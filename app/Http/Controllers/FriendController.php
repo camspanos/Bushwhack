@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFriendRequest;
 use App\Models\Friend;
 use Illuminate\Http\Request;
 
@@ -31,20 +32,14 @@ class FriendController extends Controller
      * provided name. Friends can be associated with fishing logs through
      * a many-to-many relationship.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\StoreFriendRequest  $request
      * @return \Illuminate\Http\JsonResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(StoreFriendRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
         $friend = Friend::create([
             'user_id' => auth()->id(),
-            ...$validated,
+            ...$request->validated(),
         ]);
 
         return response()->json($friend, 201);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreLocationRequest;
 use App\Models\Location;
 use Illuminate\Http\Request;
 
@@ -30,23 +31,14 @@ class LocationController extends Controller
      * Creates a new location record for the authenticated user with the
      * provided name, city, state, and country information.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\StoreLocationRequest  $request
      * @return \Illuminate\Http\JsonResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(StoreLocationRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-        ]);
-
         $location = Location::create([
             'user_id' => auth()->id(),
-            ...$validated,
+            ...$request->validated(),
         ]);
 
         return response()->json($location, 201);

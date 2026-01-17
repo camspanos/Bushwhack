@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::index
-* @see app/Http/Controllers/FlyController.php:18
+* @see app/Http/Controllers/FlyController.php:19
 * @route '/flies'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:38
+* @see app/Http/Controllers/FlyController.php:37
 * @route '/flies'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:38
+* @see app/Http/Controllers/FlyController.php:37
 * @route '/flies'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:38
+* @see app/Http/Controllers/FlyController.php:37
 * @route '/flies'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:38
+* @see app/Http/Controllers/FlyController.php:37
 * @route '/flies'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:38
+* @see app/Http/Controllers/FlyController.php:37
 * @route '/flies'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

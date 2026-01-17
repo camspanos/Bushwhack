@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFlyRequest;
 use App\Models\Fly;
 use Illuminate\Http\Request;
 
@@ -30,23 +31,14 @@ class FlyController extends Controller
      * Creates a new fly record for the authenticated user with the
      * provided name, color, size, and type information.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\StoreFlyRequest  $request
      * @return \Illuminate\Http\JsonResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(StoreFlyRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'color' => 'nullable|string|max:255',
-            'size' => 'nullable|string|max:255',
-            'type' => 'nullable|string|max:255',
-        ]);
-
         $fly = Fly::create([
             'user_id' => auth()->id(),
-            ...$validated,
+            ...$request->validated(),
         ]);
 
         return response()->json($fly, 201);

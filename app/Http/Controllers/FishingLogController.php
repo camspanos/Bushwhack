@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFishingLogRequest;
 use App\Models\FishingLog;
 use Illuminate\Http\Request;
 
@@ -14,26 +15,12 @@ class FishingLogController extends Controller
      * it with the specified friends using a many-to-many relationship through
      * the fishing_log_friend pivot table.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\StoreFishingLogRequest  $request
      * @return \Illuminate\Http\JsonResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(StoreFishingLogRequest $request)
     {
-        $validated = $request->validate([
-            'date' => 'required|date',
-            'location_id' => 'nullable|exists:locations,id',
-            'fish_id' => 'nullable|exists:fish,id',
-            'quantity' => 'nullable|integer|min:0',
-            'max_size' => 'nullable|numeric|min:0',
-            'fly_id' => 'nullable|exists:flies,id',
-            'equipment_id' => 'nullable|exists:equipment,id',
-            'style' => 'nullable|string|max:255',
-            'friend_ids' => 'nullable|array',
-            'friend_ids.*' => 'exists:friends,id',
-            'notes' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         // Create the fishing log
         $fishingLog = FishingLog::create([

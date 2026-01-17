@@ -7,11 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
-import { Fish, MapPin, Calendar, Plus } from 'lucide-vue-next';
+import { ref, onMounted, computed } from 'vue';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus } from 'lucide-vue-next';
 import axios from '@/lib/axios';
+import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,9 +23,56 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Date picker state
+const selectedDate = ref(today(getLocalTimeZone()));
+const dateInput = ref('');
+const df = new DateFormatter('en-US', { dateStyle: 'long' });
+
+// Initialize date input with today's date
+const initializeDateInput = () => {
+    const todayDate = today(getLocalTimeZone());
+    const year = todayDate.year;
+    const month = String(todayDate.month).padStart(2, '0');
+    const day = String(todayDate.day).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+};
+
+// Computed property to format date for form submission
+const formattedDate = computed(() => {
+    // Use the input field value if available, otherwise use selectedDate
+    if (dateInput.value) return dateInput.value;
+    if (!selectedDate.value) return '';
+    const year = selectedDate.value.year;
+    const month = String(selectedDate.value.month).padStart(2, '0');
+    const day = String(selectedDate.value.day).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+});
+
+// Update input when calendar date is selected
+const handleDateSelect = (date: CalendarDate | undefined) => {
+    if (!date) return;
+    selectedDate.value = date;
+    const year = date.year;
+    const month = String(date.month).padStart(2, '0');
+    const day = String(date.day).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+};
+
+// Update calendar when input changes
+const handleInputChange = () => {
+    if (!dateInput.value) return;
+    try {
+        const [year, month, day] = dateInput.value.split('-').map(Number);
+        if (year && month && day) {
+            selectedDate.value = new CalendarDate(year, month, day);
+        }
+    } catch (error) {
+        console.error('Invalid date format:', error);
+    }
+};
+
 // Form state
 const formData = ref({
-    date: '',
     location_id: '',
     fish_id: '',
     quantity: '',
@@ -30,7 +80,7 @@ const formData = ref({
     fly_id: '',
     equipment_id: '',
     fishingStyle: '',
-    friend_id: '',
+    friend_ids: [],
     notes: '',
 });
 
@@ -54,16 +104,6 @@ const newFish = ref({ species: '', water_type: '' });
 const newFly = ref({ name: '', color: '', size: '', type: '' });
 const newEquipment = ref({ rod_name: '', rod_weight: '', lure: '', line: '', tippet: '' });
 const newFriend = ref({ name: '' });
-
-const fishingStyles = [
-    'Fly Fishing',
-    'Spin Fishing',
-    'Bait Fishing',
-    'Trolling',
-    'Ice Fishing',
-    'Shore Fishing',
-    'Boat Fishing',
-];
 
 // Fetch data from API
 const fetchLocations = async () => {
@@ -164,7 +204,8 @@ const createFriend = async () => {
     try {
         const response = await axios.post('/friends', newFriend.value);
         friends.value.push(response.data);
-        formData.value.friend_id = response.data.id.toString();
+        // Add the new friend to the selected friends array
+        formData.value.friend_ids.push(response.data.id.toString());
         showFriendModal.value = false;
         newFriend.value = { name: '' };
     } catch (error) {
@@ -174,6 +215,7 @@ const createFriend = async () => {
 
 // Load all data on mount
 onMounted(() => {
+    initializeDateInput();
     fetchLocations();
     fetchEquipment();
     fetchFish();
@@ -181,9 +223,44 @@ onMounted(() => {
     fetchFriends();
 });
 
-const handleSubmit = () => {
-    console.log('Form submitted:', formData.value);
-    // TODO: Implement actual form submission
+const handleSubmit = async () => {
+    try {
+        const submitData = {
+            date: formattedDate.value,
+            location_id: formData.value.location_id || null,
+            fish_id: formData.value.fish_id || null,
+            quantity: formData.value.quantity || null,
+            max_size: formData.value.maxSize || null,
+            fly_id: formData.value.fly_id || null,
+            equipment_id: formData.value.equipment_id || null,
+            style: formData.value.fishingStyle || null,
+            friend_ids: formData.value.friend_ids,
+            notes: formData.value.notes || null,
+        };
+
+        const response = await axios.post('/fishing-logs', submitData);
+        console.log('Fishing log created:', response.data);
+
+        // Reset form
+        formData.value = {
+            location_id: '',
+            fish_id: '',
+            quantity: '',
+            maxSize: '',
+            fly_id: '',
+            equipment_id: '',
+            fishingStyle: '',
+            friend_ids: [],
+            notes: '',
+        };
+        dateInput.value = '';
+
+        // Show success message (you can add a toast notification here)
+        alert('Fishing log created successfully!');
+    } catch (error) {
+        console.error('Error creating fishing log:', error);
+        alert('Error creating fishing log. Please try again.');
+    }
 };
 </script>
 
@@ -208,15 +285,37 @@ const handleSubmit = () => {
                             <!-- Date -->
                             <div class="grid gap-2">
                                 <Label for="date" class="flex items-center gap-2">
-                                    <Calendar class="h-4 w-4" />
+                                    <CalendarIcon class="h-4 w-4" />
                                     Date
                                 </Label>
-                                <Input
-                                    id="date"
-                                    type="date"
-                                    v-model="formData.date"
-                                    required
-                                />
+                                <div class="flex gap-2">
+                                    <Input
+                                        id="date"
+                                        type="date"
+                                        v-model="dateInput"
+                                        @change="handleInputChange"
+                                        required
+                                        class="flex-1"
+                                    />
+                                    <Popover>
+                                        <PopoverTrigger as-child>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                            >
+                                                <CalendarIcon class="h-4 w-4" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent class="w-auto p-0">
+                                            <CalendarComponent
+                                                v-model="selectedDate"
+                                                initial-focus
+                                                @update:model-value="handleDateSelect"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
                             </div>
 
                             <!-- Location -->
@@ -254,41 +353,40 @@ const handleSubmit = () => {
                                 </div>
                             </div>
 
-                            <!-- Fish Species and Quantity -->
-                            <div class="grid gap-4 md:grid-cols-3">
-                                <div class="grid gap-2">
-                                    <Label for="species" class="flex items-center gap-2">
-                                        <Fish class="h-4 w-4" />
-                                        Fish Species
-                                    </Label>
-                                    <div class="flex gap-2">
-                                        <Select v-model="formData.fish_id" class="flex-1">
-                                            <SelectTrigger id="species">
-                                                <SelectValue placeholder="Select species" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem
-                                                    v-for="fish in fishSpecies"
-                                                    :key="fish.id"
-                                                    :value="fish.id.toString()"
-                                                >
-                                                    {{ fish.species }}
-                                                    <span v-if="fish.water_type" class="text-muted-foreground text-sm">
-                                                        - {{ fish.water_type }}
-                                                    </span>
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            @click="showFishModal = true"
-                                        >
-                                            <Plus class="h-4 w-4" />
-                                        </Button>
-                                    </div>
+                            <!-- Fish Species -->
+                            <div class="grid gap-2">
+                                <Label for="species" class="flex items-center gap-2">
+                                    <Fish class="h-4 w-4" />
+                                    Fish Species
+                                </Label>
+                                <div class="flex gap-2">
+                                    <Select v-model="formData.fish_id" class="flex-1">
+                                        <SelectTrigger id="species">
+                                            <SelectValue placeholder="Select species" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem
+                                                v-for="fish in fishSpecies"
+                                                :key="fish.id"
+                                                :value="fish.id.toString()"
+                                            >
+                                                {{ fish.species }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        @click="showFishModal = true"
+                                    >
+                                        <Plus class="h-4 w-4" />
+                                    </Button>
                                 </div>
+                            </div>
+
+                            <!-- Quantity and Max Size -->
+                            <div class="grid gap-4 md:grid-cols-2">
                                 <div class="grid gap-2">
                                     <Label for="quantity">Quantity Caught</Label>
                                     <Input
@@ -381,29 +479,20 @@ const handleSubmit = () => {
                             <!-- Style of Fishing -->
                             <div class="grid gap-2">
                                 <Label for="fishingStyle">Style of Fishing</Label>
-                                <Select v-model="formData.fishingStyle">
-                                    <SelectTrigger id="fishingStyle">
-                                        <SelectValue placeholder="Select fishing style" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem
-                                            v-for="style in fishingStyles"
-                                            :key="style"
-                                            :value="style"
-                                        >
-                                            {{ style }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    id="fishingStyle"
+                                    v-model="formData.fishingStyle"
+                                    placeholder="e.g., Dry fly, Nymphing, Streamer, Spin casting"
+                                />
                             </div>
 
                             <!-- Fished With -->
                             <div class="grid gap-2">
                                 <Label for="fishedWith">Fished With</Label>
                                 <div class="flex gap-2">
-                                    <Select v-model="formData.friend_id" class="flex-1">
+                                    <Select v-model="formData.friend_ids" multiple class="flex-1">
                                         <SelectTrigger id="fishedWith">
-                                            <SelectValue placeholder="Select friend" />
+                                            <SelectValue placeholder="Select friends (multiple)" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem

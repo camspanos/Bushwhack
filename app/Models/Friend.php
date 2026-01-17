@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Friend extends Model
 {
@@ -13,13 +13,27 @@ class Friend extends Model
         'name',
     ];
 
+    /**
+     * Get the user that owns this friend record.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function fishingLogs(): HasMany
+    /**
+     * Get the fishing logs that this friend was present for.
+     *
+     * This is a many-to-many relationship using the fishing_log_friend pivot table.
+     * A friend can be associated with multiple fishing logs, and a fishing log can
+     * have multiple friends.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function fishingLogs(): BelongsToMany
     {
-        return $this->hasMany(FishingLog::class);
+        return $this->belongsToMany(FishingLog::class, 'fishing_log_friend');
     }
 }

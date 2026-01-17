@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class FishingLog extends Model
 {
@@ -13,7 +14,6 @@ class FishingLog extends Model
         'equipment_id',
         'fish_id',
         'fly_id',
-        'friend_id',
         'date',
         'quantity',
         'max_size',
@@ -26,33 +26,67 @@ class FishingLog extends Model
         'max_size' => 'decimal:2',
     ];
 
+    /**
+     * Get the user that owns the fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the location where the fishing took place.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
     }
 
+    /**
+     * Get the equipment used for this fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(Equipment::class);
     }
 
+    /**
+     * Get the fish species caught in this fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function fish(): BelongsTo
     {
         return $this->belongsTo(Fish::class);
     }
 
+    /**
+     * Get the fly used for this fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function fly(): BelongsTo
     {
         return $this->belongsTo(Fly::class);
     }
 
-    public function friend(): BelongsTo
+    /**
+     * Get the friends that were present during this fishing trip.
+     *
+     * This is a many-to-many relationship using the fishing_log_friend pivot table.
+     * A fishing log can have multiple friends, and a friend can be associated with
+     * multiple fishing logs.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function friends(): BelongsToMany
     {
-        return $this->belongsTo(Friend::class);
+        return $this->belongsToMany(Friend::class, 'fishing_log_friend');
     }
 }

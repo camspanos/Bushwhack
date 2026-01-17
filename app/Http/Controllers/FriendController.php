@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFriendRequest;
 use App\Models\Friend;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FriendController extends Controller
@@ -13,10 +14,8 @@ class FriendController extends Controller
      *
      * Retrieves all friend records belonging to the authenticated user,
      * ordered alphabetically by name.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $friends = Friend::where('user_id', auth()->id())
             ->orderBy('name')
@@ -31,11 +30,8 @@ class FriendController extends Controller
      * Creates a new friend record for the authenticated user with the
      * provided name. Friends can be associated with fishing logs through
      * a many-to-many relationship.
-     *
-     * @param  \App\Http\Requests\StoreFriendRequest  $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreFriendRequest $request)
+    public function store(StoreFriendRequest $request): JsonResponse
     {
         $friend = Friend::create([
             'user_id' => auth()->id(),

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFlyRequest;
 use App\Models\Fly;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FlyController extends Controller
@@ -13,10 +14,8 @@ class FlyController extends Controller
      *
      * Retrieves all fly records belonging to the authenticated user,
      * ordered alphabetically by name.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $flies = Fly::where('user_id', auth()->id())
             ->orderBy('name')
@@ -30,11 +29,8 @@ class FlyController extends Controller
      *
      * Creates a new fly record for the authenticated user with the
      * provided name, color, size, and type information.
-     *
-     * @param  \App\Http\Requests\StoreFlyRequest  $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreFlyRequest $request)
+    public function store(StoreFlyRequest $request): JsonResponse
     {
         $fly = Fly::create([
             'user_id' => auth()->id(),

@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
@@ -22,6 +24,16 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/fishing-log',
     },
 ];
+
+// Show/hide add form dialog
+const showAddForm = ref(false);
+
+// Edit mode
+const editingLogId = ref(null);
+const isEditMode = ref(false);
+
+// Fishing logs data
+const fishingLogs = ref([]);
 
 // Date picker state
 const selectedDate = ref(today(getLocalTimeZone()));
@@ -39,7 +51,6 @@ const initializeDateInput = () => {
 
 // Computed property to format date for form submission
 const formattedDate = computed(() => {
-    // Use the input field value if available, otherwise use selectedDate
     if (dateInput.value) return dateInput.value;
     if (!selectedDate.value) return '';
     const year = selectedDate.value.year;
@@ -105,6 +116,16 @@ const newFly = ref({ name: '', color: '', size: '', type: '' });
 const newEquipment = ref({ rod_name: '', rod_weight: '', lure: '', line: '', tippet: '' });
 const newFriend = ref({ name: '' });
 
+// Fetch fishing logs
+const fetchFishingLogs = async () => {
+    try {
+        const response = await axios.get('/fishing-logs');
+        fishingLogs.value = response.data;
+    } catch (error) {
+        console.error('Error fetching fishing logs:', error);
+    }
+};
+
 // Fetch data from API
 const fetchLocations = async () => {
     try {
@@ -156,7 +177,7 @@ const createLocation = async () => {
     try {
         const response = await axios.post('/locations', newLocation.value);
         locations.value.push(response.data);
-        formData.value.location_id = response.data.id.toString();
+        formData.value.location_id = response.data.id;
         showLocationModal.value = false;
         newLocation.value = { name: '', city: '', state: '', country: '' };
     } catch (error) {
@@ -164,23 +185,11 @@ const createLocation = async () => {
     }
 };
 
-const createEquipment = async () => {
-    try {
-        const response = await axios.post('/equipment', newEquipment.value);
-        equipment.value.push(response.data);
-        formData.value.equipment_id = response.data.id.toString();
-        showEquipmentModal.value = false;
-        newEquipment.value = { rod_name: '', rod_weight: '', lure: '', line: '', tippet: '' };
-    } catch (error) {
-        console.error('Error creating equipment:', error);
-    }
-};
-
 const createFish = async () => {
     try {
         const response = await axios.post('/fish', newFish.value);
         fishSpecies.value.push(response.data);
-        formData.value.fish_id = response.data.id.toString();
+        formData.value.fish_id = response.data.id;
         showFishModal.value = false;
         newFish.value = { species: '', water_type: '' };
     } catch (error) {
@@ -192,7 +201,7 @@ const createFly = async () => {
     try {
         const response = await axios.post('/flies', newFly.value);
         flies.value.push(response.data);
-        formData.value.fly_id = response.data.id.toString();
+        formData.value.fly_id = response.data.id;
         showFlyModal.value = false;
         newFly.value = { name: '', color: '', size: '', type: '' };
     } catch (error) {
@@ -200,12 +209,22 @@ const createFly = async () => {
     }
 };
 
+const createEquipment = async () => {
+    try {
+        const response = await axios.post('/equipment', newEquipment.value);
+        equipment.value.push(response.data);
+        formData.value.equipment_id = response.data.id;
+        showEquipmentModal.value = false;
+        newEquipment.value = { rod_name: '', rod_weight: '', lure: '', line: '', tippet: '' };
+    } catch (error) {
+        console.error('Error creating equipment:', error);
+    }
+};
+
 const createFriend = async () => {
     try {
         const response = await axios.post('/friends', newFriend.value);
         friends.value.push(response.data);
-        // Add the new friend to the selected friends array
-        formData.value.friend_ids.push(response.data.id.toString());
         showFriendModal.value = false;
         newFriend.value = { name: '' };
     } catch (error) {
@@ -216,12 +235,60 @@ const createFriend = async () => {
 // Load all data on mount
 onMounted(() => {
     initializeDateInput();
+    fetchFishingLogs();
     fetchLocations();
     fetchEquipment();
     fetchFish();
     fetchFlies();
     fetchFriends();
 });
+
+// Open edit dialog with log data
+const editLog = (log: any) => {
+    isEditMode.value = true;
+    editingLogId.value = log.id;
+
+    // Parse the date
+    const logDate = new Date(log.date);
+    const year = logDate.getFullYear();
+    const month = String(logDate.getMonth() + 1).padStart(2, '0');
+    const day = String(logDate.getDate()).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+    selectedDate.value = new CalendarDate(year, parseInt(month), parseInt(day));
+
+    // Populate form with log data
+    formData.value = {
+        location_id: log.location_id?.toString() || '',
+        fish_id: log.fish_id?.toString() || '',
+        quantity: log.quantity?.toString() || '',
+        maxSize: log.max_size?.toString() || '',
+        fly_id: log.fly_id?.toString() || '',
+        equipment_id: log.equipment_id?.toString() || '',
+        fishingStyle: log.style || '',
+        friend_ids: log.friends?.map((f: any) => f.id) || [],
+        notes: log.notes || '',
+    };
+
+    showAddForm.value = true;
+};
+
+// Reset form to add mode
+const resetForm = () => {
+    isEditMode.value = false;
+    editingLogId.value = null;
+    formData.value = {
+        location_id: '',
+        fish_id: '',
+        quantity: '',
+        maxSize: '',
+        fly_id: '',
+        equipment_id: '',
+        fishingStyle: '',
+        friend_ids: [],
+        notes: '',
+    };
+    initializeDateInput();
+};
 
 const handleSubmit = async () => {
     try {
@@ -238,30 +305,38 @@ const handleSubmit = async () => {
             notes: formData.value.notes || null,
         };
 
-        const response = await axios.post('/fishing-logs', submitData);
-        console.log('Fishing log created:', response.data);
+        let response;
+        if (isEditMode.value && editingLogId.value) {
+            // Update existing log
+            response = await axios.put(`/fishing-logs/${editingLogId.value}`, submitData);
+            console.log('Fishing log updated:', response.data);
+            alert('Fishing log updated successfully!');
+        } else {
+            // Create new log
+            response = await axios.post('/fishing-logs', submitData);
+            console.log('Fishing log created:', response.data);
+            alert('Fishing log created successfully!');
+        }
 
         // Reset form
-        formData.value = {
-            location_id: '',
-            fish_id: '',
-            quantity: '',
-            maxSize: '',
-            fly_id: '',
-            equipment_id: '',
-            fishingStyle: '',
-            friend_ids: [],
-            notes: '',
-        };
-        dateInput.value = '';
+        resetForm();
 
-        // Show success message (you can add a toast notification here)
-        alert('Fishing log created successfully!');
+        // Refresh fishing logs and close dialog
+        await fetchFishingLogs();
+        showAddForm.value = false;
     } catch (error) {
-        console.error('Error creating fishing log:', error);
-        alert('Error creating fishing log. Please try again.');
+        console.error('Error saving fishing log:', error);
+        alert('Error saving fishing log. Please try again.');
     }
 };
+
+// Format date for display
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+
 </script>
 
 <template>
@@ -269,277 +344,331 @@ const handleSubmit = async () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
-            <div class="mx-auto w-full max-w-4xl">
+            <div class="mx-auto w-full max-w-6xl">
                 <Card>
                     <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <Fish class="h-6 w-6" />
-                            Log Your Fishing Trip
-                        </CardTitle>
-                        <CardDescription>
-                            Record details about your fishing adventure
-                        </CardDescription>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Fish class="h-6 w-6" />
+                                    Your Fishing Logs
+                                </CardTitle>
+                                <CardDescription>
+                                    View and manage your fishing trip records
+                                </CardDescription>
+                            </div>
+                            <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                <Plus class="h-4 w-4" />
+                                Add New Log
+                            </Button>
+                        </div>
                     </CardHeader>
-                    <CardContent>
-                        <form @submit.prevent="handleSubmit" class="space-y-6">
-                            <!-- Date -->
-                            <div class="grid gap-2">
-                                <Label for="date" class="flex items-center gap-2">
-                                    <CalendarIcon class="h-4 w-4" />
-                                    Date
-                                </Label>
-                                <div class="flex gap-2">
-                                    <Input
-                                        id="date"
-                                        type="date"
-                                        v-model="dateInput"
-                                        @change="handleInputChange"
-                                        required
-                                        class="flex-1"
-                                    />
-                                    <Popover>
-                                        <PopoverTrigger as-child>
+                            <CardContent>
+                                <div class="rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Location</TableHead>
+                                                <TableHead>Fish</TableHead>
+                                                <TableHead>Quantity</TableHead>
+                                                <TableHead>Max Size</TableHead>
+                                                <TableHead>Fly</TableHead>
+                                                <TableHead>Style</TableHead>
+                                                <TableHead class="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <TableRow v-if="fishingLogs.length === 0">
+                                                <TableCell colspan="8" class="text-center text-muted-foreground py-8">
+                                                    No fishing logs yet. Click "Add New" to create your first log!
+                                                </TableCell>
+                                            </TableRow>
+                                            <TableRow v-for="log in fishingLogs" :key="log.id">
+                                                <TableCell class="font-medium">{{ formatDate(log.date) }}</TableCell>
+                                                <TableCell>{{ log.location?.name || '-' }}</TableCell>
+                                                <TableCell>{{ log.fish?.species || '-' }}</TableCell>
+                                                <TableCell>{{ log.quantity || '-' }}</TableCell>
+                                                <TableCell>{{ log.max_size ? `${log.max_size}"` : '-' }}</TableCell>
+                                                <TableCell>{{ log.fly?.name || '-' }}</TableCell>
+                                                <TableCell>{{ log.style || '-' }}</TableCell>
+                                                <TableCell class="text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        @click="editLog(log)"
+                                                        class="h-8 w-8"
+                                                    >
+                                                        <Pencil class="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+        <!-- Add/Edit Log Dialog -->
+        <Dialog v-model:open="showAddForm" @update:open="(open) => { if (!open) resetForm(); }">
+            <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2">
+                        <Fish class="h-6 w-6" />
+                        {{ isEditMode ? 'Edit Fishing Trip' : 'Log Your Fishing Trip' }}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {{ isEditMode ? 'Update details about your fishing adventure' : 'Record details about your fishing adventure' }}
+                    </DialogDescription>
+                </DialogHeader>
+                <form @submit.prevent="handleSubmit" class="space-y-6">
+                                    <!-- Date -->
+                                    <div class="grid gap-2">
+                                        <Label for="date" class="flex items-center gap-2">
+                                            <CalendarIcon class="h-4 w-4" />
+                                            Date
+                                        </Label>
+                                        <div class="flex gap-2">
+                                            <Input
+                                                id="date"
+                                                type="date"
+                                                v-model="dateInput"
+                                                @change="handleInputChange"
+                                                required
+                                                class="flex-1"
+                                            />
+                                            <Popover>
+                                                <PopoverTrigger as-child>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                    >
+                                                        <CalendarIcon class="h-4 w-4" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent class="w-auto p-0">
+                                                    <CalendarComponent
+                                                        v-model="selectedDate"
+                                                        initial-focus
+                                                        @update:model-value="handleDateSelect"
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div class="grid gap-2">
+                                        <Label for="location" class="flex items-center gap-2">
+                                            <MapPin class="h-4 w-4" />
+                                            Location
+                                        </Label>
+                                        <div class="flex gap-2">
+                                            <Select v-model="formData.location_id">
+                                                <SelectTrigger id="location" class="flex-1">
+                                                    <SelectValue placeholder="Select a location" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem
+                                                        v-for="location in locations"
+                                                        :key="location.id"
+                                                        :value="location.id.toString()"
+                                                    >
+                                                        {{ location.name }}
+                                                        <span v-if="location.city" class="text-muted-foreground">
+                                                            - {{ location.city }}
+                                                        </span>
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 size="icon"
+                                                @click="showLocationModal = true"
                                             >
-                                                <CalendarIcon class="h-4 w-4" />
+                                                <Plus class="h-4 w-4" />
                                             </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0">
-                                            <CalendarComponent
-                                                v-model="selectedDate"
-                                                initial-focus
-                                                @update:model-value="handleDateSelect"
+                                        </div>
+                                    </div>
+
+                                    <!-- Fish Species -->
+                                    <div class="grid gap-2">
+                                        <Label for="fish">Fish Species</Label>
+                                        <div class="flex gap-2">
+                                            <Select v-model="formData.fish_id">
+                                                <SelectTrigger id="fish" class="flex-1">
+                                                    <SelectValue placeholder="Select fish species" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem
+                                                        v-for="fish in fishSpecies"
+                                                        :key="fish.id"
+                                                        :value="fish.id.toString()"
+                                                    >
+                                                        {{ fish.species }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                @click="showFishModal = true"
+                                            >
+                                                <Plus class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quantity and Max Size -->
+                                    <div class="grid gap-4 sm:grid-cols-2">
+                                        <div class="grid gap-2">
+                                            <Label for="quantity">Quantity Caught</Label>
+                                            <Input
+                                                id="quantity"
+                                                type="number"
+                                                v-model="formData.quantity"
+                                                placeholder="e.g., 5"
+                                                min="0"
                                             />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            </div>
-
-                            <!-- Location -->
-                            <div class="grid gap-2">
-                                <Label for="location" class="flex items-center gap-2">
-                                    <MapPin class="h-4 w-4" />
-                                    Location
-                                </Label>
-                                <div class="flex gap-2">
-                                    <Select v-model="formData.location_id" class="flex-1">
-                                        <SelectTrigger id="location">
-                                            <SelectValue placeholder="Select location" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem
-                                                v-for="location in locations"
-                                                :key="location.id"
-                                                :value="location.id.toString()"
-                                            >
-                                                {{ location.name }}
-                                                <span v-if="location.city" class="text-muted-foreground text-sm">
-                                                    - {{ location.city }}
-                                                </span>
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        @click="showLocationModal = true"
-                                    >
-                                        <Plus class="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <!-- Fish Species -->
-                            <div class="grid gap-2">
-                                <Label for="species" class="flex items-center gap-2">
-                                    <Fish class="h-4 w-4" />
-                                    Fish Species
-                                </Label>
-                                <div class="flex gap-2">
-                                    <Select v-model="formData.fish_id" class="flex-1">
-                                        <SelectTrigger id="species">
-                                            <SelectValue placeholder="Select species" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem
-                                                v-for="fish in fishSpecies"
-                                                :key="fish.id"
-                                                :value="fish.id.toString()"
-                                            >
-                                                {{ fish.species }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        @click="showFishModal = true"
-                                    >
-                                        <Plus class="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <!-- Quantity and Max Size -->
-                            <div class="grid gap-4 md:grid-cols-2">
-                                <div class="grid gap-2">
-                                    <Label for="quantity">Quantity Caught</Label>
-                                    <Input
-                                        id="quantity"
-                                        type="number"
-                                        v-model="formData.quantity"
-                                        placeholder="Number of fish"
-                                        min="0"
-                                    />
-                                </div>
-                                <div class="grid gap-2">
-                                    <Label for="maxSize">Max Size (inches)</Label>
-                                    <Input
-                                        id="maxSize"
-                                        type="number"
-                                        v-model="formData.maxSize"
-                                        placeholder="Largest fish"
-                                        min="0"
-                                        step="0.1"
-                                    />
-                                </div>
-                            </div>
-
-                            <!-- Fly and Rod -->
-                            <div class="grid gap-4 md:grid-cols-2">
-                                <div class="grid gap-2">
-                                    <Label for="fly">Fly</Label>
-                                    <div class="flex gap-2">
-                                        <Select v-model="formData.fly_id" class="flex-1">
-                                            <SelectTrigger id="fly">
-                                                <SelectValue placeholder="Select fly" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem
-                                                    v-for="fly in flies"
-                                                    :key="fly.id"
-                                                    :value="fly.id.toString()"
-                                                >
-                                                    {{ fly.name }}
-                                                    <span v-if="fly.size || fly.color" class="text-muted-foreground text-sm">
-                                                        - <span v-if="fly.size">Size {{ fly.size }}</span>
-                                                        <span v-if="fly.size && fly.color">, </span>
-                                                        <span v-if="fly.color">{{ fly.color }}</span>
-                                                    </span>
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            @click="showFlyModal = true"
-                                        >
-                                            <Plus class="h-4 w-4" />
-                                        </Button>
+                                        </div>
+                                        <div class="grid gap-2">
+                                            <Label for="maxSize">Max Size (inches)</Label>
+                                            <Input
+                                                id="maxSize"
+                                                type="number"
+                                                v-model="formData.maxSize"
+                                                placeholder="e.g., 18"
+                                                min="0"
+                                                step="0.1"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="grid gap-2">
-                                    <Label for="rod">Rod/Equipment</Label>
-                                    <div class="flex gap-2">
-                                        <Select v-model="formData.equipment_id" class="flex-1">
-                                            <SelectTrigger id="rod">
-                                                <SelectValue placeholder="Select equipment" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem
-                                                    v-for="equip in equipment"
-                                                    :key="equip.id"
-                                                    :value="equip.id.toString()"
-                                                >
-                                                    {{ equip.rod_name }}
-                                                    <span v-if="equip.rod_weight" class="text-muted-foreground text-sm">
-                                                        - {{ equip.rod_weight }}
-                                                    </span>
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            @click="showEquipmentModal = true"
-                                        >
-                                            <Plus class="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Style of Fishing -->
-                            <div class="grid gap-2">
-                                <Label for="fishingStyle">Style of Fishing</Label>
-                                <Input
-                                    id="fishingStyle"
-                                    v-model="formData.fishingStyle"
-                                    placeholder="e.g., Dry fly, Nymphing, Streamer, Spin casting"
-                                />
-                            </div>
-
-                            <!-- Fished With -->
-                            <div class="grid gap-2">
-                                <Label for="fishedWith">Fished With</Label>
-                                <div class="flex gap-2">
-                                    <Select v-model="formData.friend_ids" multiple class="flex-1">
-                                        <SelectTrigger id="fishedWith">
-                                            <SelectValue placeholder="Select friends (multiple)" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem
-                                                v-for="friend in friends"
-                                                :key="friend.id"
-                                                :value="friend.id.toString()"
+                                    <!-- Fly -->
+                                    <div class="grid gap-2">
+                                        <Label for="fly">Fly Used</Label>
+                                        <div class="flex gap-2">
+                                            <Select v-model="formData.fly_id">
+                                                <SelectTrigger id="fly" class="flex-1">
+                                                    <SelectValue placeholder="Select a fly" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem
+                                                        v-for="fly in flies"
+                                                        :key="fly.id"
+                                                        :value="fly.id.toString()"
+                                                    >
+                                                        {{ fly.name }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                @click="showFlyModal = true"
                                             >
-                                                {{ friend.name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        @click="showFriendModal = true"
-                                    >
-                                        <Plus class="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
+                                                <Plus class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
 
-                            <!-- Notes -->
-                            <div class="grid gap-2">
-                                <Label for="notes">Notes</Label>
-                                <Textarea
-                                    id="notes"
-                                    v-model="formData.notes"
-                                    placeholder="Additional details about your trip..."
-                                    class="min-h-[120px]"
-                                />
-                            </div>
+                                    <!-- Equipment -->
+                                    <div class="grid gap-2">
+                                        <Label for="equipment">Equipment</Label>
+                                        <div class="flex gap-2">
+                                            <Select v-model="formData.equipment_id">
+                                                <SelectTrigger id="equipment" class="flex-1">
+                                                    <SelectValue placeholder="Select equipment" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem
+                                                        v-for="item in equipment"
+                                                        :key="item.id"
+                                                        :value="item.id.toString()"
+                                                    >
+                                                        {{ item.rod_name }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                @click="showEquipmentModal = true"
+                                            >
+                                                <Plus class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
 
-                            <!-- Submit Button -->
-                            <div class="flex justify-end gap-4">
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                                <Button type="submit">
-                                    Save Fishing Log
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+                                    <!-- Fishing Style -->
+                                    <div class="grid gap-2">
+                                        <Label for="fishingStyle">Fishing Style</Label>
+                                        <Input
+                                            id="fishingStyle"
+                                            v-model="formData.fishingStyle"
+                                            placeholder="e.g., Dry Fly, Nymphing, Streamer"
+                                        />
+                                    </div>
+
+                                    <!-- Friends -->
+                                    <div class="grid gap-2">
+                                        <Label>Fishing Buddies</Label>
+                                        <div class="flex gap-2">
+                                            <div class="flex-1 space-y-2">
+                                                <div v-for="friend in friends" :key="friend.id" class="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        :id="`friend-${friend.id}`"
+                                                        :value="friend.id"
+                                                        v-model="formData.friend_ids"
+                                                        class="rounded border-gray-300"
+                                                    />
+                                                    <label :for="`friend-${friend.id}`" class="text-sm">
+                                                        {{ friend.name }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                @click="showFriendModal = true"
+                                            >
+                                                <Plus class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Notes -->
+                                    <div class="grid gap-2">
+                                        <Label for="notes">Notes</Label>
+                                        <Textarea
+                                            id="notes"
+                                            v-model="formData.notes"
+                                            placeholder="Additional details about your trip..."
+                                            class="min-h-[120px]"
+                                        />
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <DialogFooter>
+                                        <Button type="button" variant="outline" @click="showAddForm = false">
+                                            Cancel
+                                        </Button>
+                                        <Button type="submit">
+                                            {{ isEditMode ? 'Update Fishing Log' : 'Save Fishing Log' }}
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+            </DialogContent>
+        </Dialog>
 
         <!-- Location Modal -->
         <Dialog v-model:open="showLocationModal">
@@ -675,7 +804,7 @@ const handleSubmit = async () => {
                         <Input
                             id="new-fly-type"
                             v-model="newFly.type"
-                            placeholder="e.g., Nymph, Dry Fly, Streamer"
+                            placeholder="e.g., Streamer, Dry Fly"
                         />
                     </div>
                     <DialogFooter>
@@ -696,7 +825,7 @@ const handleSubmit = async () => {
                 <DialogHeader>
                     <DialogTitle>Add New Equipment</DialogTitle>
                     <DialogDescription>
-                        Create a new rod/equipment setup to add to your log.
+                        Create a new equipment setup to add to your log.
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="createEquipment" class="space-y-4">
@@ -714,7 +843,7 @@ const handleSubmit = async () => {
                         <Input
                             id="new-equipment-rod-weight"
                             v-model="newEquipment.rod_weight"
-                            placeholder="e.g., 5wt 9ft"
+                            placeholder="e.g., 5wt"
                         />
                     </div>
                     <div class="grid gap-2">
@@ -730,7 +859,7 @@ const handleSubmit = async () => {
                         <Input
                             id="new-equipment-line"
                             v-model="newEquipment.line"
-                            placeholder="e.g., 5X Tippet"
+                            placeholder="e.g., WF5F"
                         />
                     </div>
                     <div class="grid gap-2">
@@ -738,7 +867,7 @@ const handleSubmit = async () => {
                         <Input
                             id="new-equipment-tippet"
                             v-model="newEquipment.tippet"
-                            placeholder="e.g., 6X"
+                            placeholder="e.g., 5X"
                         />
                     </div>
                     <DialogFooter>
@@ -785,3 +914,8 @@ const handleSubmit = async () => {
         </Dialog>
     </AppLayout>
 </template>
+
+
+
+
+

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEquipmentRequest;
 use App\Models\Equipment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EquipmentController extends Controller
@@ -13,10 +14,8 @@ class EquipmentController extends Controller
      *
      * Retrieves all equipment records belonging to the authenticated user,
      * ordered alphabetically by rod name.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $equipment = Equipment::where('user_id', auth()->id())
             ->orderBy('rod_name')
@@ -30,11 +29,8 @@ class EquipmentController extends Controller
      *
      * Creates a new equipment record for the authenticated user with the
      * provided rod name, rod weight, lure, line, and tippet information.
-     *
-     * @param  \App\Http\Requests\StoreEquipmentRequest  $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreEquipmentRequest $request)
+    public function store(StoreEquipmentRequest $request): JsonResponse
     {
         $equipment = Equipment::create([
             'user_id' => auth()->id(),

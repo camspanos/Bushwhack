@@ -11,10 +11,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2 } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
@@ -32,8 +33,18 @@ const showAddForm = ref(false);
 const editingLogId = ref(null);
 const isEditMode = ref(false);
 
+// Delete confirmation
+const showDeleteConfirm = ref(false);
+const logToDelete = ref(null);
+
 // Fishing logs data
 const fishingLogs = ref([]);
+
+// Pagination state
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = ref(15);
+const total = ref(0);
 
 // Date picker state
 const selectedDate = ref(today(getLocalTimeZone()));
@@ -117,12 +128,39 @@ const newEquipment = ref({ rod_name: '', rod_weight: '', lure: '', line: '', tip
 const newFriend = ref({ name: '' });
 
 // Fetch fishing logs
-const fetchFishingLogs = async () => {
+const fetchFishingLogs = async (page = 1) => {
     try {
-        const response = await axios.get('/fishing-logs');
-        fishingLogs.value = response.data;
+        const response = await axios.get('/fishing-logs', {
+            params: {
+                page: page,
+                per_page: perPage.value
+            }
+        });
+        fishingLogs.value = response.data.data;
+        currentPage.value = response.data.current_page;
+        totalPages.value = response.data.last_page;
+        total.value = response.data.total;
     } catch (error) {
         console.error('Error fetching fishing logs:', error);
+    }
+};
+
+// Pagination handlers
+const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages.value) {
+        fetchFishingLogs(page);
+    }
+};
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        fetchFishingLogs(currentPage.value + 1);
+    }
+};
+
+const previousPage = () => {
+    if (currentPage.value > 1) {
+        fetchFishingLogs(currentPage.value - 1);
     }
 };
 
@@ -290,6 +328,39 @@ const resetForm = () => {
     initializeDateInput();
 };
 
+// Open delete confirmation dialog
+const confirmDelete = (log: any) => {
+    logToDelete.value = log;
+    showDeleteConfirm.value = true;
+};
+
+// Handle delete action
+const handleDelete = async () => {
+    if (!logToDelete.value) return;
+
+    try {
+        await axios.delete(`/fishing-logs/${logToDelete.value.id}`);
+
+        // Refresh fishing logs
+        await fetchFishingLogs();
+
+        // Close dialog and reset
+        showDeleteConfirm.value = false;
+        logToDelete.value = null;
+
+        alert('Fishing log deleted successfully!');
+    } catch (error) {
+        console.error('Error deleting fishing log:', error);
+        alert('Error deleting fishing log. Please try again.');
+    }
+};
+
+// Cancel delete
+const cancelDelete = () => {
+    showDeleteConfirm.value = false;
+    logToDelete.value = null;
+};
+
 const handleSubmit = async () => {
     try {
         const submitData = {
@@ -393,18 +464,58 @@ const formatDate = (dateString: string) => {
                                                 <TableCell>{{ log.fly?.name || '-' }}</TableCell>
                                                 <TableCell>{{ log.style || '-' }}</TableCell>
                                                 <TableCell class="text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        @click="editLog(log)"
-                                                        class="h-8 w-8"
-                                                    >
-                                                        <Pencil class="h-4 w-4" />
-                                                    </Button>
+                                                    <div class="flex items-center justify-end gap-0">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            @click="editLog(log)"
+                                                            class="h-8 w-8"
+                                                        >
+                                                            <Pencil class="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            @click="confirmDelete(log)"
+                                                            class="h-8 w-8 text-destructive hover:text-destructive -mr-2"
+                                                        >
+                                                            <Trash2 class="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         </TableBody>
                                     </Table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+                                    <div class="text-sm text-muted-foreground">
+                                        Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
+                                    </div>
+                                    <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
+                                            </PaginationItem>
+
+                                            <PaginationItem v-for="page in totalPages" :key="page">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    @click="goToPage(page)"
+                                                    :class="{ 'bg-accent': page === currentPage }"
+                                                    class="h-9 w-9"
+                                                >
+                                                    {{ page }}
+                                                </Button>
+                                            </PaginationItem>
+
+                                            <PaginationItem>
+                                                <PaginationNext @click="nextPage" :disabled="currentPage === totalPages" />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
                                 </div>
                             </CardContent>
                         </Card>
@@ -910,6 +1021,43 @@ const formatDate = (dateString: string) => {
                         </Button>
                     </DialogFooter>
                 </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Delete Confirmation Dialog -->
+        <Dialog v-model:open="showDeleteConfirm">
+            <DialogContent class="max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2 text-destructive">
+                        <Trash2 class="h-5 w-5" />
+                        Delete Fishing Log
+                    </DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete this fishing log? This action cannot be undone.
+                    </DialogDescription>
+                </DialogHeader>
+                <div v-if="logToDelete" class="py-4">
+                    <div class="rounded-lg bg-muted p-4 space-y-2">
+                        <p class="text-sm font-medium">Log Details:</p>
+                        <p class="text-sm text-muted-foreground">
+                            <strong>Date:</strong> {{ formatDate(logToDelete.date) }}
+                        </p>
+                        <p class="text-sm text-muted-foreground" v-if="logToDelete.location">
+                            <strong>Location:</strong> {{ logToDelete.location.name }}
+                        </p>
+                        <p class="text-sm text-muted-foreground" v-if="logToDelete.fish">
+                            <strong>Fish:</strong> {{ logToDelete.fish.species }}
+                        </p>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" @click="cancelDelete">
+                        Cancel
+                    </Button>
+                    <Button type="button" variant="destructive" @click="handleDelete">
+                        Delete
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     </AppLayout>

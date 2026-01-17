@@ -14,13 +14,16 @@ class FishingLogController extends Controller
      *
      * Retrieves all fishing log records belonging to the authenticated user,
      * ordered by date (most recent first), with related data loaded.
+     * Returns paginated results (15 per page).
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $perPage = $request->input('per_page', 15);
+
         $fishingLogs = FishingLog::where('user_id', auth()->id())
             ->with(['location', 'fish', 'fly', 'equipment', 'friends'])
             ->orderBy('date', 'desc')
-            ->get();
+            ->paginate($perPage);
 
         return response()->json($fishingLogs);
     }
@@ -94,5 +97,23 @@ class FishingLogController extends Controller
         }
 
         return response()->json($fishingLog->load(['location', 'fish', 'fly', 'equipment', 'friends']));
+    }
+
+    /**
+     * Remove the specified fishing log from storage.
+     *
+     * Deletes a fishing log entry for the authenticated user.
+     */
+    public function destroy(FishingLog $fishingLog): JsonResponse
+    {
+        // Ensure the user owns this fishing log
+        if ($fishingLog->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Delete the fishing log (friends will be automatically detached due to cascade)
+        $fishingLog->delete();
+
+        return response()->json(['message' => 'Fishing log deleted successfully']);
     }
 }

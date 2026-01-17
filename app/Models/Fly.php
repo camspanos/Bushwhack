@@ -16,11 +16,21 @@ class Fly extends Model
         'type',
     ];
 
+    /**
+     * Get the user that owns this fly.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the fishing logs where this fly was used.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function fishingLogs(): HasMany
     {
         return $this->hasMany(FishingLog::class);

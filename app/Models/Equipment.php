@@ -17,11 +17,21 @@ class Equipment extends Model
         'tippet',
     ];
 
+    /**
+     * Get the user that owns this equipment.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the fishing logs that used this equipment.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function fishingLogs(): HasMany
     {
         return $this->hasMany(FishingLog::class);

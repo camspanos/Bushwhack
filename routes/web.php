@@ -14,4 +14,8 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('fishing-log', function () {
+    return Inertia::render('FishingLog');
+})->middleware(['auth', 'verified'])->name('fishing-log');
+
 require __DIR__.'/settings.php';

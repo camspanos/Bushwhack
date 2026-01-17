@@ -13,7 +13,7 @@ use Laravel\Fortify\Features;
 class TwoFactorAuthenticationController extends Controller implements HasMiddleware
 {
     /**
-     * Get the middleware that should be assigned to the controller.
+     * @return array|\Closure[]|Middleware[]|string[]
      */
     public static function middleware(): array
     {
@@ -23,7 +23,8 @@ class TwoFactorAuthenticationController extends Controller implements HasMiddlew
     }
 
     /**
-     * Show the user's two-factor authentication settings page.
+     * @param TwoFactorAuthenticationRequest $request
+     * @return Response
      */
     public function show(TwoFactorAuthenticationRequest $request): Response
     {

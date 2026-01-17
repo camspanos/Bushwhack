@@ -12,7 +12,7 @@ use Inertia\Response;
 class PasswordController extends Controller
 {
     /**
-     * Show the user's password settings page.
+     * @return Response
      */
     public function edit(): Response
     {
@@ -20,7 +20,8 @@ class PasswordController extends Controller
     }
 
     /**
-     * Update the user's password.
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function update(Request $request): RedirectResponse
     {

@@ -9,13 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
@@ -124,7 +125,7 @@ const showFriendModal = ref(false);
 const newLocation = ref({ name: '', city: '', state: '', country: '' });
 const newFish = ref({ species: '', water_type: '' });
 const newFly = ref({ name: '', color: '', size: '', type: '' });
-const newEquipment = ref({ rod_name: '', rod_weight: '', lure: '', line: '', tippet: '' });
+const newEquipment = ref({ rod_name: '', rod_weight: '', reel: '', line: '', tippet: '' });
 const newFriend = ref({ name: '' });
 
 // Fetch fishing logs
@@ -168,7 +169,10 @@ const previousPage = () => {
 const fetchLocations = async () => {
     try {
         const response = await axios.get('/locations');
-        locations.value = response.data;
+        // Handle paginated response
+        const data = response.data.data || response.data;
+        const locationsArray = Array.isArray(data) ? data : [];
+        locations.value = locationsArray.filter((loc: any) => loc !== null && loc !== undefined);
     } catch (error) {
         console.error('Error fetching locations:', error);
     }
@@ -177,7 +181,10 @@ const fetchLocations = async () => {
 const fetchEquipment = async () => {
     try {
         const response = await axios.get('/equipment');
-        equipment.value = response.data;
+        // Handle paginated response
+        const data = response.data.data || response.data;
+        const equipmentArray = Array.isArray(data) ? data : [];
+        equipment.value = equipmentArray.filter((eq: any) => eq !== null && eq !== undefined);
     } catch (error) {
         console.error('Error fetching equipment:', error);
     }
@@ -186,7 +193,10 @@ const fetchEquipment = async () => {
 const fetchFish = async () => {
     try {
         const response = await axios.get('/fish');
-        fishSpecies.value = response.data;
+        // Handle paginated response
+        const data = response.data.data || response.data;
+        const fishArray = Array.isArray(data) ? data : [];
+        fishSpecies.value = fishArray.filter((fish: any) => fish !== null && fish !== undefined);
     } catch (error) {
         console.error('Error fetching fish:', error);
     }
@@ -195,7 +205,10 @@ const fetchFish = async () => {
 const fetchFlies = async () => {
     try {
         const response = await axios.get('/flies');
-        flies.value = response.data;
+        // Handle paginated response
+        const data = response.data.data || response.data;
+        const fliesArray = Array.isArray(data) ? data : [];
+        flies.value = fliesArray.filter((fly: any) => fly !== null && fly !== undefined);
     } catch (error) {
         console.error('Error fetching flies:', error);
     }
@@ -204,7 +217,10 @@ const fetchFlies = async () => {
 const fetchFriends = async () => {
     try {
         const response = await axios.get('/friends');
-        friends.value = response.data;
+        // Handle paginated response
+        const data = response.data.data || response.data;
+        const friendsArray = Array.isArray(data) ? data : [];
+        friends.value = friendsArray.filter((friend: any) => friend !== null && friend !== undefined);
     } catch (error) {
         console.error('Error fetching friends:', error);
     }
@@ -253,7 +269,7 @@ const createEquipment = async () => {
         equipment.value.push(response.data);
         formData.value.equipment_id = response.data.id;
         showEquipmentModal.value = false;
-        newEquipment.value = { rod_name: '', rod_weight: '', lure: '', line: '', tippet: '' };
+        newEquipment.value = { rod_name: '', rod_weight: '', reel: '', line: '', tippet: '' };
     } catch (error) {
         console.error('Error creating equipment:', error);
     }
@@ -310,6 +326,12 @@ const editLog = (log: any) => {
     showAddForm.value = true;
 };
 
+// Open add form
+const openAddForm = () => {
+    resetForm();
+    showAddForm.value = true;
+};
+
 // Reset form to add mode
 const resetForm = () => {
     isEditMode.value = false;
@@ -347,11 +369,8 @@ const handleDelete = async () => {
         // Close dialog and reset
         showDeleteConfirm.value = false;
         logToDelete.value = null;
-
-        alert('Fishing log deleted successfully!');
     } catch (error) {
         console.error('Error deleting fishing log:', error);
-        alert('Error deleting fishing log. Please try again.');
     }
 };
 
@@ -381,12 +400,10 @@ const handleSubmit = async () => {
             // Update existing log
             response = await axios.put(`/fishing-logs/${editingLogId.value}`, submitData);
             console.log('Fishing log updated:', response.data);
-            alert('Fishing log updated successfully!');
         } else {
             // Create new log
             response = await axios.post('/fishing-logs', submitData);
             console.log('Fishing log created:', response.data);
-            alert('Fishing log created successfully!');
         }
 
         // Reset form
@@ -397,7 +414,6 @@ const handleSubmit = async () => {
         showAddForm.value = false;
     } catch (error) {
         console.error('Error saving fishing log:', error);
-        alert('Error saving fishing log. Please try again.');
     }
 };
 
@@ -428,7 +444,7 @@ const formatDate = (dateString: string) => {
                                     View and manage your fishing trip records
                                 </CardDescription>
                             </div>
-                            <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                            <Button as="a" href="/fishing-log/create" class="flex items-center gap-2">
                                 <Plus class="h-4 w-4" />
                                 Add New Log
                             </Button>
@@ -519,12 +535,12 @@ const formatDate = (dateString: string) => {
                                 </div>
                             </CardContent>
                         </Card>
-                    </div>
                 </div>
+            </div>
 
         <!-- Add/Edit Log Dialog -->
-        <Dialog v-model:open="showAddForm" @update:open="(open) => { if (!open) resetForm(); }">
-            <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <Dialog v-model:open="showAddForm">
+            <DialogContent class="max-w-5xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle class="flex items-center gap-2">
                         <Fish class="h-6 w-6" />
@@ -555,7 +571,7 @@ const formatDate = (dateString: string) => {
                                                     <Button
                                                         type="button"
                                                         variant="outline"
-                                                        size="icon"
+                                                        class="px-3"
                                                     >
                                                         <CalendarIcon class="h-4 w-4" />
                                                     </Button>
@@ -732,20 +748,60 @@ const formatDate = (dateString: string) => {
                                     <div class="grid gap-2">
                                         <Label>Fishing Buddies</Label>
                                         <div class="flex gap-2">
-                                            <div class="flex-1 space-y-2">
-                                                <div v-for="friend in friends" :key="friend.id" class="flex items-center space-x-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        :id="`friend-${friend.id}`"
-                                                        :value="friend.id"
-                                                        v-model="formData.friend_ids"
-                                                        class="rounded border-gray-300"
-                                                    />
-                                                    <label :for="`friend-${friend.id}`" class="text-sm">
-                                                        {{ friend.name }}
-                                                    </label>
-                                                </div>
-                                            </div>
+                                            <Popover>
+                                                <PopoverTrigger as-child>
+                                                    <Button variant="outline" class="flex-1 justify-between">
+                                                        <span v-if="formData.friend_ids.length === 0" class="text-muted-foreground">
+                                                            Select friends...
+                                                        </span>
+                                                        <span v-else class="flex flex-wrap gap-1">
+                                                            <span
+                                                                v-for="friendId in formData.friend_ids"
+                                                                :key="friendId"
+                                                                class="inline-flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded text-xs"
+                                                            >
+                                                                {{ friends.find(f => f.id === friendId)?.name }}
+                                                                <X
+                                                                    class="h-3 w-3 cursor-pointer hover:opacity-70"
+                                                                    @click.stop="() => {
+                                                                        const index = formData.friend_ids.indexOf(friendId);
+                                                                        if (index > -1) {
+                                                                            formData.friend_ids.splice(index, 1);
+                                                                        }
+                                                                    }"
+                                                                />
+                                                            </span>
+                                                        </span>
+                                                        <ChevronDown class="h-4 w-4 opacity-50 shrink-0" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent class="w-[300px] p-0">
+                                                    <div class="p-2 space-y-1">
+                                                        <div
+                                                            v-for="friend in friends"
+                                                            :key="friend.id"
+                                                            class="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer"
+                                                            @click="() => {
+                                                                const index = formData.friend_ids.indexOf(friend.id);
+                                                                if (index > -1) {
+                                                                    formData.friend_ids.splice(index, 1);
+                                                                } else {
+                                                                    formData.friend_ids.push(friend.id);
+                                                                }
+                                                            }"
+                                                        >
+                                                            <Checkbox
+                                                                :model-value="formData.friend_ids.includes(friend.id)"
+                                                                @click.stop
+                                                            />
+                                                            <span class="text-sm">{{ friend.name }}</span>
+                                                        </div>
+                                                        <div v-if="friends.length === 0" class="p-2 text-sm text-muted-foreground text-center">
+                                                            No friends available
+                                                        </div>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
                                             <Button
                                                 type="button"
                                                 variant="outline"
@@ -958,11 +1014,11 @@ const formatDate = (dateString: string) => {
                         />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="new-equipment-lure">Lure</Label>
+                        <Label for="new-equipment-reel">Reel</Label>
                         <Input
-                            id="new-equipment-lure"
-                            v-model="newEquipment.lure"
-                            placeholder="e.g., Spinner"
+                            id="new-equipment-reel"
+                            v-model="newEquipment.reel"
+                            placeholder="e.g., Orvis Battenkill"
                         />
                     </div>
                     <div class="grid gap-2">

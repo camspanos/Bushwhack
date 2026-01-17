@@ -13,13 +13,15 @@ class LocationController extends Controller
      * Display a listing of the authenticated user's locations.
      *
      * Retrieves all locations belonging to the authenticated user,
-     * ordered alphabetically by name.
+     * ordered alphabetically by name. Returns paginated results (15 per page).
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $perPage = $request->input('per_page', 15);
+
         $locations = Location::where('user_id', auth()->id())
             ->orderBy('name')
-            ->get();
+            ->paginate($perPage);
 
         return response()->json($locations);
     }
@@ -38,5 +40,39 @@ class LocationController extends Controller
         ]);
 
         return response()->json($location, 201);
+    }
+
+    /**
+     * Update the specified location in storage.
+     *
+     * Updates a location record for the authenticated user.
+     */
+    public function update(StoreLocationRequest $request, Location $location): JsonResponse
+    {
+        // Ensure the user owns this location
+        if ($location->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $location->update($request->validated());
+
+        return response()->json($location);
+    }
+
+    /**
+     * Remove the specified location from storage.
+     *
+     * Deletes a location entry for the authenticated user.
+     */
+    public function destroy(Location $location): JsonResponse
+    {
+        // Ensure the user owns this location
+        if ($location->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $location->delete();
+
+        return response()->json(['message' => 'Location deleted successfully']);
     }
 }

@@ -24,6 +24,30 @@ Route::get('fishing-log', function () {
     return Inertia::render('FishingLog');
 })->middleware(['auth', 'verified'])->name('fishing-log');
 
+Route::get('fishing-log/create', function () {
+    return Inertia::render('FishingLogCreate');
+})->middleware(['auth', 'verified'])->name('fishing-log.create');
+
+Route::get('locations-page', function () {
+    return Inertia::render('Locations');
+})->middleware(['auth', 'verified'])->name('locations-page');
+
+Route::get('equipment-page', function () {
+    return Inertia::render('Equipment');
+})->middleware(['auth', 'verified'])->name('equipment-page');
+
+Route::get('fish-page', function () {
+    return Inertia::render('Fish');
+})->middleware(['auth', 'verified'])->name('fish-page');
+
+Route::get('flies-page', function () {
+    return Inertia::render('Flies');
+})->middleware(['auth', 'verified'])->name('flies-page');
+
+Route::get('friends-page', function () {
+    return Inertia::render('Friends');
+})->middleware(['auth', 'verified'])->name('friends-page');
+
 // CRUD Routes for Fishing Log Resources
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('locations', LocationController::class);

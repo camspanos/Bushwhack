@@ -13,13 +13,15 @@ class FriendController extends Controller
      * Display a listing of the authenticated user's friends.
      *
      * Retrieves all friend records belonging to the authenticated user,
-     * ordered alphabetically by name.
+     * ordered alphabetically by name. Returns paginated results (15 per page).
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $perPage = $request->input('per_page', 15);
+
         $friends = Friend::where('user_id', auth()->id())
             ->orderBy('name')
-            ->get();
+            ->paginate($perPage);
 
         return response()->json($friends);
     }
@@ -39,5 +41,39 @@ class FriendController extends Controller
         ]);
 
         return response()->json($friend, 201);
+    }
+
+    /**
+     * Update the specified friend in storage.
+     *
+     * Updates a friend record for the authenticated user.
+     */
+    public function update(StoreFriendRequest $request, Friend $friend): JsonResponse
+    {
+        // Ensure the user owns this friend
+        if ($friend->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $friend->update($request->validated());
+
+        return response()->json($friend);
+    }
+
+    /**
+     * Remove the specified friend from storage.
+     *
+     * Deletes a friend entry for the authenticated user.
+     */
+    public function destroy(Friend $friend): JsonResponse
+    {
+        // Ensure the user owns this friend
+        if ($friend->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $friend->delete();
+
+        return response()->json(['message' => 'Friend deleted successfully']);
     }
 }

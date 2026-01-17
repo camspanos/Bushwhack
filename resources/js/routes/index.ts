@@ -438,3 +438,373 @@ fishingLogForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 })
 
 fishingLog.form = fishingLogForm
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+export const locationsPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: locationsPage.url(options),
+    method: 'get',
+})
+
+locationsPage.definition = {
+    methods: ["get","head"],
+    url: '/locations-page',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+locationsPage.url = (options?: RouteQueryOptions) => {
+    return locationsPage.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+locationsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: locationsPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+locationsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: locationsPage.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+const locationsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: locationsPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+locationsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: locationsPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:31
+* @route '/locations-page'
+*/
+locationsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: locationsPage.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+locationsPage.form = locationsPageForm
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+export const equipmentPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: equipmentPage.url(options),
+    method: 'get',
+})
+
+equipmentPage.definition = {
+    methods: ["get","head"],
+    url: '/equipment-page',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+equipmentPage.url = (options?: RouteQueryOptions) => {
+    return equipmentPage.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+equipmentPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: equipmentPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+equipmentPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: equipmentPage.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+const equipmentPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: equipmentPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+equipmentPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: equipmentPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:35
+* @route '/equipment-page'
+*/
+equipmentPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: equipmentPage.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+equipmentPage.form = equipmentPageForm
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+export const fishPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: fishPage.url(options),
+    method: 'get',
+})
+
+fishPage.definition = {
+    methods: ["get","head"],
+    url: '/fish-page',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+fishPage.url = (options?: RouteQueryOptions) => {
+    return fishPage.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+fishPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: fishPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+fishPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: fishPage.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+const fishPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: fishPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+fishPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: fishPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:39
+* @route '/fish-page'
+*/
+fishPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: fishPage.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+fishPage.form = fishPageForm
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+export const fliesPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: fliesPage.url(options),
+    method: 'get',
+})
+
+fliesPage.definition = {
+    methods: ["get","head"],
+    url: '/flies-page',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+fliesPage.url = (options?: RouteQueryOptions) => {
+    return fliesPage.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+fliesPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: fliesPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+fliesPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: fliesPage.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+const fliesPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: fliesPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+fliesPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: fliesPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:43
+* @route '/flies-page'
+*/
+fliesPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: fliesPage.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+fliesPage.form = fliesPageForm
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+export const friendsPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: friendsPage.url(options),
+    method: 'get',
+})
+
+friendsPage.definition = {
+    methods: ["get","head"],
+    url: '/friends-page',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+friendsPage.url = (options?: RouteQueryOptions) => {
+    return friendsPage.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+friendsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: friendsPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+friendsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: friendsPage.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+const friendsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: friendsPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+friendsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: friendsPage.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:47
+* @route '/friends-page'
+*/
+friendsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: friendsPage.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+friendsPage.form = friendsPageForm

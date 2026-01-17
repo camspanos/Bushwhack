@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\EquipmentController::store
-* @see app/Http/Controllers/EquipmentController.php:33
+* @see app/Http/Controllers/EquipmentController.php:35
 * @route '/equipment'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\EquipmentController::store
-* @see app/Http/Controllers/EquipmentController.php:33
+* @see app/Http/Controllers/EquipmentController.php:35
 * @route '/equipment'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EquipmentController::store
-* @see app/Http/Controllers/EquipmentController.php:33
+* @see app/Http/Controllers/EquipmentController.php:35
 * @route '/equipment'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\EquipmentController::store
-* @see app/Http/Controllers/EquipmentController.php:33
+* @see app/Http/Controllers/EquipmentController.php:35
 * @route '/equipment'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\EquipmentController::store
-* @see app/Http/Controllers/EquipmentController.php:33
+* @see app/Http/Controllers/EquipmentController.php:35
 * @route '/equipment'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -417,10 +417,10 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-export const update = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -432,12 +432,16 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-update.url = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions) => {
+update.url = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { equipment: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { equipment: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -449,7 +453,9 @@ update.url = (args: { equipment: string | number } | [equipment: string | number
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        equipment: args.equipment,
+        equipment: typeof args.equipment === 'object'
+        ? args.equipment.id
+        : args.equipment,
     }
 
     return update.definition.url
@@ -459,30 +465,30 @@ update.url = (args: { equipment: string | number } | [equipment: string | number
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-update.put = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-update.patch = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-const updateForm = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -494,10 +500,10 @@ const updateForm = (args: { equipment: string | number } | [equipment: string | 
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-updateForm.put = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -509,10 +515,10 @@ updateForm.put = (args: { equipment: string | number } | [equipment: string | nu
 
 /**
 * @see \App\Http\Controllers\EquipmentController::update
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:50
 * @route '/equipment/{equipment}'
 */
-updateForm.patch = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -526,10 +532,10 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\EquipmentController::destroy
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:67
 * @route '/equipment/{equipment}'
 */
-export const destroy = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -541,12 +547,16 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\EquipmentController::destroy
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:67
 * @route '/equipment/{equipment}'
 */
-destroy.url = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { equipment: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { equipment: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -558,7 +568,9 @@ destroy.url = (args: { equipment: string | number } | [equipment: string | numbe
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        equipment: args.equipment,
+        equipment: typeof args.equipment === 'object'
+        ? args.equipment.id
+        : args.equipment,
     }
 
     return destroy.definition.url
@@ -568,20 +580,20 @@ destroy.url = (args: { equipment: string | number } | [equipment: string | numbe
 
 /**
 * @see \App\Http\Controllers\EquipmentController::destroy
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:67
 * @route '/equipment/{equipment}'
 */
-destroy.delete = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 /**
 * @see \App\Http\Controllers\EquipmentController::destroy
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:67
 * @route '/equipment/{equipment}'
 */
-const destroyForm = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -593,10 +605,10 @@ const destroyForm = (args: { equipment: string | number } | [equipment: string |
 
 /**
 * @see \App\Http\Controllers\EquipmentController::destroy
-* @see app/Http/Controllers/EquipmentController.php:0
+* @see app/Http/Controllers/EquipmentController.php:67
 * @route '/equipment/{equipment}'
 */
-destroyForm.delete = (args: { equipment: string | number } | [equipment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

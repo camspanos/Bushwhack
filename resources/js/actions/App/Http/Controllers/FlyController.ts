@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:33
+* @see app/Http/Controllers/FlyController.php:35
 * @route '/flies'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:33
+* @see app/Http/Controllers/FlyController.php:35
 * @route '/flies'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:33
+* @see app/Http/Controllers/FlyController.php:35
 * @route '/flies'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:33
+* @see app/Http/Controllers/FlyController.php:35
 * @route '/flies'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\FlyController::store
-* @see app/Http/Controllers/FlyController.php:33
+* @see app/Http/Controllers/FlyController.php:35
 * @route '/flies'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -417,10 +417,10 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-export const update = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -432,12 +432,16 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-update.url = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions) => {
+update.url = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { fly: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { fly: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -449,7 +453,9 @@ update.url = (args: { fly: string | number } | [fly: string | number ] | string 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        fly: args.fly,
+        fly: typeof args.fly === 'object'
+        ? args.fly.id
+        : args.fly,
     }
 
     return update.definition.url
@@ -459,30 +465,30 @@ update.url = (args: { fly: string | number } | [fly: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-update.put = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-update.patch = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-const updateForm = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -494,10 +500,10 @@ const updateForm = (args: { fly: string | number } | [fly: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-updateForm.put = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -509,10 +515,10 @@ updateForm.put = (args: { fly: string | number } | [fly: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:50
 * @route '/flies/{fly}'
 */
-updateForm.patch = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -526,10 +532,10 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:67
 * @route '/flies/{fly}'
 */
-export const destroy = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -541,12 +547,16 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:67
 * @route '/flies/{fly}'
 */
-destroy.url = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { fly: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { fly: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -558,7 +568,9 @@ destroy.url = (args: { fly: string | number } | [fly: string | number ] | string
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        fly: args.fly,
+        fly: typeof args.fly === 'object'
+        ? args.fly.id
+        : args.fly,
     }
 
     return destroy.definition.url
@@ -568,20 +580,20 @@ destroy.url = (args: { fly: string | number } | [fly: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:67
 * @route '/flies/{fly}'
 */
-destroy.delete = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:67
 * @route '/flies/{fly}'
 */
-const destroyForm = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -593,10 +605,10 @@ const destroyForm = (args: { fly: string | number } | [fly: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:0
+* @see app/Http/Controllers/FlyController.php:67
 * @route '/flies/{fly}'
 */
-destroyForm.delete = (args: { fly: string | number } | [fly: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

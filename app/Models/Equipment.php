@@ -12,7 +12,7 @@ class Equipment extends Model
         'user_id',
         'rod_name',
         'rod_weight',
-        'lure',
+        'reel',
         'line',
         'tippet',
     ];

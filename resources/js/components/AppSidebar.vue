@@ -11,10 +11,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, fishingLog } from '@/routes';
+import { dashboard, fishingLog, locationsPage, equipmentPage, fishPage, fliesPage, friendsPage } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Fish } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Fish, MapPin, Wrench, Bug, Users } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -27,6 +27,31 @@ const mainNavItems: NavItem[] = [
         title: 'Fishing Log',
         href: fishingLog(),
         icon: Fish,
+    },
+    {
+        title: 'Locations',
+        href: locationsPage(),
+        icon: MapPin,
+    },
+    {
+        title: 'Equipment',
+        href: equipmentPage(),
+        icon: Wrench,
+    },
+    {
+        title: 'Fish',
+        href: fishPage(),
+        icon: Fish,
+    },
+    {
+        title: 'Flies',
+        href: fliesPage(),
+        icon: Bug,
+    },
+    {
+        title: 'Friends',
+        href: friendsPage(),
+        icon: Users,
     },
 ];
 

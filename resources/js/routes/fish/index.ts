@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:33
+* @see app/Http/Controllers/FishController.php:35
 * @route '/fish'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:33
+* @see app/Http/Controllers/FishController.php:35
 * @route '/fish'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:33
+* @see app/Http/Controllers/FishController.php:35
 * @route '/fish'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:33
+* @see app/Http/Controllers/FishController.php:35
 * @route '/fish'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:33
+* @see app/Http/Controllers/FishController.php:35
 * @route '/fish'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -417,10 +417,10 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-export const update = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -432,12 +432,16 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-update.url = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions) => {
+update.url = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { fish: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { fish: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -449,7 +453,9 @@ update.url = (args: { fish: string | number } | [fish: string | number ] | strin
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        fish: args.fish,
+        fish: typeof args.fish === 'object'
+        ? args.fish.id
+        : args.fish,
     }
 
     return update.definition.url
@@ -459,30 +465,30 @@ update.url = (args: { fish: string | number } | [fish: string | number ] | strin
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-update.put = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-update.patch = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-const updateForm = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -494,10 +500,10 @@ const updateForm = (args: { fish: string | number } | [fish: string | number ] |
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-updateForm.put = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -509,10 +515,10 @@ updateForm.put = (args: { fish: string | number } | [fish: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:50
 * @route '/fish/{fish}'
 */
-updateForm.patch = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -526,10 +532,10 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:67
 * @route '/fish/{fish}'
 */
-export const destroy = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -541,12 +547,16 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:67
 * @route '/fish/{fish}'
 */
-destroy.url = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { fish: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { fish: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -558,7 +568,9 @@ destroy.url = (args: { fish: string | number } | [fish: string | number ] | stri
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        fish: args.fish,
+        fish: typeof args.fish === 'object'
+        ? args.fish.id
+        : args.fish,
     }
 
     return destroy.definition.url
@@ -568,20 +580,20 @@ destroy.url = (args: { fish: string | number } | [fish: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:67
 * @route '/fish/{fish}'
 */
-destroy.delete = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:67
 * @route '/fish/{fish}'
 */
-const destroyForm = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -593,10 +605,10 @@ const destroyForm = (args: { fish: string | number } | [fish: string | number ] 
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:0
+* @see app/Http/Controllers/FishController.php:67
 * @route '/fish/{fish}'
 */
-destroyForm.delete = (args: { fish: string | number } | [fish: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

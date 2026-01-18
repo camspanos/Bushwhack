@@ -1,3 +1,4 @@
+import DashboardController from './DashboardController'
 import LocationController from './LocationController'
 import EquipmentController from './EquipmentController'
 import FishController from './FishController'
@@ -7,6 +8,7 @@ import FishingLogController from './FishingLogController'
 import Settings from './Settings'
 
 const Controllers = {
+    DashboardController: Object.assign(DashboardController, DashboardController),
     LocationController: Object.assign(LocationController, LocationController),
     EquipmentController: Object.assign(EquipmentController, EquipmentController),
     FishController: Object.assign(FishController, FishController),

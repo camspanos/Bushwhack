@@ -32,7 +32,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { useActiveUrl } from '@/composables/useActiveUrl';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
+import { dashboard, home } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import type { InertiaLinkProps } from '@inertiajs/vue3';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -145,7 +145,7 @@ const rightNavItems: NavItem[] = [
                     </Sheet>
                 </div>
 
-                <Link :href="dashboard()" class="flex items-center gap-x-2">
+                <Link :href="home()" class="flex items-center gap-x-2">
                     <AppLogo />
                 </Link>
 

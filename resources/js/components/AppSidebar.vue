@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, fishingLog, locationsPage, equipmentPage, fishPage, fliesPage, friendsPage, about } from '@/routes';
+import { dashboard, fishingLog, locationsPage, equipmentPage, fishPage, fliesPage, friendsPage, about, home } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { Info, LayoutGrid, Fish, MapPin, Wrench, Bug, Users } from 'lucide-vue-next';
@@ -70,7 +70,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <Link :href="home()">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

@@ -216,61 +216,92 @@ onMounted(() => {
                                 </div>
                             </CardHeader>
                             <CardContent class="p-6">
-                                <div class="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Species</TableHead>
-                                    <TableHead>Water Type</TableHead>
-                                    <TableHead class="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow v-if="fish.length === 0">
-                                    <TableCell colspan="3" class="text-center text-muted-foreground py-8">
-                                        No fish species yet. Click "Add New" to create your first fish species!
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow v-for="item in fish" :key="item.id">
-                                    <TableCell class="font-medium">{{ item.species }}</TableCell>
-                                    <TableCell>{{ item.water_type || '-' }}</TableCell>
-                                    <TableCell class="text-right">
-                                        <div class="flex items-center justify-end gap-0">
-                                            <Button variant="ghost" size="icon" @click="editItem(item)" class="h-8 w-8">
-                                                <Pencil class="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" @click="confirmDelete(item)"
-                                                class="h-8 w-8 text-destructive hover:text-destructive -mr-2">
-                                                <Trash2 class="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </div>
+                                <!-- Desktop Table View -->
+                                <div class="hidden md:block rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Species</TableHead>
+                                                <TableHead>Water Type</TableHead>
+                                                <TableHead class="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <TableRow v-if="fish.length === 0">
+                                                <TableCell colspan="3" class="text-center text-muted-foreground py-8">
+                                                    No fish species yet. Click "Add New" to create your first fish species!
+                                                </TableCell>
+                                            </TableRow>
+                                            <TableRow v-for="item in fish" :key="item.id">
+                                                <TableCell class="font-medium">{{ item.species }}</TableCell>
+                                                <TableCell>{{ item.water_type || '-' }}</TableCell>
+                                                <TableCell class="text-right">
+                                                    <div class="flex items-center justify-end gap-0">
+                                                        <Button variant="ghost" size="icon" @click="editItem(item)" class="h-8 w-8">
+                                                            <Pencil class="h-4 w-4" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" @click="confirmDelete(item)"
+                                                            class="h-8 w-8 text-destructive hover:text-destructive -mr-2">
+                                                            <Trash2 class="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
 
-                    <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
-                        <div class="text-sm text-muted-foreground">
-                            Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
-                        </div>
-                        <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
-                                </PaginationItem>
-                                <PaginationItem v-for="page in totalPages" :key="page">
-                                    <Button variant="ghost" size="icon" @click="goToPage(page)"
-                                        :class="{ 'bg-accent': page === currentPage }" class="h-9 w-9">
-                                        {{ page }}
-                                    </Button>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationNext @click="nextPage" :disabled="currentPage === totalPages" />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
+                                <!-- Mobile Card View -->
+                                <div class="md:hidden space-y-3">
+                                    <div v-if="fish.length === 0" class="text-center text-muted-foreground py-8 border rounded-md">
+                                        No fish species yet. Click "Add New" to create your first fish species!
+                                    </div>
+                                    <Card v-for="item in fish" :key="item.id" class="overflow-hidden">
+                                        <CardContent class="p-4">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div class="flex-1 space-y-1">
+                                                    <div class="font-semibold text-base">{{ item.species }}</div>
+                                                    <div class="text-sm">
+                                                        <span class="text-muted-foreground">Water Type:</span>
+                                                        <span class="ml-1">{{ item.water_type || '-' }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex gap-1">
+                                                    <Button variant="ghost" size="icon-sm" @click="editItem(item)">
+                                                        <Pencil class="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon-sm" @click="confirmDelete(item)"
+                                                        class="text-destructive hover:text-destructive">
+                                                        <Trash2 class="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+                                    <div class="text-sm text-muted-foreground">
+                                        Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
+                                    </div>
+                                    <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
+                                            </PaginationItem>
+                                            <PaginationItem v-for="page in totalPages" :key="page">
+                                                <Button variant="ghost" size="icon" @click="goToPage(page)"
+                                                    :class="{ 'bg-accent dark:bg-accent dark:border-border': page === currentPage }" class="h-9 w-9">
+                                                    {{ page }}
+                                                </Button>
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <PaginationNext @click="nextPage" :disabled="currentPage === totalPages" />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

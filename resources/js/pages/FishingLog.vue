@@ -471,7 +471,8 @@ const viewNotes = (notes: string) => {
                         </div>
                     </CardHeader>
                     <CardContent class="p-6">
-                        <div class="rounded-md border">
+                        <!-- Desktop Table View -->
+                        <div class="hidden lg:block rounded-md border">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -537,8 +538,76 @@ const viewNotes = (notes: string) => {
                             </Table>
                         </div>
 
-                        <!-- Pagination -->
-                        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+                        <!-- Mobile Card View -->
+                        <div class="lg:hidden space-y-3">
+                            <div v-if="fishingLogs.length === 0" class="text-center text-muted-foreground py-8 border rounded-md">
+                                No fishing logs yet. Click "Add New" to create your first log!
+                            </div>
+                            <Card v-for="log in fishingLogs" :key="log.id" class="overflow-hidden">
+                                <CardContent class="p-4">
+                                    <div class="space-y-3">
+                                        <!-- Header with Date and Actions -->
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-base">{{ formatDate(log.date) }}</div>
+                                                <div class="text-sm text-muted-foreground">{{ log.location?.name || 'No location' }}</div>
+                                            </div>
+                                            <div class="flex gap-1">
+                                                <Button variant="ghost" size="icon-sm" @click="editLog(log)">
+                                                    <Pencil class="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon-sm" @click="confirmDelete(log)"
+                                                    class="text-destructive hover:text-destructive">
+                                                    <Trash2 class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Details Grid -->
+                                        <div class="grid grid-cols-2 gap-2 text-sm">
+                                            <div>
+                                                <span class="text-muted-foreground">Fish:</span>
+                                                <span class="ml-1">{{ log.fish?.species || '-' }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted-foreground">Quantity:</span>
+                                                <span class="ml-1">{{ log.quantity || '-' }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted-foreground">Max Size:</span>
+                                                <span class="ml-1">{{ log.max_size ? `${formatSize(log.max_size)}"` : '-' }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted-foreground">Fly:</span>
+                                                <span class="ml-1">{{ log.fly?.name || '-' }}</span>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <span class="text-muted-foreground">Style:</span>
+                                                <span class="ml-1">{{ log.style || '-' }}</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Notes Button -->
+                                        <div v-if="log.notes" class="pt-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                @click="viewNotes(log.notes)"
+                                                class="w-full flex items-center justify-center gap-2"
+                                            >
+                                                <FileText class="h-4 w-4" />
+                                                View Notes
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Pagination -->
+                <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
                             <div class="text-sm text-muted-foreground">
                                 Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
                             </div>
@@ -553,7 +622,7 @@ const viewNotes = (notes: string) => {
                                             variant="ghost"
                                             size="icon"
                                             @click="goToPage(page)"
-                                            :class="{ 'bg-accent': page === currentPage }"
+                                            :class="{ 'bg-accent dark:bg-accent dark:border-border': page === currentPage }"
                                             class="h-9 w-9"
                                         >
                                             {{ page }}
@@ -565,9 +634,7 @@ const viewNotes = (notes: string) => {
                                     </PaginationItem>
                                 </PaginationContent>
                             </Pagination>
-                        </div>
-                    </CardContent>
-                </Card>
+                </div>
             </div>
         </div>
 

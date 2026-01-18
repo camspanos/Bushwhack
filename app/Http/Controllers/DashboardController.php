@@ -25,7 +25,7 @@ class DashboardController extends Controller
 
         // Get available years from fishing logs
         $availableYears = FishingLog::where('user_id', $userId)
-            ->selectRaw('DISTINCT strftime("%Y", date) as year')
+            ->selectRaw('DISTINCT YEAR(date) as year')
             ->orderBy('year', 'desc')
             ->pluck('year')
             ->filter()
@@ -156,14 +156,14 @@ class DashboardController extends Controller
         // Favorite weekday - most fished day of the week (filtered by year)
         $weekdayData = (clone $baseQuery)
             ->select(
-                DB::raw("CASE CAST(strftime('%w', date) AS INTEGER)
-                    WHEN 0 THEN 'Sunday'
-                    WHEN 1 THEN 'Monday'
-                    WHEN 2 THEN 'Tuesday'
-                    WHEN 3 THEN 'Wednesday'
-                    WHEN 4 THEN 'Thursday'
-                    WHEN 5 THEN 'Friday'
-                    WHEN 6 THEN 'Saturday'
+                DB::raw("CASE DAYOFWEEK(date)
+                    WHEN 1 THEN 'Sunday'
+                    WHEN 2 THEN 'Monday'
+                    WHEN 3 THEN 'Tuesday'
+                    WHEN 4 THEN 'Wednesday'
+                    WHEN 5 THEN 'Thursday'
+                    WHEN 6 THEN 'Friday'
+                    WHEN 7 THEN 'Saturday'
                 END as weekday"),
                 DB::raw('COUNT(*) as trip_count')
             )

@@ -49,6 +49,10 @@ Route::get('friends-page', function () {
     return Inertia::render('Friends');
 })->middleware(['auth', 'verified'])->name('friends-page');
 
+Route::get('about', function () {
+    return Inertia::render('About');
+})->middleware(['auth', 'verified'])->name('about');
+
 // CRUD Routes for Fishing Log Resources
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('locations', LocationController::class);
@@ -57,6 +61,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('flies', FlyController::class);
     Route::resource('friends', FriendController::class);
     Route::resource('fishing-logs', FishingLogController::class);
+
+    // Statistics Routes
+    Route::get('locations/stats/all', [LocationController::class, 'statistics'])->name('locations.statistics');
+    Route::get('equipment/stats/all', [EquipmentController::class, 'statistics'])->name('equipment.statistics');
+    Route::get('fish/stats/all', [FishController::class, 'statistics'])->name('fish.statistics');
+    Route::get('flies/stats/all', [FlyController::class, 'statistics'])->name('flies.statistics');
+    Route::get('friends/stats/all', [FriendController::class, 'statistics'])->name('friends.statistics');
 });
 
 require __DIR__.'/settings.php';

@@ -293,7 +293,7 @@ home.form = homeForm
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -308,7 +308,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -317,7 +317,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -327,7 +327,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -337,7 +337,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -347,7 +347,7 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -357,7 +357,7 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:17
+* @see app/Http/Controllers/DashboardController.php:18
 * @route '/dashboard'
 */
 dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -815,3 +815,77 @@ friendsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 })
 
 friendsPage.form = friendsPageForm
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+export const about = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: about.url(options),
+    method: 'get',
+})
+
+about.definition = {
+    methods: ["get","head"],
+    url: '/about',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+about.url = (options?: RouteQueryOptions) => {
+    return about.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+about.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: about.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: about.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+const aboutForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: about.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+aboutForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: about.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:52
+* @route '/about'
+*/
+aboutForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: about.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+about.form = aboutForm

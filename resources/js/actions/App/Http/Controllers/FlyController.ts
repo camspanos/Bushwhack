@@ -620,6 +620,87 @@ destroyForm.delete = (args: { fly: number | { id: number } } | [fly: number | { 
 
 destroy.form = destroyForm
 
-const FlyController = { index, create, store, show, edit, update, destroy }
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+statistics.definition = {
+    methods: ["get","head"],
+    url: '/flies/stats/all',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+statistics.url = (options?: RouteQueryOptions) => {
+    return statistics.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statistics.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FlyController::statistics
+* @see app/Http/Controllers/FlyController.php:88
+* @route '/flies/stats/all'
+*/
+statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+statistics.form = statisticsForm
+
+const FlyController = { index, create, store, show, edit, update, destroy, statistics }
 
 export default FlyController

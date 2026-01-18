@@ -27,6 +27,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+
+
 // Show/hide add form dialog
 const showAddForm = ref(false);
 
@@ -423,6 +425,14 @@ const formatDate = (dateString: string) => {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
+// Format size for display (remove .0 decimals)
+const formatSize = (size: number) => {
+    const num = parseFloat(size.toString());
+    return num % 1 === 0 ? Math.floor(num).toString() : num.toString();
+};
+
+
+
 
 </script>
 
@@ -450,93 +460,93 @@ const formatDate = (dateString: string) => {
                             </Button>
                         </div>
                     </CardHeader>
-                            <CardContent>
-                                <div class="rounded-md border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Location</TableHead>
-                                                <TableHead>Fish</TableHead>
-                                                <TableHead>Quantity</TableHead>
-                                                <TableHead>Max Size</TableHead>
-                                                <TableHead>Fly</TableHead>
-                                                <TableHead>Style</TableHead>
-                                                <TableHead class="text-right">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            <TableRow v-if="fishingLogs.length === 0">
-                                                <TableCell colspan="8" class="text-center text-muted-foreground py-8">
-                                                    No fishing logs yet. Click "Add New" to create your first log!
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow v-for="log in fishingLogs" :key="log.id">
-                                                <TableCell class="font-medium">{{ formatDate(log.date) }}</TableCell>
-                                                <TableCell>{{ log.location?.name || '-' }}</TableCell>
-                                                <TableCell>{{ log.fish?.species || '-' }}</TableCell>
-                                                <TableCell>{{ log.quantity || '-' }}</TableCell>
-                                                <TableCell>{{ log.max_size ? `${log.max_size}"` : '-' }}</TableCell>
-                                                <TableCell>{{ log.fly?.name || '-' }}</TableCell>
-                                                <TableCell>{{ log.style || '-' }}</TableCell>
-                                                <TableCell class="text-right">
-                                                    <div class="flex items-center justify-end gap-0">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            @click="editLog(log)"
-                                                            class="h-8 w-8"
-                                                        >
-                                                            <Pencil class="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            @click="confirmDelete(log)"
-                                                            class="h-8 w-8 text-destructive hover:text-destructive -mr-2"
-                                                        >
-                                                            <Trash2 class="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableBody>
-                                    </Table>
-                                </div>
-
-                                <!-- Pagination -->
-                                <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
-                                    <div class="text-sm text-muted-foreground">
-                                        Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
-                                    </div>
-                                    <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
-                                        <PaginationContent>
-                                            <PaginationItem>
-                                                <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
-                                            </PaginationItem>
-
-                                            <PaginationItem v-for="page in totalPages" :key="page">
+                    <CardContent class="p-6">
+                        <div class="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Location</TableHead>
+                                        <TableHead>Fish</TableHead>
+                                        <TableHead>Quantity</TableHead>
+                                        <TableHead>Max Size</TableHead>
+                                        <TableHead>Fly</TableHead>
+                                        <TableHead>Style</TableHead>
+                                        <TableHead class="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow v-if="fishingLogs.length === 0">
+                                        <TableCell colspan="8" class="text-center text-muted-foreground py-8">
+                                            No fishing logs yet. Click "Add New" to create your first log!
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow v-for="log in fishingLogs" :key="log.id">
+                                        <TableCell class="font-medium">{{ formatDate(log.date) }}</TableCell>
+                                        <TableCell>{{ log.location?.name || '-' }}</TableCell>
+                                        <TableCell>{{ log.fish?.species || '-' }}</TableCell>
+                                        <TableCell>{{ log.quantity || '-' }}</TableCell>
+                                        <TableCell>{{ log.max_size ? `${formatSize(log.max_size)}"` : '-' }}</TableCell>
+                                        <TableCell>{{ log.fly?.name || '-' }}</TableCell>
+                                        <TableCell>{{ log.style || '-' }}</TableCell>
+                                        <TableCell class="text-right">
+                                            <div class="flex items-center justify-end gap-0">
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    @click="goToPage(page)"
-                                                    :class="{ 'bg-accent': page === currentPage }"
-                                                    class="h-9 w-9"
+                                                    @click="editLog(log)"
+                                                    class="h-8 w-8"
                                                 >
-                                                    {{ page }}
+                                                    <Pencil class="h-4 w-4" />
                                                 </Button>
-                                            </PaginationItem>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    @click="confirmDelete(log)"
+                                                    class="h-8 w-8 text-destructive hover:text-destructive -mr-2"
+                                                >
+                                                    <Trash2 class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </div>
 
-                                            <PaginationItem>
-                                                <PaginationNext @click="nextPage" :disabled="currentPage === totalPages" />
-                                            </PaginationItem>
-                                        </PaginationContent>
-                                    </Pagination>
-                                </div>
-                            </CardContent>
-                        </Card>
-                </div>
+                        <!-- Pagination -->
+                        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+                            <div class="text-sm text-muted-foreground">
+                                Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
+                            </div>
+                            <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
+                                    </PaginationItem>
+
+                                    <PaginationItem v-for="page in totalPages" :key="page">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            @click="goToPage(page)"
+                                            :class="{ 'bg-accent': page === currentPage }"
+                                            class="h-9 w-9"
+                                        >
+                                            {{ page }}
+                                        </Button>
+                                    </PaginationItem>
+
+                                    <PaginationItem>
+                                        <PaginationNext @click="nextPage" :disabled="currentPage === totalPages" />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
+        </div>
 
         <!-- Add/Edit Log Dialog -->
         <Dialog v-model:open="showAddForm">

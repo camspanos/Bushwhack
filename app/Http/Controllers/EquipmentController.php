@@ -75,4 +75,54 @@ class EquipmentController extends Controller
 
         return response()->json(['message' => 'Equipment deleted successfully']);
     }
+
+    /**
+     * Get statistics for all equipment.
+     *
+     * Returns aggregated statistics for each equipment including:
+     * - Total trips
+     * - Total fish caught
+     * - Biggest fish
+     * - Success rate
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $yearFilter = $request->input('year', 'lifetime');
+
+        $equipment = Equipment::where('user_id', auth()->id())
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('id', 'equipment_id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
+            }])
+            ->get()
+            ->map(function ($item) {
+                $logs = $item->fishingLogs;
+                $totalTrips = $logs->count();
+                $totalFish = $logs->sum('quantity');
+                $biggestFish = $logs->max('max_size') ?? 0;
+                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+                $successRate = $totalTrips > 0
+                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    : 0;
+
+                return [
+                    'id' => $item->id,
+                    'rod_name' => $item->rod_name,
+                    'rod_weight' => $item->rod_weight,
+                    'reel' => $item->reel,
+                    'line' => $item->line,
+                    'tippet' => $item->tippet,
+                    'totalTrips' => $totalTrips,
+                    'totalFish' => $totalFish,
+                    'biggestFish' => $biggestFish,
+                    'successRate' => $successRate,
+                ];
+            })
+            ->sortByDesc('totalFish')
+            ->values();
+
+        return response()->json($equipment);
+    }
 }

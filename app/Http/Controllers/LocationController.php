@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLocationRequest;
 use App\Models\Location;
+use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LocationController extends Controller
 {
@@ -74,5 +76,54 @@ class LocationController extends Controller
         $location->delete();
 
         return response()->json(['message' => 'Location deleted successfully']);
+    }
+
+    /**
+     * Get statistics for all locations.
+     *
+     * Returns aggregated statistics for each location including:
+     * - Total trips
+     * - Total fish caught
+     * - Biggest fish
+     * - Success rate
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $yearFilter = $request->input('year', 'lifetime');
+
+        $locations = Location::where('user_id', auth()->id())
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('id', 'location_id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
+            }])
+            ->get()
+            ->map(function ($location) {
+                $logs = $location->fishingLogs;
+                $totalTrips = $logs->count();
+                $totalFish = $logs->sum('quantity');
+                $biggestFish = $logs->max('max_size') ?? 0;
+                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+                $successRate = $totalTrips > 0
+                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    : 0;
+
+                return [
+                    'id' => $location->id,
+                    'name' => $location->name,
+                    'city' => $location->city,
+                    'state' => $location->state,
+                    'country' => $location->country,
+                    'totalTrips' => $totalTrips,
+                    'totalFish' => $totalFish,
+                    'biggestFish' => $biggestFish,
+                    'successRate' => $successRate,
+                ];
+            })
+            ->sortByDesc('totalFish')
+            ->values();
+
+        return response()->json($locations);
     }
 }

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FriendController::index
-* @see app/Http/Controllers/FriendController.php:18
+* @see app/Http/Controllers/FriendController.php:20
 * @route '/friends'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\FriendController::store
-* @see app/Http/Controllers/FriendController.php:36
+* @see app/Http/Controllers/FriendController.php:38
 * @route '/friends'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\FriendController::store
-* @see app/Http/Controllers/FriendController.php:36
+* @see app/Http/Controllers/FriendController.php:38
 * @route '/friends'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FriendController::store
-* @see app/Http/Controllers/FriendController.php:36
+* @see app/Http/Controllers/FriendController.php:38
 * @route '/friends'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\FriendController::store
-* @see app/Http/Controllers/FriendController.php:36
+* @see app/Http/Controllers/FriendController.php:38
 * @route '/friends'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\FriendController::store
-* @see app/Http/Controllers/FriendController.php:36
+* @see app/Http/Controllers/FriendController.php:38
 * @route '/friends'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -417,7 +417,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 export const update = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -432,7 +432,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 update.url = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -465,7 +465,7 @@ update.url = (args: { friend: number | { id: number } } | [friend: number | { id
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 update.put = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -475,7 +475,7 @@ update.put = (args: { friend: number | { id: number } } | [friend: number | { id
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 update.patch = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -485,7 +485,7 @@ update.patch = (args: { friend: number | { id: number } } | [friend: number | { 
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 const updateForm = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -500,7 +500,7 @@ const updateForm = (args: { friend: number | { id: number } } | [friend: number 
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 updateForm.put = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -515,7 +515,7 @@ updateForm.put = (args: { friend: number | { id: number } } | [friend: number | 
 
 /**
 * @see \App\Http\Controllers\FriendController::update
-* @see app/Http/Controllers/FriendController.php:51
+* @see app/Http/Controllers/FriendController.php:53
 * @route '/friends/{friend}'
 */
 updateForm.patch = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -532,7 +532,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\FriendController::destroy
-* @see app/Http/Controllers/FriendController.php:68
+* @see app/Http/Controllers/FriendController.php:70
 * @route '/friends/{friend}'
 */
 export const destroy = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -547,7 +547,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FriendController::destroy
-* @see app/Http/Controllers/FriendController.php:68
+* @see app/Http/Controllers/FriendController.php:70
 * @route '/friends/{friend}'
 */
 destroy.url = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -580,7 +580,7 @@ destroy.url = (args: { friend: number | { id: number } } | [friend: number | { i
 
 /**
 * @see \App\Http\Controllers\FriendController::destroy
-* @see app/Http/Controllers/FriendController.php:68
+* @see app/Http/Controllers/FriendController.php:70
 * @route '/friends/{friend}'
 */
 destroy.delete = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -590,7 +590,7 @@ destroy.delete = (args: { friend: number | { id: number } } | [friend: number | 
 
 /**
 * @see \App\Http\Controllers\FriendController::destroy
-* @see app/Http/Controllers/FriendController.php:68
+* @see app/Http/Controllers/FriendController.php:70
 * @route '/friends/{friend}'
 */
 const destroyForm = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -605,7 +605,7 @@ const destroyForm = (args: { friend: number | { id: number } } | [friend: number
 
 /**
 * @see \App\Http\Controllers\FriendController::destroy
-* @see app/Http/Controllers/FriendController.php:68
+* @see app/Http/Controllers/FriendController.php:70
 * @route '/friends/{friend}'
 */
 destroyForm.delete = (args: { friend: number | { id: number } } | [friend: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -620,6 +620,87 @@ destroyForm.delete = (args: { friend: number | { id: number } } | [friend: numbe
 
 destroy.form = destroyForm
 
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+statistics.definition = {
+    methods: ["get","head"],
+    url: '/friends/stats/all',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+statistics.url = (options?: RouteQueryOptions) => {
+    return statistics.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statistics.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FriendController::statistics
+* @see app/Http/Controllers/FriendController.php:91
+* @route '/friends/stats/all'
+*/
+statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+statistics.form = statisticsForm
+
 const friends = {
     index: Object.assign(index, index),
     create: Object.assign(create, create),
@@ -628,6 +709,7 @@ const friends = {
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
+    statistics: Object.assign(statistics, statistics),
 }
 
 export default friends

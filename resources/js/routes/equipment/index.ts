@@ -620,6 +620,87 @@ destroyForm.delete = (args: { equipment: number | { id: number } } | [equipment:
 
 destroy.form = destroyForm
 
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+statistics.definition = {
+    methods: ["get","head"],
+    url: '/equipment/stats/all',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+statistics.url = (options?: RouteQueryOptions) => {
+    return statistics.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statistics.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EquipmentController::statistics
+* @see app/Http/Controllers/EquipmentController.php:88
+* @route '/equipment/stats/all'
+*/
+statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+statistics.form = statisticsForm
+
 const equipment = {
     index: Object.assign(index, index),
     create: Object.assign(create, create),
@@ -628,6 +709,7 @@ const equipment = {
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
+    statistics: Object.assign(statistics, statistics),
 }
 
 export default equipment

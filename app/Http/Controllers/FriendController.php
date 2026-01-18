@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFriendRequest;
 use App\Models\Friend;
+use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FriendController extends Controller
 {
@@ -75,5 +77,51 @@ class FriendController extends Controller
         $friend->delete();
 
         return response()->json(['message' => 'Friend deleted successfully']);
+    }
+
+    /**
+     * Get statistics for all friends.
+     *
+     * Returns aggregated statistics for each friend including:
+     * - Total trips together
+     * - Total fish caught
+     * - Biggest fish
+     * - Success rate
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $yearFilter = $request->input('year', 'lifetime');
+
+        $friends = Friend::where('user_id', auth()->id())
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('fishing_logs.id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
+            }])
+            ->get()
+            ->map(function ($friend) {
+                $logs = $friend->fishingLogs;
+                $totalTrips = $logs->count();
+                $totalFish = $logs->sum('quantity');
+                $biggestFish = $logs->max('max_size') ?? 0;
+                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+                $successRate = $totalTrips > 0
+                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    : 0;
+
+                return [
+                    'id' => $friend->id,
+                    'name' => $friend->name,
+                    'totalTrips' => $totalTrips,
+                    'totalFish' => $totalFish,
+                    'biggestFish' => $biggestFish,
+                    'successRate' => $successRate,
+                ];
+            })
+            ->sortByDesc('totalTrips')
+            ->values();
+
+        return response()->json($friends);
     }
 }

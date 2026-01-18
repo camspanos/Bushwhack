@@ -75,4 +75,53 @@ class FlyController extends Controller
 
         return response()->json(['message' => 'Fly deleted successfully']);
     }
+
+    /**
+     * Get statistics for all flies.
+     *
+     * Returns aggregated statistics for each fly including:
+     * - Total caught
+     * - Total trips
+     * - Biggest fish
+     * - Success rate
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $yearFilter = $request->input('year', 'lifetime');
+
+        $flies = Fly::where('user_id', auth()->id())
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('id', 'fly_id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
+            }])
+            ->get()
+            ->map(function ($fly) {
+                $logs = $fly->fishingLogs;
+                $totalCaught = $logs->sum('quantity');
+                $totalTrips = $logs->count();
+                $biggestFish = $logs->max('max_size') ?? 0;
+                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+                $successRate = $totalTrips > 0
+                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    : 0;
+
+                return [
+                    'id' => $fly->id,
+                    'name' => $fly->name,
+                    'color' => $fly->color,
+                    'size' => $fly->size,
+                    'type' => $fly->type,
+                    'totalCaught' => $totalCaught,
+                    'totalTrips' => $totalTrips,
+                    'biggestFish' => $biggestFish,
+                    'successRate' => $successRate,
+                ];
+            })
+            ->sortByDesc('totalCaught')
+            ->values();
+
+        return response()->json($flies);
+    }
 }

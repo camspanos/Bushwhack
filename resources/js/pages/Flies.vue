@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
-import { Bug, Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { ref, onMounted, computed, watch } from 'vue';
+import { Bug, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,11 +25,17 @@ const isEditMode = ref(false);
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const flies = ref([]);
+const flyStats = ref([]);
 
 const currentPage = ref(1);
 const totalPages = ref(1);
 const perPage = ref(15);
 const total = ref(0);
+
+// Year filter
+const currentYear = new Date().getFullYear().toString();
+const selectedYearFilter = ref(currentYear);
+const availableYears = ref<string[]>([]);
 
 const formData = ref({
     name: '',
@@ -128,8 +136,44 @@ const cancelDelete = () => {
     itemToDelete.value = null;
 };
 
+// Fetch available years
+const fetchAvailableYears = async () => {
+    try {
+        const response = await axios.get('/fishing-logs');
+        const logs = response.data.data;
+        const years = [...new Set(logs.map((log: any) => new Date(log.date).getFullYear().toString()))];
+        availableYears.value = years.sort((a, b) => parseInt(b) - parseInt(a));
+    } catch (error) {
+        console.error('Error fetching available years:', error);
+    }
+};
+
+// Fetch fly statistics
+const fetchFlyStats = async () => {
+    try {
+        const response = await axios.get('/flies/stats/all', {
+            params: { year: selectedYearFilter.value }
+        });
+        flyStats.value = response.data;
+    } catch (error) {
+        console.error('Error fetching fly statistics:', error);
+    }
+};
+
+// Watch for year filter changes
+watch(selectedYearFilter, () => {
+    fetchFlyStats();
+});
+
+// Display year label
+const yearLabel = computed(() => {
+    return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
+});
+
 onMounted(() => {
     fetchFlies();
+    fetchAvailableYears();
+    fetchFlyStats();
 });
 </script>
 
@@ -138,26 +182,41 @@ onMounted(() => {
     <AppLayout title="Flies" :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
-                <Card>
-                    <CardHeader>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <CardTitle class="flex items-center gap-2">
-                                    <Bug class="h-6 w-6" />
-                                    Your Flies
-                                </CardTitle>
-                                <CardDescription>
-                                    View and manage your fly collection
-                                </CardDescription>
-                            </div>
-                            <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
-                                <Plus class="h-4 w-4" />
-                                Add New Fly
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                    <div class="rounded-md border">
+                <!-- Tab Navigation -->
+                <Tabs default-value="table" class="w-full">
+                    <TabsList class="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="table" class="flex items-center gap-2">
+                            <TableIcon class="h-4 w-4" />
+                            Table View
+                        </TabsTrigger>
+                        <TabsTrigger value="dashboard" class="flex items-center gap-2">
+                            <BarChart3 class="h-4 w-4" />
+                            Dashboard
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <!-- Table View -->
+                    <TabsContent value="table" class="mt-0">
+                        <Card>
+                            <CardHeader>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle class="flex items-center gap-2">
+                                            <Bug class="h-6 w-6" />
+                                            Your Flies
+                                        </CardTitle>
+                                        <CardDescription>
+                                            View and manage your fly collection
+                                        </CardDescription>
+                                    </div>
+                                    <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                        <Plus class="h-4 w-4" />
+                                        Add New Fly
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent class="p-6">
+                                <div class="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -216,9 +275,80 @@ onMounted(() => {
                             </PaginationContent>
                         </Pagination>
                     </div>
-                </CardContent>
-            </Card>
-        </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <!-- Dashboard View -->
+                    <TabsContent value="dashboard" class="mt-0">
+                        <div class="space-y-6">
+                            <!-- Header with Year Filter -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                                        <Bug class="h-6 w-6" />
+                                        Fly Performance
+                                    </h3>
+                                    <p class="text-muted-foreground">Statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label for="fly-year-filter" class="text-sm font-medium">Filter by:</label>
+                                    <NativeSelect v-model="selectedYearFilter" id="fly-year-filter" class="w-[140px]">
+                                        <NativeSelectOption value="lifetime">Lifetime</NativeSelectOption>
+                                        <NativeSelectOption v-for="year in availableYears" :key="year" :value="year">
+                                            {{ year }}
+                                        </NativeSelectOption>
+                                    </NativeSelect>
+                                </div>
+                            </div>
+
+                            <!-- Fly Stats Grid -->
+                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <Card v-for="fly in flyStats" :key="fly.id">
+                                    <CardHeader>
+                                        <CardTitle class="text-lg">{{ fly.name }}</CardTitle>
+                                        <CardDescription>
+                                            {{ fly.color }} - Size {{ fly.size }} - {{ fly.type }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent class="space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <Fish class="h-4 w-4" />
+                                                Total Caught
+                                            </span>
+                                            <span class="font-bold">{{ fly.totalCaught }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <CalendarIcon class="h-4 w-4" />
+                                                Total Trips
+                                            </span>
+                                            <span class="font-bold">{{ fly.totalTrips }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <Award class="h-4 w-4" />
+                                                Biggest Fish
+                                            </span>
+                                            <span class="font-bold">{{ fly.biggestFish }}"</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <!-- Empty State -->
+                            <Card v-if="flyStats.length === 0">
+                                <CardContent class="py-8">
+                                    <div class="text-center text-muted-foreground">
+                                        No fly statistics available yet. Start logging your fishing trips!
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
 
         <!-- Add/Edit Dialog -->

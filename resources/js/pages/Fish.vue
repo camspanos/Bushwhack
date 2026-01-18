@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
-import { Fish as FishIcon, Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { ref, onMounted, computed, watch } from 'vue';
+import { Fish as FishIcon, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, TrendingUp, Award, Calendar as CalendarIcon } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -23,11 +25,17 @@ const isEditMode = ref(false);
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const fish = ref([]);
+const fishStats = ref([]);
 
 const currentPage = ref(1);
 const totalPages = ref(1);
 const perPage = ref(15);
 const total = ref(0);
+
+// Year filter
+const currentYear = new Date().getFullYear().toString();
+const selectedYearFilter = ref(currentYear);
+const availableYears = ref<string[]>([]);
 
 const formData = ref({
     species: '',
@@ -122,8 +130,50 @@ const cancelDelete = () => {
     itemToDelete.value = null;
 };
 
+// Fetch available years
+const fetchAvailableYears = async () => {
+    try {
+        const response = await axios.get('/fishing-logs');
+        const logs = response.data.data;
+        const years = [...new Set(logs.map((log: any) => new Date(log.date).getFullYear().toString()))];
+        availableYears.value = years.sort((a, b) => parseInt(b) - parseInt(a));
+    } catch (error) {
+        console.error('Error fetching available years:', error);
+    }
+};
+
+// Fetch fish statistics
+const fetchFishStats = async () => {
+    try {
+        const response = await axios.get('/fish/stats/all', {
+            params: { year: selectedYearFilter.value }
+        });
+        fishStats.value = response.data;
+    } catch (error) {
+        console.error('Error fetching fish statistics:', error);
+    }
+};
+
+// Watch for year filter changes
+watch(selectedYearFilter, () => {
+    fetchFishStats();
+});
+
+// Display year label
+const yearLabel = computed(() => {
+    return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
+});
+
+// Format size for display (remove .0 decimals)
+const formatSize = (size: number) => {
+    const num = parseFloat(size.toString());
+    return num % 1 === 0 ? Math.floor(num).toString() : num.toString();
+};
+
 onMounted(() => {
     fetchFish();
+    fetchAvailableYears();
+    fetchFishStats();
 });
 </script>
 
@@ -132,26 +182,41 @@ onMounted(() => {
     <AppLayout title="Fish" :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
-                <Card>
-                    <CardHeader>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <CardTitle class="flex items-center gap-2">
-                                    <FishIcon class="h-6 w-6" />
-                                    Your Fish Species
-                                </CardTitle>
-                                <CardDescription>
-                                    View and manage your fish species
-                                </CardDescription>
-                            </div>
-                            <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
-                                <Plus class="h-4 w-4" />
-                                Add New Fish Species
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                    <div class="rounded-md border">
+                <!-- Tab Navigation -->
+                <Tabs default-value="table" class="w-full">
+                    <TabsList class="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="table" class="flex items-center gap-2">
+                            <TableIcon class="h-4 w-4" />
+                            Table View
+                        </TabsTrigger>
+                        <TabsTrigger value="dashboard" class="flex items-center gap-2">
+                            <BarChart3 class="h-4 w-4" />
+                            Dashboard
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <!-- Table View -->
+                    <TabsContent value="table" class="mt-0">
+                        <Card>
+                            <CardHeader>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle class="flex items-center gap-2">
+                                            <FishIcon class="h-6 w-6" />
+                                            Your Fish Species
+                                        </CardTitle>
+                                        <CardDescription>
+                                            View and manage your fish species
+                                        </CardDescription>
+                                    </div>
+                                    <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                        <Plus class="h-4 w-4" />
+                                        Add New Fish Species
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent class="p-6">
+                                <div class="rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -206,9 +271,87 @@ onMounted(() => {
                             </PaginationContent>
                         </Pagination>
                     </div>
-                </CardContent>
-            </Card>
-        </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <!-- Dashboard View -->
+                    <TabsContent value="dashboard" class="mt-0">
+                        <div class="space-y-6">
+                            <!-- Header with Year Filter -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                                        <FishIcon class="h-6 w-6" />
+                                        Fish Species Performance
+                                    </h3>
+                                    <p class="text-muted-foreground">Statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label for="fish-year-filter" class="text-sm font-medium">Filter by:</label>
+                                    <NativeSelect v-model="selectedYearFilter" id="fish-year-filter" class="w-[140px]">
+                                        <NativeSelectOption value="lifetime">Lifetime</NativeSelectOption>
+                                        <NativeSelectOption v-for="year in availableYears" :key="year" :value="year">
+                                            {{ year }}
+                                        </NativeSelectOption>
+                                    </NativeSelect>
+                                </div>
+                            </div>
+
+                            <!-- Fish Stats Grid -->
+                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <Card v-for="fishSpecies in fishStats" :key="fishSpecies.id">
+                                    <CardHeader>
+                                        <CardTitle class="text-lg">{{ fishSpecies.species }}</CardTitle>
+                                        <CardDescription>
+                                            {{ fishSpecies.water_type || 'No water type specified' }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent class="space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <FishIcon class="h-4 w-4" />
+                                                Total Caught
+                                            </span>
+                                            <span class="font-bold">{{ fishSpecies.totalCaught }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <CalendarIcon class="h-4 w-4" />
+                                                Total Trips
+                                            </span>
+                                            <span class="font-bold">{{ fishSpecies.totalTrips }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <Award class="h-4 w-4" />
+                                                Biggest Catch
+                                            </span>
+                                            <span class="font-bold">{{ formatSize(fishSpecies.biggestFish) }}"</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <TrendingUp class="h-4 w-4" />
+                                                Avg Size
+                                            </span>
+                                            <span class="font-bold">{{ formatSize(fishSpecies.avgSize) }}"</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <!-- Empty State -->
+                            <Card v-if="fishStats.length === 0">
+                                <CardContent class="py-8">
+                                    <div class="text-center text-muted-foreground">
+                                        No fish species statistics available yet. Start logging your fishing trips!
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
 
         <!-- Add/Edit Dialog -->

@@ -75,4 +75,50 @@ class FishController extends Controller
 
         return response()->json(['message' => 'Fish species deleted successfully']);
     }
+
+    /**
+     * Get statistics for all fish species.
+     *
+     * Returns aggregated statistics for each fish species including:
+     * - Total caught
+     * - Total trips
+     * - Biggest fish
+     * - Average size
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $yearFilter = $request->input('year', 'lifetime');
+
+        $fish = Fish::where('user_id', auth()->id())
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('id', 'fish_id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
+            }])
+            ->get()
+            ->map(function ($fishSpecies) {
+                $logs = $fishSpecies->fishingLogs;
+                $totalCaught = $logs->sum('quantity');
+                $totalTrips = $logs->count();
+                $biggestFish = $logs->max('max_size') ?? 0;
+                $avgSize = $totalCaught > 0
+                    ? round($logs->sum('max_size') / $totalCaught, 1)
+                    : 0;
+
+                return [
+                    'id' => $fishSpecies->id,
+                    'species' => $fishSpecies->species,
+                    'water_type' => $fishSpecies->water_type,
+                    'totalCaught' => $totalCaught,
+                    'totalTrips' => $totalTrips,
+                    'biggestFish' => $biggestFish,
+                    'avgSize' => $avgSize,
+                ];
+            })
+            ->sortByDesc('totalCaught')
+            ->values();
+
+        return response()->json($fish);
+    }
 }

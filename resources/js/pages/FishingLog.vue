@@ -16,7 +16,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X, FileText } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
@@ -39,6 +39,10 @@ const isEditMode = ref(false);
 // Delete confirmation
 const showDeleteConfirm = ref(false);
 const logToDelete = ref(null);
+
+// Notes modal
+const showNotesModal = ref(false);
+const selectedNotes = ref('');
 
 // Fishing logs data
 const fishingLogs = ref([]);
@@ -431,6 +435,12 @@ const formatSize = (size: number) => {
     return num % 1 === 0 ? Math.floor(num).toString() : num.toString();
 };
 
+// Open notes modal
+const viewNotes = (notes: string) => {
+    selectedNotes.value = notes;
+    showNotesModal.value = true;
+};
+
 
 
 
@@ -472,12 +482,13 @@ const formatSize = (size: number) => {
                                         <TableHead>Max Size</TableHead>
                                         <TableHead>Fly</TableHead>
                                         <TableHead>Style</TableHead>
+                                        <TableHead>Notes</TableHead>
                                         <TableHead class="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-if="fishingLogs.length === 0">
-                                        <TableCell colspan="8" class="text-center text-muted-foreground py-8">
+                                        <TableCell colspan="9" class="text-center text-muted-foreground py-8">
                                             No fishing logs yet. Click "Add New" to create your first log!
                                         </TableCell>
                                     </TableRow>
@@ -489,6 +500,18 @@ const formatSize = (size: number) => {
                                         <TableCell>{{ log.max_size ? `${formatSize(log.max_size)}"` : '-' }}</TableCell>
                                         <TableCell>{{ log.fly?.name || '-' }}</TableCell>
                                         <TableCell>{{ log.style || '-' }}</TableCell>
+                                        <TableCell>
+                                            <Button
+                                                v-if="log.notes"
+                                                variant="ghost"
+                                                size="icon"
+                                                @click="viewNotes(log.notes)"
+                                                class="h-8 w-8"
+                                            >
+                                                <FileText class="h-4 w-4" />
+                                            </Button>
+                                            <span v-else class="text-muted-foreground">-</span>
+                                        </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center justify-end gap-0">
                                                 <Button
@@ -1122,6 +1145,31 @@ const formatSize = (size: number) => {
                     </Button>
                     <Button type="button" variant="destructive" @click="handleDelete">
                         Delete
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Notes Modal -->
+        <Dialog v-model:open="showNotesModal">
+            <DialogContent class="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2">
+                        <FileText class="h-5 w-5" />
+                        Trip Notes
+                    </DialogTitle>
+                    <DialogDescription>
+                        Notes from this fishing trip
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="py-4">
+                    <div class="rounded-lg border bg-muted/50 p-4">
+                        <p class="whitespace-pre-wrap text-sm">{{ selectedNotes }}</p>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" @click="showNotesModal = false">
+                        Close
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -26,13 +26,12 @@ createInertiaApp({
 });
 
 // Handle CSRF token expiration (419 errors)
-router.on('error', (event) => {
-    if (event.detail.errors && typeof event.detail.errors === 'object') {
-        const response = event.detail.errors as { response?: { status?: number } };
-        if (response.response?.status === 419) {
-            // CSRF token expired - reload the page to get a fresh token
-            window.location.reload();
-        }
+document.addEventListener('inertia:error', (event) => {
+    const response = (event as any).detail?.response;
+    if (response?.status === 419) {
+        // CSRF token expired - reload the page to get a fresh token
+        console.log('CSRF token expired, reloading page...');
+        window.location.reload();
     }
 });
 

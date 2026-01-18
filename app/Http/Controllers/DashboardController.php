@@ -98,7 +98,7 @@ class DashboardController extends Controller
         }
         $catchesByMonth = $monthQuery
             ->select(
-                DB::raw("strftime('%Y-%m', date) as month"),
+                DB::raw("DATE_FORMAT(date, '%Y-%m') as month"),
                 DB::raw('SUM(quantity) as total')
             )
             ->groupBy('month')
@@ -203,11 +203,11 @@ class DashboardController extends Controller
         if ($yearFilter === 'lifetime') {
             // For lifetime, show last 12 months grouped by month
             $catchesOverTimeQuery->where('date', '>=', now()->subMonths(12));
-            $groupBy = "strftime('%Y-%m', date)";
+            $groupBy = "DATE_FORMAT(date, '%Y-%m')";
             $dateFormat = '%Y-%m-01'; // First day of month for consistent formatting
         } else {
             // For specific year, group by week to keep it manageable
-            $groupBy = "strftime('%Y-%W', date)";
+            $groupBy = "DATE_FORMAT(date, '%Y-%u')";
             $dateFormat = '%Y-%m-%d'; // Use actual date
         }
 

@@ -136,6 +136,13 @@ const cancelDelete = () => {
     itemToDelete.value = null;
 };
 
+// Format size for display (remove .0 decimals)
+const formatSize = (size: number) => {
+    if (!size) return '0';
+    const num = parseFloat(size.toString());
+    return num % 1 === 0 ? Math.floor(num).toString() : num.toString();
+};
+
 // Fetch available years
 const fetchAvailableYears = async () => {
     try {
@@ -331,7 +338,7 @@ onMounted(() => {
                                                 <Award class="h-4 w-4" />
                                                 Biggest Fish
                                             </span>
-                                            <span class="font-bold">{{ fly.biggestFish }}"</span>
+                                            <span class="font-bold">{{ formatSize(fly.biggestFish) }}"</span>
                                         </div>
                                     </CardContent>
                                 </Card>

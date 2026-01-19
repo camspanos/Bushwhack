@@ -28,7 +28,7 @@ class StoreFishingLogRequest extends FormRequest
             'quantity' => 'nullable|integer|min:0',
             'max_size' => 'nullable|numeric|min:0',
             'fly_id' => 'nullable|exists:flies,id',
-            'equipment_id' => 'nullable|exists:equipment,id',
+            'equipment_id' => 'nullable|exists:rods,id',
             'style' => 'nullable|string|max:255',
             'friend_ids' => 'nullable|array',
             'friend_ids.*' => 'exists:friends,id',

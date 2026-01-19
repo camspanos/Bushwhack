@@ -1,6 +1,6 @@
 import DashboardController from './DashboardController'
 import LocationController from './LocationController'
-import EquipmentController from './EquipmentController'
+import RodController from './RodController'
 import FishController from './FishController'
 import FlyController from './FlyController'
 import FriendController from './FriendController'
@@ -10,7 +10,7 @@ import Settings from './Settings'
 const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
     LocationController: Object.assign(LocationController, LocationController),
-    EquipmentController: Object.assign(EquipmentController, EquipmentController),
+    RodController: Object.assign(RodController, RodController),
     FishController: Object.assign(FishController, FishController),
     FlyController: Object.assign(FlyController, FlyController),
     FriendController: Object.assign(FriendController, FriendController),

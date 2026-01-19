@@ -11,7 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, fishingLog, locationsPage, equipmentPage, fishPage, fliesPage, friendsPage, about, home } from '@/routes';
+import { dashboard, fishingLog, locationsPage, rodsPage, fishPage, fliesPage, friendsPage, about, home } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { Info, LayoutGrid, Fish, MapPin, Wrench, Bug, Users } from 'lucide-vue-next';
@@ -34,8 +34,8 @@ const mainNavItems: NavItem[] = [
         icon: MapPin,
     },
     {
-        title: 'Equipment',
-        href: equipmentPage(),
+        title: 'Rods',
+        href: rodsPage(),
         icon: Wrench,
     },
     {

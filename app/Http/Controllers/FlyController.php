@@ -115,7 +115,7 @@ class FlyController extends Controller
                     'type' => $fly->type,
                     'totalCaught' => $totalCaught,
                     'totalTrips' => $totalTrips,
-                    'biggestFish' => $biggestFish,
+                    'biggestFish' => (float) $biggestFish,
                     'successRate' => $successRate,
                 ];
             })

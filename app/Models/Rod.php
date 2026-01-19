@@ -6,19 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Equipment extends Model
+class Rod extends Model
 {
     protected $fillable = [
         'user_id',
         'rod_name',
         'rod_weight',
+        'rod_length',
         'reel',
         'line',
-        'tippet',
     ];
 
     /**
-     * Get the user that owns this equipment.
+     * Get the user that owns this rod.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -28,7 +28,7 @@ class Equipment extends Model
     }
 
     /**
-     * Get the fishing logs that used this equipment.
+     * Get the fishing logs that used this rod.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -37,3 +37,4 @@ class Equipment extends Model
         return $this->hasMany(FishingLog::class);
     }
 }
+

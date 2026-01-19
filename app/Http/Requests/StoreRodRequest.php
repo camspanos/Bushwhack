@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreEquipmentRequest extends FormRequest
+class StoreRodRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,10 @@ class StoreEquipmentRequest extends FormRequest
         return [
             'rod_name' => 'required|string|max:255',
             'rod_weight' => 'nullable|string|max:255',
-            'lure' => 'nullable|string|max:255',
+            'rod_length' => 'nullable|string|max:255',
+            'reel' => 'nullable|string|max:255',
             'line' => 'nullable|string|max:255',
-            'tippet' => 'nullable|string|max:255',
         ];
     }
 }
+

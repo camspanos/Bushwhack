@@ -47,13 +47,23 @@ class FishingLog extends Model
     }
 
     /**
-     * Get the equipment used for this fishing log.
+     * Get the rod used for this fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function rod(): BelongsTo
+    {
+        return $this->belongsTo(Rod::class, 'equipment_id');
+    }
+
+    /**
+     * Alias for rod() to maintain backward compatibility.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function equipment(): BelongsTo
     {
-        return $this->belongsTo(Equipment::class);
+        return $this->rod();
     }
 
     /**

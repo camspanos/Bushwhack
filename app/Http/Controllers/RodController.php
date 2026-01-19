@@ -2,84 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreEquipmentRequest;
-use App\Models\Equipment;
+use App\Http\Requests\StoreRodRequest;
+use App\Models\Rod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class EquipmentController extends Controller
+class RodController extends Controller
 {
     /**
-     * Display a listing of the authenticated user's equipment.
+     * Display a listing of the authenticated user's rods.
      *
-     * Retrieves all equipment records belonging to the authenticated user,
+     * Retrieves all rod records belonging to the authenticated user,
      * ordered alphabetically by rod name. Returns paginated results (15 per page).
      */
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->input('per_page', 15);
 
-        $equipment = Equipment::where('user_id', auth()->id())
+        $rods = Rod::where('user_id', auth()->id())
             ->orderBy('rod_name')
             ->paginate($perPage);
 
-        return response()->json($equipment);
+        return response()->json($rods);
     }
 
     /**
-     * Store a newly created equipment in storage.
+     * Store a newly created rod in storage.
      *
-     * Creates a new equipment record for the authenticated user with the
-     * provided rod name, rod weight, lure, line, and tippet information.
+     * Creates a new rod record for the authenticated user with the
+     * provided rod name, rod weight, rod length, reel, and line information.
      */
-    public function store(StoreEquipmentRequest $request): JsonResponse
+    public function store(StoreRodRequest $request): JsonResponse
     {
-        $equipment = Equipment::create([
+        $rod = Rod::create([
             'user_id' => auth()->id(),
             ...$request->validated(),
         ]);
 
-        return response()->json($equipment, 201);
+        return response()->json($rod, 201);
     }
 
     /**
-     * Update the specified equipment in storage.
+     * Update the specified rod in storage.
      *
-     * Updates an equipment record for the authenticated user.
+     * Updates a rod record for the authenticated user.
      */
-    public function update(StoreEquipmentRequest $request, Equipment $equipment): JsonResponse
+    public function update(StoreRodRequest $request, Rod $rod): JsonResponse
     {
-        // Ensure the user owns this equipment
-        if ($equipment->user_id !== auth()->id()) {
+        // Ensure the user owns this rod
+        if ($rod->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $equipment->update($request->validated());
+        $rod->update($request->validated());
 
-        return response()->json($equipment);
+        return response()->json($rod);
     }
 
     /**
-     * Remove the specified equipment from storage.
+     * Remove the specified rod from storage.
      *
-     * Deletes an equipment entry for the authenticated user.
+     * Deletes a rod entry for the authenticated user.
      */
-    public function destroy(Equipment $equipment): JsonResponse
+    public function destroy(Rod $rod): JsonResponse
     {
-        // Ensure the user owns this equipment
-        if ($equipment->user_id !== auth()->id()) {
+        // Ensure the user owns this rod
+        if ($rod->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $equipment->delete();
+        $rod->delete();
 
-        return response()->json(['message' => 'Equipment deleted successfully']);
+        return response()->json(['message' => 'Rod deleted successfully']);
     }
 
     /**
-     * Get statistics for all equipment.
+     * Get statistics for all rods.
      *
-     * Returns aggregated statistics for each equipment including:
+     * Returns aggregated statistics for each rod including:
      * - Total trips
      * - Total fish caught
      * - Biggest fish
@@ -89,7 +89,7 @@ class EquipmentController extends Controller
     {
         $yearFilter = $request->input('year', 'lifetime');
 
-        $equipment = Equipment::where('user_id', auth()->id())
+        $rods = Rod::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('id', 'equipment_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
@@ -111,18 +111,19 @@ class EquipmentController extends Controller
                     'id' => $item->id,
                     'rod_name' => $item->rod_name,
                     'rod_weight' => $item->rod_weight,
+                    'rod_length' => $item->rod_length,
                     'reel' => $item->reel,
                     'line' => $item->line,
-                    'tippet' => $item->tippet,
                     'totalTrips' => $totalTrips,
                     'totalFish' => $totalFish,
-                    'biggestFish' => $biggestFish,
+                    'biggestFish' => (float) $biggestFish,
                     'successRate' => $successRate,
                 ];
             })
             ->sortByDesc('totalFish')
             ->values();
 
-        return response()->json($equipment);
+        return response()->json($rods);
     }
 }
+

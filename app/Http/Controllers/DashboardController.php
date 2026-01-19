@@ -48,7 +48,7 @@ class DashboardController extends Controller
 
         // Favorite location (most visited, filtered by year)
         $favoriteLocation = (clone $baseQuery)
-            ->select('location_id', DB::raw('COUNT(*) as visit_count'))
+            ->select('location_id', DB::raw('COUNT(DISTINCT date) as visit_count'))
             ->whereNotNull('location_id')
             ->groupBy('location_id')
             ->orderByDesc('visit_count')

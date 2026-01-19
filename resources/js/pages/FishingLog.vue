@@ -139,7 +139,7 @@ const showFriendModal = ref(false);
 const newLocation = ref({ name: '', city: '', state: '', country: '' });
 const newFish = ref({ species: '', water_type: '' });
 const newFly = ref({ name: '', color: '', size: '', type: '' });
-const newEquipment = ref({ rod_name: '', rod_weight: '', reel: '', line: '', tippet: '' });
+const newEquipment = ref({ rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' });
 const newFriend = ref({ name: '' });
 
 // Fetch fishing logs
@@ -196,7 +196,7 @@ const fetchLocations = async () => {
 
 const fetchEquipment = async () => {
     try {
-        const response = await axios.get('/equipment');
+        const response = await axios.get('/rods');
         // Handle paginated response
         const data = response.data.data || response.data;
         const equipmentArray = Array.isArray(data) ? data : [];
@@ -289,11 +289,11 @@ const createFly = async () => {
 
 const createEquipment = async () => {
     try {
-        const response = await axios.post('/equipment', newEquipment.value);
+        const response = await axios.post('/rods', newEquipment.value);
         equipment.value.push(response.data);
         formData.value.equipment_id = response.data.id;
         showEquipmentModal.value = false;
-        newEquipment.value = { rod_name: '', rod_weight: '', reel: '', line: '', tippet: '' };
+        newEquipment.value = { rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' };
     } catch (error) {
         console.error('Error creating equipment:', error);
     }
@@ -633,10 +633,11 @@ const viewNotes = (notes: string) => {
                 </Card>
 
                 <!-- Pagination -->
-                <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
-                            <div class="text-sm text-muted-foreground">
+                <div v-if="totalPages > 1" class="mt-4 space-y-3">
+                            <div class="text-sm text-muted-foreground text-center">
                                 Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
                             </div>
+                            <div class="overflow-x-auto">
                             <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
                                 <PaginationContent>
                                     <PaginationItem>
@@ -660,6 +661,7 @@ const viewNotes = (notes: string) => {
                                     </PaginationItem>
                                 </PaginationContent>
                             </Pagination>
+                            </div>
                 </div>
             </div>
         </div>
@@ -829,13 +831,13 @@ const viewNotes = (notes: string) => {
                                         </div>
                                     </div>
 
-                                    <!-- Equipment -->
+                                    <!-- Rod -->
                                     <div class="grid gap-2">
-                                        <Label for="equipment">Equipment</Label>
+                                        <Label for="equipment">Rod</Label>
                                         <div class="flex gap-2">
                                             <Select v-model="formData.equipment_id">
                                                 <SelectTrigger id="equipment" class="flex-1">
-                                                    <SelectValue placeholder="Select equipment" />
+                                                    <SelectValue placeholder="Select rod" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem
@@ -1113,13 +1115,13 @@ const viewNotes = (notes: string) => {
             </DialogContent>
         </Dialog>
 
-        <!-- Equipment Modal -->
+        <!-- Rod Modal -->
         <Dialog v-model:open="showEquipmentModal">
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Equipment</DialogTitle>
+                    <DialogTitle>Add New Rod</DialogTitle>
                     <DialogDescription>
-                        Create a new equipment setup to add to your log.
+                        Create a new rod setup to add to your log.
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="createEquipment" class="space-y-4">
@@ -1157,11 +1159,11 @@ const viewNotes = (notes: string) => {
                         />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="new-equipment-tippet">Tippet</Label>
+                        <Label for="new-equipment-rod-length">Rod Length</Label>
                         <Input
-                            id="new-equipment-tippet"
-                            v-model="newEquipment.tippet"
-                            placeholder="e.g., 5X"
+                            id="new-equipment-rod-length"
+                            v-model="newEquipment.rod_length"
+                            placeholder="e.g., 9ft"
                         />
                     </div>
                     <DialogFooter>
@@ -1169,7 +1171,7 @@ const viewNotes = (notes: string) => {
                             Cancel
                         </Button>
                         <Button type="submit">
-                            Add Equipment
+                            Add Rod
                         </Button>
                     </DialogFooter>
                 </form>

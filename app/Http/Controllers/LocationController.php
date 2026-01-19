@@ -101,12 +101,12 @@ class LocationController extends Controller
             ->get()
             ->map(function ($location) {
                 $logs = $location->fishingLogs;
-                $totalTrips = $logs->count();
+                $totalTrips = $logs->pluck('date')->unique()->count();
                 $totalFish = $logs->sum('quantity');
                 $biggestFish = $logs->max('max_size') ?? 0;
-                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+                $daysWithFish = $logs->where('quantity', '>', 0)->pluck('date')->unique()->count();
                 $successRate = $totalTrips > 0
-                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    ? round(($daysWithFish / $totalTrips) * 100, 1)
                     : 0;
 
                 return [
@@ -117,7 +117,7 @@ class LocationController extends Controller
                     'country' => $location->country,
                     'totalTrips' => $totalTrips,
                     'totalFish' => $totalFish,
-                    'biggestFish' => $biggestFish,
+                    'biggestFish' => (float) $biggestFish,
                     'successRate' => $successRate,
                 ];
             })

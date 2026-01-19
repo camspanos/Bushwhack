@@ -522,68 +522,68 @@ locationsPage.form = locationsPageForm
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-export const equipmentPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: equipmentPage.url(options),
+export const rodsPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: rodsPage.url(options),
     method: 'get',
 })
 
-equipmentPage.definition = {
+rodsPage.definition = {
     methods: ["get","head"],
-    url: '/equipment-page',
+    url: '/rods-page',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-equipmentPage.url = (options?: RouteQueryOptions) => {
-    return equipmentPage.definition.url + queryParams(options)
+rodsPage.url = (options?: RouteQueryOptions) => {
+    return rodsPage.definition.url + queryParams(options)
 }
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-equipmentPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: equipmentPage.url(options),
+rodsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: rodsPage.url(options),
     method: 'get',
 })
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-equipmentPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: equipmentPage.url(options),
+rodsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: rodsPage.url(options),
     method: 'head',
 })
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-const equipmentPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: equipmentPage.url(options),
+const rodsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: rodsPage.url(options),
     method: 'get',
 })
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-equipmentPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: equipmentPage.url(options),
+rodsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: rodsPage.url(options),
     method: 'get',
 })
 
 /**
 * @see routes/web.php:36
-* @route '/equipment-page'
+* @route '/rods-page'
 */
-equipmentPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: equipmentPage.url({
+rodsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: rodsPage.url({
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -592,7 +592,7 @@ equipmentPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get
     method: 'get',
 })
 
-equipmentPage.form = equipmentPageForm
+rodsPage.form = rodsPageForm
 
 /**
 * @see routes/web.php:40

@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\RodController;
 use App\Http\Controllers\FishController;
 use App\Http\Controllers\FishingLogController;
 use App\Http\Controllers\FlyController;
@@ -33,9 +33,9 @@ Route::get('locations-page', function () {
     return Inertia::render('Locations');
 })->middleware(['auth', 'verified'])->name('locations-page');
 
-Route::get('equipment-page', function () {
+Route::get('rods-page', function () {
     return Inertia::render('Equipment');
-})->middleware(['auth', 'verified'])->name('equipment-page');
+})->middleware(['auth', 'verified'])->name('rods-page');
 
 Route::get('fish-page', function () {
     return Inertia::render('Fish');
@@ -56,7 +56,7 @@ Route::get('about', function () {
 // CRUD Routes for Fishing Log Resources
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('locations', LocationController::class);
-    Route::resource('equipment', EquipmentController::class);
+    Route::resource('rods', RodController::class);
     Route::resource('fish', FishController::class);
     Route::resource('flies', FlyController::class);
     Route::resource('friends', FriendController::class);
@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Statistics Routes
     Route::get('locations/stats/all', [LocationController::class, 'statistics'])->name('locations.statistics');
-    Route::get('equipment/stats/all', [EquipmentController::class, 'statistics'])->name('equipment.statistics');
+    Route::get('rods/stats/all', [RodController::class, 'statistics'])->name('rods.statistics');
     Route::get('fish/stats/all', [FishController::class, 'statistics'])->name('fish.statistics');
     Route::get('flies/stats/all', [FlyController::class, 'statistics'])->name('flies.statistics');
     Route::get('friends/stats/all', [FriendController::class, 'statistics'])->name('friends.statistics');

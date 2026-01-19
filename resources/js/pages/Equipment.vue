@@ -16,7 +16,7 @@ import { Wrench, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, Tren
 import axios from '@/lib/axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Equipment', href: '/equipment' },
+    { title: 'Rods', href: '/rods-page' },
 ];
 
 const showAddForm = ref(false);
@@ -40,14 +40,14 @@ const availableYears = ref<string[]>([]);
 const formData = ref({
     rod_name: '',
     rod_weight: '',
+    rod_length: '',
     reel: '',
     line: '',
-    tippet: '',
 });
 
 const fetchEquipment = async (page = 1) => {
     try {
-        const response = await axios.get('/equipment', {
+        const response = await axios.get('/rods', {
             params: { page: page, per_page: perPage.value }
         });
         equipment.value = response.data.data;
@@ -83,9 +83,9 @@ const editItem = (item: any) => {
     formData.value = {
         rod_name: item.rod_name,
         rod_weight: item.rod_weight || '',
+        rod_length: item.rod_length || '',
         reel: item.reel || '',
         line: item.line || '',
-        tippet: item.tippet || '',
     };
     showAddForm.value = true;
 };
@@ -94,9 +94,9 @@ const resetForm = () => {
     formData.value = {
         rod_name: '',
         rod_weight: '',
+        rod_length: '',
         reel: '',
         line: '',
-        tippet: '',
     };
     editingId.value = null;
     isEditMode.value = false;
@@ -106,9 +106,9 @@ const resetForm = () => {
 const handleSubmit = async () => {
     try {
         if (isEditMode.value && editingId.value) {
-            await axios.put(`/equipment/${editingId.value}`, formData.value);
+            await axios.put(`/rods/${editingId.value}`, formData.value);
         } else {
-            await axios.post('/equipment', formData.value);
+            await axios.post('/rods', formData.value);
         }
         await fetchEquipment(currentPage.value);
         resetForm();
@@ -125,7 +125,7 @@ const confirmDelete = (item: any) => {
 const handleDelete = async () => {
     if (!itemToDelete.value) return;
     try {
-        await axios.delete(`/equipment/${itemToDelete.value.id}`);
+        await axios.delete(`/rods/${itemToDelete.value.id}`);
         await fetchEquipment(currentPage.value);
         showDeleteConfirm.value = false;
         itemToDelete.value = null;
@@ -154,7 +154,7 @@ const fetchAvailableYears = async () => {
 // Fetch equipment statistics
 const fetchEquipmentStats = async () => {
     try {
-        const response = await axios.get('/equipment/stats/all', {
+        const response = await axios.get('/rods/stats/all', {
             params: { year: selectedYearFilter.value }
         });
         equipmentStats.value = response.data;
@@ -173,6 +173,11 @@ const yearLabel = computed(() => {
     return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
 });
 
+// Format size to remove unnecessary decimals
+const formatSize = (size: number) => {
+    return size % 1 === 0 ? size.toString() : size.toFixed(2).replace(/\.?0+$/, '');
+};
+
 onMounted(() => {
     fetchEquipment();
     fetchAvailableYears();
@@ -181,8 +186,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <Head title="Equipment" />
-    <AppLayout title="Equipment" :breadcrumbs="breadcrumbs">
+    <Head title="Rods" />
+    <AppLayout title="Rods" :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
                 <!-- Tab Navigation -->
@@ -206,15 +211,15 @@ onMounted(() => {
                                     <div>
                                         <CardTitle class="flex items-center gap-2">
                                             <Wrench class="h-6 w-6" />
-                                            Your Equipment
+                                            Your Rods
                                         </CardTitle>
                                         <CardDescription>
-                                            View and manage your fishing equipment
+                                            View and manage your fishing rods
                                         </CardDescription>
                                     </div>
                                     <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
-                                        Add New Equipment
+                                        Add New Rod
                                     </Button>
                                 </div>
                             </CardHeader>
@@ -226,24 +231,24 @@ onMounted(() => {
                                             <TableRow>
                                                 <TableHead>Rod Name</TableHead>
                                                 <TableHead>Rod Weight</TableHead>
+                                                <TableHead>Rod Length</TableHead>
                                                 <TableHead>Reel</TableHead>
                                                 <TableHead>Line</TableHead>
-                                                <TableHead>Tippet</TableHead>
                                                 <TableHead class="text-right">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             <TableRow v-if="equipment.length === 0">
                                                 <TableCell colspan="6" class="text-center text-muted-foreground py-8">
-                                                    No equipment yet. Click "Add New" to create your first equipment!
+                                                    No rods yet. Click "Add New" to create your first rod!
                                                 </TableCell>
                                             </TableRow>
                                             <TableRow v-for="item in equipment" :key="item.id">
                                                 <TableCell class="font-medium">{{ item.rod_name }}</TableCell>
                                                 <TableCell>{{ item.rod_weight || '-' }}</TableCell>
+                                                <TableCell>{{ item.rod_length || '-' }}</TableCell>
                                                 <TableCell>{{ item.reel || '-' }}</TableCell>
                                                 <TableCell>{{ item.line || '-' }}</TableCell>
-                                                <TableCell>{{ item.tippet || '-' }}</TableCell>
                                                 <TableCell class="text-right">
                                                     <div class="flex items-center justify-end gap-0">
                                                         <Button variant="ghost" size="icon" @click="editItem(item)" class="h-8 w-8">
@@ -263,7 +268,7 @@ onMounted(() => {
                                 <!-- Mobile Card View -->
                                 <div class="md:hidden space-y-3">
                                     <div v-if="equipment.length === 0" class="text-center text-muted-foreground py-8 border rounded-md">
-                                        No equipment yet. Click "Add New" to create your first equipment!
+                                        No rods yet. Click "Add New" to create your first rod!
                                     </div>
                                     <Card v-for="item in equipment" :key="item.id" class="overflow-hidden">
                                         <CardContent class="p-4">
@@ -276,16 +281,16 @@ onMounted(() => {
                                                             <span class="ml-1">{{ item.rod_weight || '-' }}</span>
                                                         </div>
                                                         <div>
+                                                            <span class="text-muted-foreground">Length:</span>
+                                                            <span class="ml-1">{{ item.rod_length || '-' }}</span>
+                                                        </div>
+                                                        <div>
                                                             <span class="text-muted-foreground">Reel:</span>
                                                             <span class="ml-1">{{ item.reel || '-' }}</span>
                                                         </div>
                                                         <div>
                                                             <span class="text-muted-foreground">Line:</span>
                                                             <span class="ml-1">{{ item.line || '-' }}</span>
-                                                        </div>
-                                                        <div>
-                                                            <span class="text-muted-foreground">Tippet:</span>
-                                                            <span class="ml-1">{{ item.tippet || '-' }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -337,7 +342,7 @@ onMounted(() => {
                                 <div>
                                     <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
                                         <Wrench class="h-6 w-6" />
-                                        Equipment Performance
+                                        Rod Performance
                                     </h3>
                                     <p class="text-muted-foreground">Statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}</p>
                                 </div>
@@ -381,7 +386,7 @@ onMounted(() => {
                                                 <Award class="h-4 w-4" />
                                                 Biggest Fish
                                             </span>
-                                            <span class="font-bold">{{ equip.biggestFish }}"</span>
+                                            <span class="font-bold">{{ formatSize(equip.biggestFish) }}"</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
@@ -414,10 +419,10 @@ onMounted(() => {
                 <DialogHeader>
                     <DialogTitle class="flex items-center gap-2">
                         <Wrench class="h-6 w-6" />
-                        {{ isEditMode ? 'Edit Equipment' : 'Add New Equipment' }}
+                        {{ isEditMode ? 'Edit Rod' : 'Add New Rod' }}
                     </DialogTitle>
                     <DialogDescription>
-                        {{ isEditMode ? 'Update the equipment details below.' : 'Enter the equipment details below.' }}
+                        {{ isEditMode ? 'Update the rod details below.' : 'Enter the rod details below.' }}
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="handleSubmit">
@@ -431,6 +436,10 @@ onMounted(() => {
                             <Input id="rod_weight" v-model="formData.rod_weight" placeholder="e.g., 5wt" />
                         </div>
                         <div class="grid gap-2">
+                            <Label for="rod_length">Rod Length</Label>
+                            <Input id="rod_length" v-model="formData.rod_length" placeholder="e.g., 9ft" />
+                        </div>
+                        <div class="grid gap-2">
                             <Label for="reel">Reel</Label>
                             <Input id="reel" v-model="formData.reel" placeholder="e.g., Orvis Battenkill" />
                         </div>
@@ -438,14 +447,10 @@ onMounted(() => {
                             <Label for="line">Line</Label>
                             <Input id="line" v-model="formData.line" placeholder="e.g., WF5F" />
                         </div>
-                        <div class="grid gap-2">
-                            <Label for="tippet">Tippet</Label>
-                            <Input id="tippet" v-model="formData.tippet" placeholder="e.g., 4X" />
-                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" @click="resetForm">Cancel</Button>
-                        <Button type="submit">{{ isEditMode ? 'Update Equipment' : 'Add Equipment' }}</Button>
+                        <Button type="submit">{{ isEditMode ? 'Update Rod' : 'Add Rod' }}</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -457,15 +462,15 @@ onMounted(() => {
                 <DialogHeader>
                     <DialogTitle class="flex items-center gap-2 text-destructive">
                         <Trash2 class="h-5 w-5" />
-                        Delete Equipment
+                        Delete Rod
                     </DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete this equipment? This action cannot be undone.
+                        Are you sure you want to delete this rod? This action cannot be undone.
                     </DialogDescription>
                 </DialogHeader>
                 <div v-if="itemToDelete" class="py-4">
                     <div class="rounded-lg bg-muted p-4 space-y-2">
-                        <p class="text-sm font-medium">Equipment Details:</p>
+                        <p class="text-sm font-medium">Rod Details:</p>
                         <p class="text-sm text-muted-foreground">
                             <strong>Rod Name:</strong> {{ itemToDelete.rod_name }}
                         </p>

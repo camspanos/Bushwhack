@@ -34,7 +34,7 @@ Route::get('locations-page', function () {
 })->middleware(['auth', 'verified'])->name('locations-page');
 
 Route::get('rods-page', function () {
-    return Inertia::render('Equipment');
+    return Inertia::render('Rod');
 })->middleware(['auth', 'verified'])->name('rods-page');
 
 Route::get('fish-page', function () {

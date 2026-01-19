@@ -34,7 +34,7 @@ class Rod extends Model
      */
     public function fishingLogs(): HasMany
     {
-        return $this->hasMany(FishingLog::class);
+        return $this->hasMany(FishingLog::class, 'equipment_id');
     }
 }
 

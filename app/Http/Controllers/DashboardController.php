@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Equipment;
 use App\Models\Fish;
 use App\Models\FishingLog;
 use App\Models\Fly;

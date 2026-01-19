@@ -403,7 +403,7 @@ onMounted(() => {
                             <Card v-if="equipmentStats.length === 0">
                                 <CardContent class="py-8">
                                     <div class="text-center text-muted-foreground">
-                                        No equipment statistics available yet. Start logging your fishing trips!
+                                        No rod statistics available yet. Start logging your fishing trips!
                                     </div>
                                 </CardContent>
                             </Card>

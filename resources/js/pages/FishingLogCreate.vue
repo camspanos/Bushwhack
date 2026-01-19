@@ -105,7 +105,9 @@ const newFriend = ref({ name: '' });
 // Fetch data from API
 const fetchLocations = async () => {
     try {
-        const response = await axios.get('/locations');
+        const response = await axios.get('/locations', {
+            params: { per_page: 1000 }
+        });
         // Handle paginated response
         const data = response.data.data || response.data;
         const locationsArray = Array.isArray(data) ? data : [];
@@ -119,7 +121,9 @@ const fetchLocations = async () => {
 
 const fetchEquipment = async () => {
     try {
-        const response = await axios.get('/rods');
+        const response = await axios.get('/rods', {
+            params: { per_page: 1000 }
+        });
         // Handle paginated response
         const data = response.data.data || response.data;
         const equipmentArray = Array.isArray(data) ? data : [];
@@ -133,7 +137,9 @@ const fetchEquipment = async () => {
 
 const fetchFish = async () => {
     try {
-        const response = await axios.get('/fish');
+        const response = await axios.get('/fish', {
+            params: { per_page: 1000 }
+        });
         // Handle paginated response
         const data = response.data.data || response.data;
         const fishArray = Array.isArray(data) ? data : [];
@@ -147,7 +153,9 @@ const fetchFish = async () => {
 
 const fetchFlies = async () => {
     try {
-        const response = await axios.get('/flies');
+        const response = await axios.get('/flies', {
+            params: { per_page: 1000 }
+        });
         // Handle paginated response
         const data = response.data.data || response.data;
         const fliesArray = Array.isArray(data) ? data : [];
@@ -161,7 +169,9 @@ const fetchFlies = async () => {
 
 const fetchFriends = async () => {
     try {
-        const response = await axios.get('/friends');
+        const response = await axios.get('/friends', {
+            params: { per_page: 1000 }
+        });
         // Handle paginated response
         const data = response.data.data || response.data;
         const friendsArray = Array.isArray(data) ? data : [];

@@ -40,7 +40,7 @@ class DashboardController extends Controller
 
         // Total counts (filtered by year)
         $totalCatches = (clone $baseQuery)->sum('quantity') ?? 0;
-        $totalTrips = (clone $baseQuery)->count();
+        $totalTrips = (clone $baseQuery)->distinct()->count('date');
 
         // Total locations and friends (always lifetime)
         $totalLocations = Location::where('user_id', $userId)->count();
@@ -73,7 +73,7 @@ class DashboardController extends Controller
 
         // All species caught with statistics (filtered by year)
         $allSpecies = (clone $baseQuery)
-            ->select('fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(*) as trip_count'))
+            ->select('fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
             ->whereNotNull('fish_id')
             ->groupBy('fish_id')
             ->orderByDesc('total_caught')
@@ -147,8 +147,11 @@ class DashboardController extends Controller
             ->unique()
             ->count();
 
-        // Most caught in a day
-        $mostInDay = $filteredLogs->max('quantity') ?? 0;
+        // Most caught in a day (sum all catches per day, then find max)
+        $mostInDay = $filteredLogs
+            ->groupBy('date')
+            ->map(fn($logs) => $logs->sum('quantity'))
+            ->max() ?? 0;
 
         // Success rate
         $successRate = $daysFished > 0 ? round(($daysWithFish / $daysFished) * 100, 1) : 0;
@@ -186,14 +189,19 @@ class DashboardController extends Controller
             ->with('location')
             ->first();
 
-        // Most successful fly (filtered by year)
-        $mostSuccessfulFly = (clone $baseQuery)
-            ->select('fly_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('fly_id')
-            ->where('quantity', '>', 0)
-            ->groupBy('fly_id')
+        // Most successful fly (filtered by year, grouped by fly name)
+        $mostSuccessfulFlyQuery = FishingLog::where('fishing_logs.user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $mostSuccessfulFlyQuery->whereYear('fishing_logs.date', $yearFilter);
+        }
+        $mostSuccessfulFly = $mostSuccessfulFlyQuery
+            ->join('flies', 'fishing_logs.fly_id', '=', 'flies.id')
+            ->select('flies.name', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
+            ->whereNotNull('fishing_logs.fly_id')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->where('flies.user_id', $userId)
+            ->groupBy('flies.name')
             ->orderByDesc('total_caught')
-            ->with('fly')
             ->first();
 
         // Catches over time - for line chart (filtered by year)
@@ -227,33 +235,59 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Streak tracker - calculate current streak of successful trips
+        // Streak tracker - calculate streaks of consecutive calendar days with catches
         $allTripsOrdered = FishingLog::where('user_id', $userId)
-            ->orderByDesc('date')
-            ->get();
+            ->where('quantity', '>', 0)
+            ->orderBy('date')
+            ->get()
+            ->groupBy(function($log) {
+                return \Carbon\Carbon::parse($log->date)->format('Y-m-d');
+            });
 
         $currentStreak = 0;
         $longestStreak = 0;
         $tempStreak = 0;
-        $lastSuccessful = null;
+        $lastDate = null;
 
-        foreach ($allTripsOrdered as $log) {
-            if ($log->quantity > 0) {
+        foreach ($allTripsOrdered as $date => $logs) {
+            $currentDate = \Carbon\Carbon::parse($date);
+
+            // Check if this is consecutive to the last successful day
+            if ($lastDate === null) {
+                $tempStreak = 1;
+            } elseif ($lastDate->copy()->addDay()->isSameDay($currentDate)) {
+                // Current date is exactly 1 day after last date
                 $tempStreak++;
-                if ($lastSuccessful === null) {
-                    $currentStreak = $tempStreak;
-                }
-                $lastSuccessful = true;
             } else {
-                if ($lastSuccessful === null) {
-                    $currentStreak = 0;
-                }
+                // Not consecutive, save the streak and start a new one
                 $longestStreak = max($longestStreak, $tempStreak);
-                $tempStreak = 0;
-                $lastSuccessful = false;
+                $tempStreak = 1;
             }
+            $lastDate = $currentDate;
         }
         $longestStreak = max($longestStreak, $tempStreak);
+
+        // Calculate current streak (only counts if you fished today or yesterday)
+        $today = \Carbon\Carbon::today();
+        $recentTrips = FishingLog::where('user_id', $userId)
+            ->where('quantity', '>', 0)
+            ->orderByDesc('date')
+            ->get()
+            ->groupBy(function($log) {
+                return \Carbon\Carbon::parse($log->date)->format('Y-m-d');
+            });
+
+        $expectedDate = $today;
+        foreach ($recentTrips as $date => $logs) {
+            $tripDate = \Carbon\Carbon::parse($date);
+
+            if ($tripDate->isSameDay($expectedDate)) {
+                $currentStreak++;
+                $expectedDate = $expectedDate->subDay();
+            } else {
+                break;
+            }
+        }
 
         return Inertia::render('Dashboard', [
             'stats' => [
@@ -279,8 +313,9 @@ class DashboardController extends Controller
                 'total' => $mostProductiveLocation->total_caught ?? 0,
             ] : null,
             'mostSuccessfulFly' => $mostSuccessfulFly ? [
-                'name' => $mostSuccessfulFly->fly?->name,
+                'name' => $mostSuccessfulFly->name,
                 'total' => $mostSuccessfulFly->total_caught ?? 0,
+                'days' => $mostSuccessfulFly->days_used ?? 0,
             ] : null,
             'yearStats' => [
                 'daysFished' => $daysFished,

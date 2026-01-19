@@ -32,6 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const selectedDate = ref(today(getLocalTimeZone()));
 const dateInput = ref('');
 const df = new DateFormatter('en-US', { dateStyle: 'long' });
+const isCalendarOpen = ref(false);
 
 // Form data
 const formData = ref({
@@ -76,6 +77,7 @@ const handleDateSelect = (date: CalendarDate) => {
         selectedDate.value = date;
         const { year, month, day } = date;
         dateInput.value = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        isCalendarOpen.value = false; // Close the calendar popover
     }
 };
 
@@ -107,7 +109,9 @@ const fetchLocations = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const locationsArray = Array.isArray(data) ? data : [];
-        locations.value = locationsArray.filter((loc: any) => loc !== null && loc !== undefined);
+        locations.value = locationsArray
+            .filter((loc: any) => loc !== null && loc !== undefined)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name));
     } catch (error) {
         console.error('Error fetching locations:', error);
     }
@@ -119,7 +123,9 @@ const fetchEquipment = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const equipmentArray = Array.isArray(data) ? data : [];
-        equipment.value = equipmentArray.filter((eq: any) => eq !== null && eq !== undefined);
+        equipment.value = equipmentArray
+            .filter((eq: any) => eq !== null && eq !== undefined)
+            .sort((a: any, b: any) => a.rod_name.localeCompare(b.rod_name));
     } catch (error) {
         console.error('Error fetching equipment:', error);
     }
@@ -131,7 +137,9 @@ const fetchFish = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const fishArray = Array.isArray(data) ? data : [];
-        fishSpecies.value = fishArray.filter((fish: any) => fish !== null && fish !== undefined);
+        fishSpecies.value = fishArray
+            .filter((fish: any) => fish !== null && fish !== undefined)
+            .sort((a: any, b: any) => a.species.localeCompare(b.species));
     } catch (error) {
         console.error('Error fetching fish:', error);
     }
@@ -143,7 +151,9 @@ const fetchFlies = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const fliesArray = Array.isArray(data) ? data : [];
-        flies.value = fliesArray.filter((fly: any) => fly !== null && fly !== undefined);
+        flies.value = fliesArray
+            .filter((fly: any) => fly !== null && fly !== undefined)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name));
     } catch (error) {
         console.error('Error fetching flies:', error);
     }
@@ -155,7 +165,9 @@ const fetchFriends = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const friendsArray = Array.isArray(data) ? data : [];
-        friends.value = friendsArray.filter((friend: any) => friend !== null && friend !== undefined);
+        friends.value = friendsArray
+            .filter((friend: any) => friend !== null && friend !== undefined)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name));
     } catch (error) {
         console.error('Error fetching friends:', error);
     }
@@ -308,7 +320,7 @@ const handleCancel = () => {
                                         @change="handleInputChange"
                                         class="flex-1"
                                     />
-                                    <Popover>
+                                    <Popover v-model:open="isCalendarOpen">
                                         <PopoverTrigger as-child>
                                             <Button variant="outline" class="px-3">
                                                 <CalendarIcon class="h-4 w-4" />
@@ -335,6 +347,9 @@ const handleCancel = () => {
                                         <SelectContent>
                                             <SelectItem v-for="location in locations" :key="location.id" :value="location.id.toString()">
                                                 {{ location.name }}
+                                                <span v-if="location.city" class="text-muted-foreground">
+                                                    - {{ location.city }}
+                                                </span>
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -358,6 +373,9 @@ const handleCancel = () => {
                                         <SelectContent>
                                             <SelectItem v-for="fish in fishSpecies" :key="fish.id" :value="fish.id.toString()">
                                                 {{ fish.species }}
+                                                <span v-if="fish.water_type" class="text-muted-foreground">
+                                                    - {{ fish.water_type }}
+                                                </span>
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -403,6 +421,9 @@ const handleCancel = () => {
                                         <SelectContent>
                                             <SelectItem v-for="fly in flies" :key="fly.id" :value="fly.id.toString()">
                                                 {{ fly.name }}
+                                                <span v-if="fly.size || fly.color" class="text-muted-foreground">
+                                                    - <span v-if="fly.size">Size {{ fly.size }}</span><span v-if="fly.size && fly.color">, </span><span v-if="fly.color">{{ fly.color }}</span>
+                                                </span>
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -423,6 +444,9 @@ const handleCancel = () => {
                                         <SelectContent>
                                             <SelectItem v-for="eq in equipment" :key="eq.id" :value="eq.id.toString()">
                                                 {{ eq.rod_name }}
+                                                <span v-if="eq.rod_weight" class="text-muted-foreground">
+                                                    - {{ eq.rod_weight }}
+                                                </span>
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -435,18 +459,12 @@ const handleCancel = () => {
                             <!-- Fishing Style -->
                             <div class="grid gap-2">
                                 <Label for="fishingStyle">Fishing Style</Label>
-                                <Select v-model="formData.fishingStyle">
-                                    <SelectTrigger id="fishingStyle">
-                                        <SelectValue placeholder="Select fishing style" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Dry Fly">Dry Fly</SelectItem>
-                                        <SelectItem value="Nymph">Nymph</SelectItem>
-                                        <SelectItem value="Streamer">Streamer</SelectItem>
-                                        <SelectItem value="Euro Nymph">Euro Nymph</SelectItem>
-                                        <SelectItem value="Wet Fly">Wet Fly</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    id="fishingStyle"
+                                    type="text"
+                                    v-model="formData.fishingStyle"
+                                    placeholder="e.g., Dry Fly, Nymph, Streamer"
+                                />
                             </div>
 
                             <!-- Friends -->

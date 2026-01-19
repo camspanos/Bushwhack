@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X, FileText } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
@@ -57,6 +57,8 @@ const total = ref(0);
 const selectedDate = ref(today(getLocalTimeZone()));
 const dateInput = ref('');
 const df = new DateFormatter('en-US', { dateStyle: 'long' });
+const isCalendarOpen = ref(false);
+let closeCalendar: (() => void) | null = null;
 
 // Initialize date input with today's date
 const initializeDateInput = () => {
@@ -85,6 +87,12 @@ const handleDateSelect = (date: CalendarDate | undefined) => {
     const month = String(date.month).padStart(2, '0');
     const day = String(date.day).padStart(2, '0');
     dateInput.value = `${year}-${month}-${day}`;
+
+    // Close the calendar popover
+    isCalendarOpen.value = false;
+    if (closeCalendar) {
+        closeCalendar();
+    }
 };
 
 // Update calendar when input changes
@@ -178,7 +186,9 @@ const fetchLocations = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const locationsArray = Array.isArray(data) ? data : [];
-        locations.value = locationsArray.filter((loc: any) => loc !== null && loc !== undefined);
+        locations.value = locationsArray
+            .filter((loc: any) => loc !== null && loc !== undefined)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name));
     } catch (error) {
         console.error('Error fetching locations:', error);
     }
@@ -190,7 +200,9 @@ const fetchEquipment = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const equipmentArray = Array.isArray(data) ? data : [];
-        equipment.value = equipmentArray.filter((eq: any) => eq !== null && eq !== undefined);
+        equipment.value = equipmentArray
+            .filter((eq: any) => eq !== null && eq !== undefined)
+            .sort((a: any, b: any) => a.rod_name.localeCompare(b.rod_name));
     } catch (error) {
         console.error('Error fetching equipment:', error);
     }
@@ -202,7 +214,9 @@ const fetchFish = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const fishArray = Array.isArray(data) ? data : [];
-        fishSpecies.value = fishArray.filter((fish: any) => fish !== null && fish !== undefined);
+        fishSpecies.value = fishArray
+            .filter((fish: any) => fish !== null && fish !== undefined)
+            .sort((a: any, b: any) => a.species.localeCompare(b.species));
     } catch (error) {
         console.error('Error fetching fish:', error);
     }
@@ -214,7 +228,9 @@ const fetchFlies = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const fliesArray = Array.isArray(data) ? data : [];
-        flies.value = fliesArray.filter((fly: any) => fly !== null && fly !== undefined);
+        flies.value = fliesArray
+            .filter((fly: any) => fly !== null && fly !== undefined)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name));
     } catch (error) {
         console.error('Error fetching flies:', error);
     }
@@ -226,7 +242,9 @@ const fetchFriends = async () => {
         // Handle paginated response
         const data = response.data.data || response.data;
         const friendsArray = Array.isArray(data) ? data : [];
-        friends.value = friendsArray.filter((friend: any) => friend !== null && friend !== undefined);
+        friends.value = friendsArray
+            .filter((friend: any) => friend !== null && friend !== undefined)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name));
     } catch (error) {
         console.error('Error fetching friends:', error);
     }
@@ -308,11 +326,11 @@ const editLog = (log: any) => {
     isEditMode.value = true;
     editingLogId.value = log.id;
 
-    // Parse the date
-    const logDate = new Date(log.date);
-    const year = logDate.getFullYear();
-    const month = String(logDate.getMonth() + 1).padStart(2, '0');
-    const day = String(logDate.getDate()).padStart(2, '0');
+    // Parse the date as local date to avoid timezone issues
+    const dateParts = log.date.split('T')[0].split('-'); // Handle both "2026-01-02" and "2026-01-02T00:00:00"
+    const year = parseInt(dateParts[0]);
+    const month = dateParts[1].padStart(2, '0');
+    const day = dateParts[2].padStart(2, '0');
     dateInput.value = `${year}-${month}-${day}`;
     selectedDate.value = new CalendarDate(year, parseInt(month), parseInt(day));
 
@@ -425,7 +443,15 @@ const handleSubmit = async () => {
 
 // Format date for display
 const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    if (!dateString) return 'Invalid date';
+
+    // Parse the date string as local date to avoid timezone issues
+    const parts = dateString.split('T')[0].split('-'); // Handle both "2026-01-02" and "2026-01-02T00:00:00"
+    const [year, month, day] = parts.map(Number);
+
+    if (!year || !month || !day) return 'Invalid date';
+
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
@@ -663,25 +689,17 @@ const viewNotes = (notes: string) => {
                                                 type="date"
                                                 v-model="dateInput"
                                                 @change="handleInputChange"
-                                                required
                                                 class="flex-1"
+                                                required
                                             />
-                                            <Popover>
+                                            <Popover v-model:open="isCalendarOpen">
                                                 <PopoverTrigger as-child>
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        class="px-3"
-                                                    >
+                                                    <Button variant="outline" class="px-3">
                                                         <CalendarIcon class="h-4 w-4" />
                                                     </Button>
                                                 </PopoverTrigger>
                                                 <PopoverContent class="w-auto p-0">
-                                                    <CalendarComponent
-                                                        v-model="selectedDate"
-                                                        initial-focus
-                                                        @update:model-value="handleDateSelect"
-                                                    />
+                                                    <CalendarComponent v-model="selectedDate" @update:model-value="handleDateSelect" />
                                                 </PopoverContent>
                                             </Popover>
                                         </div>
@@ -737,6 +755,9 @@ const viewNotes = (notes: string) => {
                                                         :value="fish.id.toString()"
                                                     >
                                                         {{ fish.species }}
+                                                        <span v-if="fish.water_type" class="text-muted-foreground">
+                                                            - {{ fish.water_type }}
+                                                        </span>
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -791,6 +812,9 @@ const viewNotes = (notes: string) => {
                                                         :value="fly.id.toString()"
                                                     >
                                                         {{ fly.name }}
+                                                        <span v-if="fly.size || fly.color" class="text-muted-foreground">
+                                                            - <span v-if="fly.size">Size {{ fly.size }}</span><span v-if="fly.size && fly.color">, </span><span v-if="fly.color">{{ fly.color }}</span>
+                                                        </span>
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -820,6 +844,9 @@ const viewNotes = (notes: string) => {
                                                         :value="item.id.toString()"
                                                     >
                                                         {{ item.rod_name }}
+                                                        <span v-if="item.rod_weight" class="text-muted-foreground">
+                                                            - {{ item.rod_weight }}
+                                                        </span>
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>

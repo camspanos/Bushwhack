@@ -45,6 +45,7 @@ interface LocationData {
 interface TopPerformer {
     name: string;
     total: number;
+    days?: number;
 }
 
 interface YearStats {
@@ -161,13 +162,15 @@ const pieSlices = computed(() => {
     let currentAngle = -90; // Start at top
 
     topSpecies.forEach((species, index) => {
-        const percentage = species.total_caught / total;
+        const caught = Number(species.total_caught);
+        const percentage = caught / total;
         const angle = percentage * 360;
 
         slices.push({
             path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
             color: getSpeciesColor(index),
             percentage: Math.round(percentage * 100),
+            species: species.species,
         });
 
         currentAngle += angle;
@@ -203,13 +206,13 @@ const speciesStats = computed(() => {
     const currentYearLogs = props.allSpecies;
 
     // Calculate total fish caught this year from all species
-    const totalFish = currentYearLogs.reduce((sum: number, species: SpeciesData) => sum + species.total_caught, 0);
+    const totalFish = currentYearLogs.reduce((sum: number, species: SpeciesData) => sum + Number(species.total_caught), 0);
 
     // Calculate total trips this year from all species
-    const totalTrips = currentYearLogs.reduce((sum: number, species: SpeciesData) => sum + species.trip_count, 0);
+    const totalTrips = currentYearLogs.reduce((sum: number, species: SpeciesData) => sum + Number(species.trip_count), 0);
 
     // Find biggest fish this year
-    const biggestFish = Math.max(0, ...currentYearLogs.map((species: SpeciesData) => species.biggest_size));
+    const biggestFish = Math.max(0, ...currentYearLogs.map((species: SpeciesData) => Number(species.biggest_size)));
 
     return {
         totalFish,
@@ -383,7 +386,7 @@ const speciesStats = computed(() => {
                             <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
                                 <div
                                     v-for="(species, index) in allSpecies.slice(0, 8)"
-                                    :key="species.name"
+                                    :key="species.species"
                                     class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
                                     :class="hoveredSlice === index ? 'bg-muted' : ''"
                                     @mouseenter="hoveredSlice = index"
@@ -394,7 +397,7 @@ const speciesStats = computed(() => {
                                             class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                             :style="{ backgroundColor: getSpeciesColor(index) }"
                                         ></div>
-                                        <span class="text-xs font-medium truncate">{{ species.name }}</span>
+                                        <span class="text-xs font-medium truncate">{{ species.species }}</span>
                                     </div>
                                     <div class="flex items-center gap-1.5 flex-shrink-0">
                                         <span class="text-xs font-bold">{{ species.total_caught }}</span>
@@ -562,7 +565,7 @@ const speciesStats = computed(() => {
                         <div v-if="mostSuccessfulFly" class="space-y-2">
                             <div class="text-xl font-bold">{{ mostSuccessfulFly.name }}</div>
                             <p class="text-sm text-muted-foreground">
-                                {{ mostSuccessfulFly.total }} fish caught
+                                {{ mostSuccessfulFly.total }} fish caught • {{ mostSuccessfulFly.days }} days used
                             </p>
                         </div>
                         <div v-else class="text-muted-foreground">
@@ -598,7 +601,7 @@ const speciesStats = computed(() => {
                                     </div>
                                 </div>
                                 <div v-if="species.biggest_size > 0" class="text-right">
-                                    <div class="text-sm font-medium">{{ species.biggest_size }}"</div>
+                                    <div class="text-sm font-medium">{{ formatSize(species.biggest_size) }}"</div>
                                     <div class="text-xs text-muted-foreground">biggest</div>
                                 </div>
                             </div>

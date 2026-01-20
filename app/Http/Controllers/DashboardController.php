@@ -110,14 +110,14 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Top 5 locations by catches (filtered by year)
+        // Top 7 locations by catches (filtered by year)
         $topLocations = (clone $baseQuery)
             ->select('location_id', DB::raw('SUM(quantity) as total_caught'))
             ->whereNotNull('location_id')
             ->groupBy('location_id')
             ->orderByDesc('total_caught')
             ->with('location')
-            ->limit(5)
+            ->limit(7)
             ->get()
             ->map(function ($item) {
                 return [

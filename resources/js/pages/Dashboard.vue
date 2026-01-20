@@ -229,6 +229,11 @@ const speciesStats = computed(() => {
         biggestFish,
     };
 });
+
+// Top 5 species for the list display
+const topSpecies = computed(() => {
+    return props.allSpecies.slice(0, 5);
+});
 </script>
 
 <template>
@@ -581,20 +586,20 @@ const speciesStats = computed(() => {
                 </Card>
             </div>
 
-            <!-- All Species & Top Locations -->
+            <!-- Top Species & Top Locations -->
             <div class="grid gap-4 md:grid-cols-2">
-                <!-- All Species Caught -->
+                <!-- Top Species Caught -->
                 <Card>
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <Fish class="h-5 w-5" />
-                            All Species Caught
+                            Top Species Caught
                         </CardTitle>
-                        <CardDescription>Complete list of species you've caught</CardDescription>
+                        <CardDescription>Your most caught species</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="allSpecies.length > 0" class="space-y-3">
-                            <div v-for="species in allSpecies" :key="species.species" class="flex items-start gap-3 pb-3 border-b last:border-0">
+                        <div v-if="topSpecies.length > 0" class="space-y-3">
+                            <div v-for="species in topSpecies" :key="species.species" class="flex items-start gap-3 pb-3 border-b last:border-0">
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium">{{ species.species }}</span>
@@ -631,7 +636,7 @@ const speciesStats = computed(() => {
                         <CardDescription>Your most productive spots</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="topLocations.length > 0" class="space-y-3">
+                        <div v-if="topLocations.length > 0" class="space-y-2">
                             <div v-for="(location, index) in topLocations" :key="location.name" class="flex items-center gap-3">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium">
                                     {{ index + 1 }}

@@ -121,6 +121,10 @@ class LocationController extends Controller
                     'successRate' => $successRate,
                 ];
             })
+            ->filter(function ($location) {
+                // Only include locations that have trips in the filtered date range
+                return $location['totalTrips'] > 0;
+            })
             ->sortByDesc('totalFish')
             ->values();
 

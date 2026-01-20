@@ -133,7 +133,7 @@ const yearLabel = computed(() => {
 // Hovered slice for pie chart
 const hoveredSlice = ref<number | null>(null);
 
-// Color palette for pie chart
+// Color palette for pie chart - expanded to support more species
 const speciesColors = [
     '#3b82f6', // blue
     '#10b981', // green
@@ -145,6 +145,16 @@ const speciesColors = [
     '#84cc16', // lime
     '#f97316', // orange
     '#6366f1', // indigo
+    '#14b8a6', // teal
+    '#f43f5e', // rose
+    '#a855f7', // violet
+    '#22c55e', // emerald
+    '#eab308', // yellow
+    '#0ea5e9', // sky
+    '#d946ef', // fuchsia
+    '#64748b', // slate
+    '#78716c', // stone
+    '#dc2626', // red-600
 ];
 
 const getSpeciesColor = (index: number) => {
@@ -156,12 +166,11 @@ const pieSlices = computed(() => {
     const total = speciesStats.value.totalFish;
     if (total === 0) return [];
 
-    // Only show top 8 species in pie chart
-    const topSpecies = props.allSpecies.slice(0, 8);
+    // Show all species in pie chart
     const slices = [];
     let currentAngle = -90; // Start at top
 
-    topSpecies.forEach((species, index) => {
+    props.allSpecies.forEach((species, index) => {
         const caught = Number(species.total_caught);
         const percentage = caught / total;
         const angle = percentage * 360;
@@ -385,7 +394,7 @@ const speciesStats = computed(() => {
                             <!-- Legend -->
                             <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
                                 <div
-                                    v-for="(species, index) in allSpecies.slice(0, 8)"
+                                    v-for="(species, index) in allSpecies"
                                     :key="species.species"
                                     class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
                                     :class="hoveredSlice === index ? 'bg-muted' : ''"
@@ -405,9 +414,6 @@ const speciesStats = computed(() => {
                                             ({{ Math.round((species.total_caught / speciesStats.totalFish) * 100) }}%)
                                         </span>
                                     </div>
-                                </div>
-                                <div v-if="allSpecies.length > 8" class="text-xs text-muted-foreground text-center pt-1">
-                                    +{{ allSpecies.length - 8 }} more species
                                 </div>
                             </div>
                         </div>

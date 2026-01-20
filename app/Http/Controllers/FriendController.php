@@ -119,6 +119,10 @@ class FriendController extends Controller
                     'successRate' => $successRate,
                 ];
             })
+            ->filter(function ($friend) {
+                // Only include friends that have trips in the filtered date range
+                return $friend['totalTrips'] > 0;
+            })
             ->sortByDesc('totalTrips')
             ->values();
 

@@ -119,6 +119,10 @@ class FlyController extends Controller
                     'successRate' => $successRate,
                 ];
             })
+            ->filter(function ($fly) {
+                // Only include flies that have trips in the filtered date range
+                return $fly['totalTrips'] > 0;
+            })
             ->sortByDesc('totalCaught')
             ->values();
 

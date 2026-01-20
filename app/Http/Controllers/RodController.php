@@ -120,6 +120,10 @@ class RodController extends Controller
                     'successRate' => $successRate,
                 ];
             })
+            ->filter(function ($rod) {
+                // Only include rods that have trips in the filtered date range
+                return $rod['totalTrips'] > 0;
+            })
             ->sortByDesc('totalFish')
             ->values();
 

@@ -116,6 +116,10 @@ class FishController extends Controller
                     'avgSize' => $avgSize,
                 ];
             })
+            ->filter(function ($fishSpecies) {
+                // Only include fish species that have been caught in the filtered date range
+                return $fishSpecies['totalCaught'] > 0;
+            })
             ->sortByDesc('totalCaught')
             ->values();
 

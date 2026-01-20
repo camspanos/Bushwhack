@@ -12,7 +12,8 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed, watch } from 'vue';
-import { Fish as FishIcon, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, TrendingUp, Award, Calendar as CalendarIcon } from 'lucide-vue-next';
+import { Fish as FishIcon, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, TrendingUp, Award, Calendar as CalendarIcon, AlertCircle } from 'lucide-vue-next';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,6 +27,7 @@ const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const fish = ref([]);
 const fishStats = ref([]);
+const errorMessage = ref('');
 
 const currentPage = ref(1);
 const totalPages = ref(1);
@@ -92,9 +94,11 @@ const resetForm = () => {
     editingId.value = null;
     isEditMode.value = false;
     showAddForm.value = false;
+    errorMessage.value = '';
 };
 
 const handleSubmit = async () => {
+    errorMessage.value = '';
     try {
         if (isEditMode.value && editingId.value) {
             await axios.put(`/fish/${editingId.value}`, formData.value);
@@ -103,8 +107,12 @@ const handleSubmit = async () => {
         }
         await fetchFish(currentPage.value);
         resetForm();
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error saving fish:', error);
+        if (error.response?.status === 409) {
+            errorMessage.value = error.response.data.message || 'This fish species already exists.';
+            showAddForm.value = false;
+        }
     }
 };
 
@@ -182,6 +190,12 @@ onMounted(() => {
     <AppLayout title="Fish" :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
+                <!-- Error Alert -->
+                <Alert v-if="errorMessage" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertDescription>{{ errorMessage }}</AlertDescription>
+                </Alert>
+
                 <!-- Tab Navigation -->
                 <Tabs default-value="table" class="w-full">
                     <TabsList class="grid w-full grid-cols-2 mb-4">

@@ -34,9 +34,26 @@ class FlyController extends Controller
      */
     public function store(StoreFlyRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
+        // Check if fly already exists with same details
+        $existing = Fly::where('user_id', auth()->id())
+            ->where('name', $validated['name'])
+            ->where('color', $validated['color'] ?? null)
+            ->where('size', $validated['size'] ?? null)
+            ->where('type', $validated['type'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A fly with these details already exists.',
+                'fly' => $existing
+            ], 409);
+        }
+
         $fly = Fly::create([
             'user_id' => auth()->id(),
-            ...$request->validated(),
+            ...$validated,
         ]);
 
         return response()->json($fly, 201);
@@ -54,7 +71,24 @@ class FlyController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $fly->update($request->validated());
+        $validated = $request->validated();
+
+        // Check if another fly already exists with same details
+        $existing = Fly::where('user_id', auth()->id())
+            ->where('id', '!=', $fly->id)
+            ->where('name', $validated['name'])
+            ->where('color', $validated['color'] ?? null)
+            ->where('size', $validated['size'] ?? null)
+            ->where('type', $validated['type'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A fly with these details already exists.',
+            ], 409);
+        }
+
+        $fly->update($validated);
 
         return response()->json($fly);
     }

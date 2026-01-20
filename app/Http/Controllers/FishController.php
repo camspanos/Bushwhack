@@ -34,9 +34,24 @@ class FishController extends Controller
      */
     public function store(StoreFishRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
+        // Check if fish species already exists with same details
+        $existing = Fish::where('user_id', auth()->id())
+            ->where('species', $validated['species'])
+            ->where('water_type', $validated['water_type'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A fish species with these details already exists.',
+                'fish' => $existing
+            ], 409);
+        }
+
         $fish = Fish::create([
             'user_id' => auth()->id(),
-            ...$request->validated(),
+            ...$validated,
         ]);
 
         return response()->json($fish, 201);
@@ -54,7 +69,22 @@ class FishController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $fish->update($request->validated());
+        $validated = $request->validated();
+
+        // Check if another fish species already exists with same details
+        $existing = Fish::where('user_id', auth()->id())
+            ->where('id', '!=', $fish->id)
+            ->where('species', $validated['species'])
+            ->where('water_type', $validated['water_type'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A fish species with these details already exists.',
+            ], 409);
+        }
+
+        $fish->update($validated);
 
         return response()->json($fish);
     }

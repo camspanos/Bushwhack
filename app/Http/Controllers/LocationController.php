@@ -36,9 +36,26 @@ class LocationController extends Controller
      */
     public function store(StoreLocationRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
+        // Check if location already exists with same details
+        $existing = Location::where('user_id', auth()->id())
+            ->where('name', $validated['name'])
+            ->where('city', $validated['city'] ?? null)
+            ->where('state', $validated['state'] ?? null)
+            ->where('country', $validated['country'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A location with these details already exists.',
+                'location' => $existing
+            ], 409);
+        }
+
         $location = Location::create([
             'user_id' => auth()->id(),
-            ...$request->validated(),
+            ...$validated,
         ]);
 
         return response()->json($location, 201);
@@ -56,7 +73,24 @@ class LocationController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $location->update($request->validated());
+        $validated = $request->validated();
+
+        // Check if another location already exists with same details
+        $existing = Location::where('user_id', auth()->id())
+            ->where('id', '!=', $location->id)
+            ->where('name', $validated['name'])
+            ->where('city', $validated['city'] ?? null)
+            ->where('state', $validated['state'] ?? null)
+            ->where('country', $validated['country'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A location with these details already exists.',
+            ], 409);
+        }
+
+        $location->update($validated);
 
         return response()->json($location);
     }

@@ -34,9 +34,27 @@ class RodController extends Controller
      */
     public function store(StoreRodRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
+        // Check if rod already exists with same details
+        $existing = Rod::where('user_id', auth()->id())
+            ->where('rod_name', $validated['rod_name'])
+            ->where('rod_weight', $validated['rod_weight'] ?? null)
+            ->where('rod_length', $validated['rod_length'] ?? null)
+            ->where('reel', $validated['reel'] ?? null)
+            ->where('line', $validated['line'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A rod with these details already exists.',
+                'rod' => $existing
+            ], 409);
+        }
+
         $rod = Rod::create([
             'user_id' => auth()->id(),
-            ...$request->validated(),
+            ...$validated,
         ]);
 
         return response()->json($rod, 201);
@@ -54,7 +72,25 @@ class RodController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $rod->update($request->validated());
+        $validated = $request->validated();
+
+        // Check if another rod already exists with same details
+        $existing = Rod::where('user_id', auth()->id())
+            ->where('id', '!=', $rod->id)
+            ->where('rod_name', $validated['rod_name'])
+            ->where('rod_weight', $validated['rod_weight'] ?? null)
+            ->where('rod_length', $validated['rod_length'] ?? null)
+            ->where('reel', $validated['reel'] ?? null)
+            ->where('line', $validated['line'] ?? null)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A rod with these details already exists.',
+            ], 409);
+        }
+
+        $rod->update($validated);
 
         return response()->json($rod);
     }

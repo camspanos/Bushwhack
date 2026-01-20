@@ -13,7 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, ArrowLeft, ChevronDown, X } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, ArrowLeft, ChevronDown, X, AlertCircle } from 'lucide-vue-next';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 
@@ -94,6 +95,13 @@ const showFishModal = ref(false);
 const showFlyModal = ref(false);
 const showEquipmentModal = ref(false);
 const showFriendModal = ref(false);
+
+// Error messages for each modal
+const locationError = ref('');
+const fishError = ref('');
+const flyError = ref('');
+const equipmentError = ref('');
+const friendError = ref('');
 
 // New item forms
 const newLocation = ref({ name: '', city: '', state: '', country: '' });
@@ -195,66 +203,96 @@ onMounted(() => {
 
 // Create new location
 const createLocation = async () => {
+    locationError.value = '';
     try {
         const response = await axios.post('/locations', newLocation.value);
         locations.value.push(response.data);
         formData.value.location_id = response.data.id.toString();
         newLocation.value = { name: '', city: '', state: '', country: '' };
         showLocationModal.value = false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating location:', error);
+        if (error.response?.status === 409) {
+            locationError.value = error.response.data.message || 'This location already exists.';
+        } else {
+            locationError.value = 'An error occurred while creating the location.';
+        }
     }
 };
 
 // Create new fish
 const createFish = async () => {
+    fishError.value = '';
     try {
         const response = await axios.post('/fish', newFish.value);
         fishSpecies.value.push(response.data);
         formData.value.fish_id = response.data.id.toString();
         newFish.value = { species: '', water_type: '' };
         showFishModal.value = false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating fish:', error);
+        if (error.response?.status === 409) {
+            fishError.value = error.response.data.message || 'This fish species already exists.';
+        } else {
+            fishError.value = 'An error occurred while creating the fish species.';
+        }
     }
 };
 
 // Create new fly
 const createFly = async () => {
+    flyError.value = '';
     try {
         const response = await axios.post('/flies', newFly.value);
         flies.value.push(response.data);
         formData.value.fly_id = response.data.id.toString();
         newFly.value = { name: '', color: '', size: '', type: '' };
         showFlyModal.value = false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating fly:', error);
+        if (error.response?.status === 409) {
+            flyError.value = error.response.data.message || 'This fly already exists.';
+        } else {
+            flyError.value = 'An error occurred while creating the fly.';
+        }
     }
 };
 
 // Create new equipment
 const createEquipment = async () => {
+    equipmentError.value = '';
     try {
         const response = await axios.post('/rods', newEquipment.value);
         equipment.value.push(response.data);
         formData.value.equipment_id = response.data.id.toString();
         newEquipment.value = { rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' };
         showEquipmentModal.value = false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating equipment:', error);
+        if (error.response?.status === 409) {
+            equipmentError.value = error.response.data.message || 'This rod already exists.';
+        } else {
+            equipmentError.value = 'An error occurred while creating the rod.';
+        }
     }
 };
 
 // Create new friend
 const createFriend = async () => {
+    friendError.value = '';
     try {
         const response = await axios.post('/friends', newFriend.value);
         friends.value.push(response.data);
         formData.value.friend_ids.push(response.data.id);
         newFriend.value = { name: '' };
         showFriendModal.value = false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating friend:', error);
+        if (error.response?.status === 409) {
+            friendError.value = error.response.data.message || 'This friend already exists.';
+        } else {
+            friendError.value = 'An error occurred while creating the friend.';
+        }
     }
 };
 
@@ -576,6 +614,10 @@ const handleCancel = () => {
                         Create a new fishing location to add to your log.
                     </DialogDescription>
                 </DialogHeader>
+                <Alert v-if="locationError" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertDescription>{{ locationError }}</AlertDescription>
+                </Alert>
                 <form @submit.prevent="createLocation" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="new-location-name">Location Name *</Label>
@@ -631,6 +673,10 @@ const handleCancel = () => {
                         Create a new fish species to add to your log.
                     </DialogDescription>
                 </DialogHeader>
+                <Alert v-if="fishError" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertDescription>{{ fishError }}</AlertDescription>
+                </Alert>
                 <form @submit.prevent="createFish" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="new-fish-species">Species *</Label>
@@ -670,6 +716,10 @@ const handleCancel = () => {
                         Create a new fly pattern to add to your log.
                     </DialogDescription>
                 </DialogHeader>
+                <Alert v-if="flyError" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertDescription>{{ flyError }}</AlertDescription>
+                </Alert>
                 <form @submit.prevent="createFly" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="new-fly-name">Fly Name *</Label>
@@ -725,6 +775,10 @@ const handleCancel = () => {
                         Create a new rod setup to add to your log.
                     </DialogDescription>
                 </DialogHeader>
+                <Alert v-if="equipmentError" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertDescription>{{ equipmentError }}</AlertDescription>
+                </Alert>
                 <form @submit.prevent="createEquipment" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="new-equipment-rod-name">Rod Name *</Label>
@@ -788,6 +842,10 @@ const handleCancel = () => {
                         Add a friend to your fishing log.
                     </DialogDescription>
                 </DialogHeader>
+                <Alert v-if="friendError" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertDescription>{{ friendError }}</AlertDescription>
+                </Alert>
                 <form @submit.prevent="createFriend" class="space-y-4">
                     <div class="grid gap-2">
                         <Label for="new-friend-name">Friend Name *</Label>

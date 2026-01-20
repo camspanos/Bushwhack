@@ -37,9 +37,23 @@ class FriendController extends Controller
      */
     public function store(StoreFriendRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
+        // Check if friend already exists with same name
+        $existing = Friend::where('user_id', auth()->id())
+            ->where('name', $validated['name'])
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A friend with this name already exists.',
+                'friend' => $existing
+            ], 409);
+        }
+
         $friend = Friend::create([
             'user_id' => auth()->id(),
-            ...$request->validated(),
+            ...$validated,
         ]);
 
         return response()->json($friend, 201);
@@ -57,7 +71,21 @@ class FriendController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $friend->update($request->validated());
+        $validated = $request->validated();
+
+        // Check if another friend already exists with same name
+        $existing = Friend::where('user_id', auth()->id())
+            ->where('id', '!=', $friend->id)
+            ->where('name', $validated['name'])
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'A friend with this name already exists.',
+            ], 409);
+        }
+
+        $friend->update($validated);
 
         return response()->json($friend);
     }

@@ -546,12 +546,14 @@ const viewNotes = (notes: string) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
-                <Card>
+                <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <div>
                                 <CardTitle class="flex items-center gap-2">
-                                    <Fish class="h-6 w-6" />
+                                    <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                        <Fish class="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                                    </div>
                                     Your Fishing Logs
                                 </CardTitle>
                                 <CardDescription>
@@ -637,7 +639,7 @@ const viewNotes = (notes: string) => {
                             <div v-if="fishingLogs.length === 0" class="text-center text-muted-foreground py-8 border rounded-md">
                                 No fishing logs yet. Click "Add New" to create your first log!
                             </div>
-                            <Card v-for="log in fishingLogs" :key="log.id" class="overflow-hidden">
+                            <Card v-for="log in fishingLogs" :key="log.id" class="overflow-hidden bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                                 <CardContent class="p-4">
                                     <div class="space-y-3">
                                         <!-- Header with Date and Actions -->

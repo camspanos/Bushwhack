@@ -122,6 +122,8 @@ class DashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'name' => $item->location->name ?? 'Unknown',
+                    'city' => $item->location->city ?? null,
+                    'state' => $item->location->state ?? null,
                     'total' => $item->total_caught ?? 0,
                 ];
             });
@@ -201,6 +203,22 @@ class DashboardController extends Controller
             ->where('flies.user_id', $userId)
             ->groupBy('flies.name')
             ->orderByDesc('total_caught')
+            ->first();
+
+        // Fly with biggest fish (filtered by year, grouped by fly name)
+        $biggestFishFlyQuery = FishingLog::where('fishing_logs.user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $biggestFishFlyQuery->whereYear('fishing_logs.date', $yearFilter);
+        }
+        $biggestFishFly = $biggestFishFlyQuery
+            ->join('flies', 'fishing_logs.fly_id', '=', 'flies.id')
+            ->select('flies.name', DB::raw('MAX(fishing_logs.max_size) as biggest_size'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
+            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.max_size')
+            ->where('fishing_logs.max_size', '>', 0)
+            ->where('flies.user_id', $userId)
+            ->groupBy('flies.name')
+            ->orderByDesc('biggest_size')
             ->first();
 
         // Catches over time - for line chart (filtered by year)
@@ -315,6 +333,11 @@ class DashboardController extends Controller
                 'name' => $mostSuccessfulFly->name,
                 'total' => $mostSuccessfulFly->total_caught ?? 0,
                 'days' => $mostSuccessfulFly->days_used ?? 0,
+            ] : null,
+            'biggestFishFly' => $biggestFishFly ? [
+                'name' => $biggestFishFly->name,
+                'size' => $biggestFishFly->biggest_size ?? 0,
+                'days' => $biggestFishFly->days_used ?? 0,
             ] : null,
             'yearStats' => [
                 'daysFished' => $daysFished,

@@ -219,12 +219,14 @@ onMounted(() => {
 
                     <!-- Table View -->
                     <TabsContent value="table" class="mt-0">
-                        <Card>
+                        <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                             <CardHeader>
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <CardTitle class="flex items-center gap-2">
-                                            <Wrench class="h-6 w-6" />
+                                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                                <Wrench class="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                                            </div>
                                             Your Rods
                                         </CardTitle>
                                         <CardDescription>
@@ -373,9 +375,14 @@ onMounted(() => {
 
                             <!-- Equipment Stats Grid -->
                             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <Card v-for="equip in equipmentStats" :key="equip.id">
+                                <Card v-for="equip in equipmentStats" :key="equip.id" class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                                     <CardHeader>
-                                        <CardTitle class="text-lg">{{ equip.rod_name }}</CardTitle>
+                                        <CardTitle class="text-lg flex items-center gap-2">
+                                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                                <Wrench class="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                            </div>
+                                            {{ equip.rod_name }}
+                                        </CardTitle>
                                         <CardDescription>
                                             {{ equip.rod_weight ? equip.rod_weight + ' wt' : 'No weight specified' }}
                                         </CardDescription>

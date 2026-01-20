@@ -39,6 +39,8 @@ interface ChartData {
 
 interface LocationData {
     name: string;
+    city: string | null;
+    state: string | null;
     total: number;
 }
 
@@ -46,6 +48,12 @@ interface TopPerformer {
     name: string;
     total: number;
     days?: number;
+}
+
+interface BiggestFishFly {
+    name: string;
+    size: number;
+    days: number;
 }
 
 interface YearStats {
@@ -78,6 +86,7 @@ const props = defineProps<{
     topLocations: LocationData[];
     mostProductiveLocation: TopPerformer | null;
     mostSuccessfulFly: TopPerformer | null;
+    biggestFishFly: BiggestFishFly | null;
     yearStats: YearStats;
     catchesOverTime: CatchOverTime[];
     streakStats: StreakStats;
@@ -230,9 +239,9 @@ const speciesStats = computed(() => {
     };
 });
 
-// Top 5 species for the list display
+// Top 7 species for the list display
 const topSpecies = computed(() => {
-    return props.allSpecies.slice(0, 5);
+    return props.allSpecies.slice(0, 7);
 });
 </script>
 
@@ -260,46 +269,54 @@ const topSpecies = computed(() => {
 
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card class="bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Total Catches</CardTitle>
-                        <Fish class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+                            <Fish class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ stats.totalCatches }}</div>
+                        <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ stats.totalCatches }}</div>
                         <p class="text-xs text-muted-foreground">Across {{ stats.totalTrips }} trips</p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card class="bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Favorite Location</CardTitle>
-                        <MapPin class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
+                            <MapPin class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ stats.favoriteLocation || 'N/A' }}</div>
+                        <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ stats.favoriteLocation || 'N/A' }}</div>
                         <p class="text-xs text-muted-foreground">Most visited spot</p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card class="bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Top Species</CardTitle>
-                        <TrendingUp class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+                            <TrendingUp class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ stats.topFish || 'N/A' }}</div>
+                        <div class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ stats.topFish || 'N/A' }}</div>
                         <p class="text-xs text-muted-foreground">{{ stats.topFishCount }} caught</p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card class="bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Fishing Buddies</CardTitle>
-                        <Users class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-purple-100 p-2 dark:bg-purple-900/30">
+                            <Users class="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ stats.totalFriends }}</div>
+                        <div class="text-2xl font-bold text-purple-700 dark:text-purple-300">{{ stats.totalFriends }}</div>
                         <p class="text-xs text-muted-foreground">Friends in your network</p>
                     </CardContent>
                 </Card>
@@ -308,16 +325,18 @@ const topSpecies = computed(() => {
             <!-- Biggest Catch & Charts Row -->
             <div class="grid gap-4 md:grid-cols-2">
                 <!-- Biggest Catch -->
-                <Card v-if="stats.biggestCatch">
+                <Card v-if="stats.biggestCatch" class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
-                            <Award class="h-5 w-5" />
+                            <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
+                                <Award class="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                            </div>
                             Biggest Catch
                         </CardTitle>
                     </CardHeader>
                     <CardContent class="pt-0 pb-3">
                         <div class="space-y-1">
-                            <div class="text-3xl font-bold">{{ formatSize(stats.biggestCatch.size) }}"</div>
+                            <div class="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{{ formatSize(stats.biggestCatch.size) }}"</div>
                             <div class="text-lg font-medium">{{ stats.biggestCatch.species }}</div>
                             <div class="text-sm text-muted-foreground">
                                 <div>{{ stats.biggestCatch.location }}</div>
@@ -330,7 +349,9 @@ const topSpecies = computed(() => {
                 <Card v-else>
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
-                            <Award class="h-5 w-5" />
+                            <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">
+                                <Award class="h-5 w-5 text-gray-400" />
+                            </div>
                             Biggest Catch
                         </CardTitle>
                     </CardHeader>
@@ -341,10 +362,12 @@ const topSpecies = computed(() => {
 
 
                 <!-- Species Distribution Pie Chart -->
-                <Card>
+                <Card class="bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10">
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
-                            <Fish class="h-5 w-5" />
+                            <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
+                                <Fish class="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                            </div>
                             Species Caught
                         </CardTitle>
                     </CardHeader>
@@ -435,13 +458,15 @@ const topSpecies = computed(() => {
             <!-- Year Stats Grid -->
             <div class="grid gap-4 md:grid-cols-3">
                 <!-- Favorite Weekday -->
-                <Card>
+                <Card class="bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Favorite Weekday</CardTitle>
-                        <Calendar class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-cyan-100 p-2 dark:bg-cyan-900/30">
+                            <Calendar class="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div v-if="favoriteWeekday" class="text-2xl font-bold">{{ favoriteWeekday.day }}</div>
+                        <div v-if="favoriteWeekday" class="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{{ favoriteWeekday.day }}</div>
                         <div v-else class="text-2xl font-bold text-muted-foreground">-</div>
                         <p class="text-xs text-muted-foreground">
                             {{ favoriteWeekday ? `${favoriteWeekday.count} trips` : 'No data yet' }}
@@ -450,27 +475,32 @@ const topSpecies = computed(() => {
                 </Card>
 
                 <!-- Streak Tracker -->
-                <Card>
+                <Card class="bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Longest Streak</CardTitle>
-                        <Flame class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
+                            <Flame class="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ streakStats.longestStreak }}</div>
+                        <div class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ streakStats.longestStreak }}</div>
                         <p class="text-xs text-muted-foreground">
                             Current streak {{ streakStats.currentStreak }}
+                            <span v-if="streakStats.currentStreak > 0" class="ml-1">🔥</span>
                         </p>
                     </CardContent>
                 </Card>
 
                 <!-- Average per Trip -->
-                <Card>
+                <Card class="bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Average per Trip</CardTitle>
-                        <BarChart3 class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/30">
+                            <BarChart3 class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">
+                        <div class="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
                             {{ speciesStats.totalTrips > 0 ? (speciesStats.totalFish / speciesStats.totalTrips).toFixed(1) : '0' }}
                         </div>
                         <p class="text-xs text-muted-foreground">
@@ -483,13 +513,15 @@ const topSpecies = computed(() => {
             <!-- Days Stats Grid -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Days Fished -->
-                <Card>
+                <Card class="bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Days Fished</CardTitle>
-                        <Calendar class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-sky-100 p-2 dark:bg-sky-900/30">
+                            <Calendar class="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ yearStats.daysFished }}</div>
+                        <div class="text-2xl font-bold text-sky-700 dark:text-sky-300">{{ yearStats.daysFished }}</div>
                         <p class="text-xs text-muted-foreground">
                             Total days on the water
                         </p>
@@ -497,27 +529,37 @@ const topSpecies = computed(() => {
                 </Card>
 
                 <!-- Successful Days -->
-                <Card>
+                <Card class="bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Successful Days</CardTitle>
-                        <Fish class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
+                            <Fish class="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ yearStats.daysWithFish }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            {{ yearStats.successRate }}% success rate
-                        </p>
+                        <div class="text-2xl font-bold text-green-700 dark:text-green-300">{{ yearStats.daysWithFish }}</div>
+                        <div class="mt-1 flex items-center gap-2">
+                            <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                    class="h-full bg-green-500 transition-all duration-500"
+                                    :style="{ width: `${yearStats.successRate}%` }"
+                                ></div>
+                            </div>
+                            <span class="text-xs font-medium text-green-600 dark:text-green-400">{{ yearStats.successRate }}%</span>
+                        </div>
                     </CardContent>
                 </Card>
 
                 <!-- Days Skunked -->
-                <Card>
+                <Card class="bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Days Skunked</CardTitle>
-                        <X class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-red-100 p-2 dark:bg-red-900/30">
+                            <X class="h-4 w-4 text-red-600 dark:text-red-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ yearStats.daysSkunked }}</div>
+                        <div class="text-2xl font-bold text-red-700 dark:text-red-300">{{ yearStats.daysSkunked }}</div>
                         <p class="text-xs text-muted-foreground">
                             Where the fish at?
                         </p>
@@ -525,13 +567,15 @@ const topSpecies = computed(() => {
                 </Card>
 
                 <!-- Most in a Day -->
-                <Card>
+                <Card class="bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20">
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Most in a Day</CardTitle>
-                        <Award class="h-4 w-4 text-muted-foreground" />
+                        <div class="rounded-full bg-violet-100 p-2 dark:bg-violet-900/30">
+                            <Award class="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                        </div>
                     </CardHeader>
                     <CardContent class="pb-3">
-                        <div class="text-2xl font-bold">{{ yearStats.mostInDay }}</div>
+                        <div class="text-2xl font-bold text-violet-700 dark:text-violet-300">{{ yearStats.mostInDay }}</div>
                         <p class="text-xs text-muted-foreground">
                             Personal best day
                         </p>
@@ -541,21 +585,29 @@ const topSpecies = computed(() => {
 
             <!-- Top Performers -->
             <div class="grid gap-4 md:grid-cols-2">
-                <!-- Most Productive Location -->
-                <Card>
+                <!-- Most Successful Fly (by quantity) -->
+                <Card class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10">
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
-                            <MapPin class="h-5 w-5" />
-                            Most Productive Location
+                            <div class="rounded-full bg-rose-100 p-1.5 dark:bg-rose-900/30">
+                                <Award class="h-5 w-5 text-rose-600 dark:text-rose-400" />
+                            </div>
+                            Most Successful Fly
                         </CardTitle>
-                        <CardDescription>Best fishing spot</CardDescription>
+                        <CardDescription>Most fish caught</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="mostProductiveLocation" class="space-y-2">
-                            <div class="text-xl font-bold">{{ mostProductiveLocation.name }}</div>
-                            <p class="text-sm text-muted-foreground">
-                                {{ mostProductiveLocation.total }} fish caught
-                            </p>
+                        <div v-if="mostSuccessfulFly" class="space-y-2">
+                            <div class="text-xl font-bold text-rose-700 dark:text-rose-300">{{ mostSuccessfulFly.name }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
+                                    <span>🎣</span>
+                                    <span>{{ mostSuccessfulFly.total }} fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ mostSuccessfulFly.days }} days used
+                                </span>
+                            </div>
                         </div>
                         <div v-else class="text-muted-foreground">
                             No data yet
@@ -563,21 +615,29 @@ const topSpecies = computed(() => {
                     </CardContent>
                 </Card>
 
-                <!-- Most Successful Fly -->
-                <Card>
+                <!-- Biggest Fish Fly -->
+                <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
-                            <Award class="h-5 w-5" />
-                            Most Successful Fly
+                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                <Award class="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            Biggest Fish Fly
                         </CardTitle>
-                        <CardDescription>Top performer</CardDescription>
+                        <CardDescription>Largest fish caught</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="mostSuccessfulFly" class="space-y-2">
-                            <div class="text-xl font-bold">{{ mostSuccessfulFly.name }}</div>
-                            <p class="text-sm text-muted-foreground">
-                                {{ mostSuccessfulFly.total }} fish caught • {{ mostSuccessfulFly.days }} days used
-                            </p>
+                        <div v-if="biggestFishFly" class="space-y-2">
+                            <div class="text-xl font-bold text-teal-700 dark:text-teal-300">{{ biggestFishFly.name }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-medium text-teal-800 dark:bg-teal-900/30 dark:text-teal-300">
+                                    <span>🏆</span>
+                                    <span>{{ formatSize(biggestFishFly.size) }}" fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ biggestFishFly.days }} days used
+                                </span>
+                            </div>
                         </div>
                         <div v-else class="text-muted-foreground">
                             No data yet
@@ -589,61 +649,73 @@ const topSpecies = computed(() => {
             <!-- Top Species & Top Locations -->
             <div class="grid gap-4 md:grid-cols-2">
                 <!-- Top Species Caught -->
-                <Card>
+                <Card class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
-                            <Fish class="h-5 w-5" />
+                            <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
+                                <Fish class="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                            </div>
                             Top Species Caught
                         </CardTitle>
                         <CardDescription>Your most caught species</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="topSpecies.length > 0" class="space-y-3">
-                            <div v-for="species in topSpecies" :key="species.species" class="flex items-start gap-3 pb-3 border-b last:border-0">
-                                <div class="flex-1 space-y-1">
+                        <div v-if="topSpecies.length > 0" class="space-y-2">
+                            <div v-for="(species, index) in topSpecies" :key="species.species" class="flex items-center gap-3 pb-2 border-b last:border-0">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-sm font-bold flex-shrink-0">
+                                    {{ index + 1 }}
+                                </div>
+                                <div class="flex-1">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium">{{ species.species }}</span>
-                                        <span v-if="species.water_type" class="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                                        <span v-if="species.water_type" class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
                                             {{ species.water_type }}
                                         </span>
+                                        <span v-if="index === 0">🥇</span>
+                                        <span v-else-if="index === 1">🥈</span>
+                                        <span v-else-if="index === 2">🥉</span>
                                     </div>
-                                    <div class="text-sm text-muted-foreground">
-                                        {{ species.total_caught }} caught across {{ species.trip_count }} trips
-                                    </div>
+                                    <div class="text-sm text-muted-foreground">{{ species.total_caught }} catches</div>
                                 </div>
                                 <div v-if="species.biggest_size > 0" class="text-right">
-                                    <div class="text-sm font-medium">{{ formatSize(species.biggest_size) }}"</div>
+                                    <div class="text-sm font-medium text-yellow-700 dark:text-yellow-300">{{ formatSize(species.biggest_size) }}"</div>
                                     <div class="text-xs text-muted-foreground">biggest</div>
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="text-center py-8">
-                            <p class="text-muted-foreground mb-4">No species caught yet</p>
-                            <Link :href="fishingLog()" class="text-sm text-primary hover:underline">
-                                Log your first catch →
-                            </Link>
-                        </div>
+                        <p v-else class="text-muted-foreground">No species data available</p>
                     </CardContent>
                 </Card>
 
                 <!-- Top Locations -->
-                <Card>
+                <Card class="bg-gradient-to-br from-lime-50/30 to-transparent dark:from-lime-950/10">
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
-                            <MapPin class="h-5 w-5" />
+                            <div class="rounded-full bg-lime-100 p-1.5 dark:bg-lime-900/30">
+                                <MapPin class="h-5 w-5 text-lime-600 dark:text-lime-400" />
+                            </div>
                             Top Locations
                         </CardTitle>
                         <CardDescription>Your most productive spots</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
                         <div v-if="topLocations.length > 0" class="space-y-2">
-                            <div v-for="(location, index) in topLocations" :key="location.name" class="flex items-center gap-3">
-                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium">
+                            <div v-for="(location, index) in topLocations" :key="location.name" class="flex items-center gap-3 pb-2 border-b last:border-0">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-lime-100 dark:bg-lime-900/30 text-lime-700 dark:text-lime-300 text-sm font-bold flex-shrink-0">
                                     {{ index + 1 }}
                                 </div>
                                 <div class="flex-1">
-                                    <div class="font-medium">{{ location.name }}</div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">{{ location.name }}</span>
+                                        <span v-if="index === 0">🥇</span>
+                                        <span v-else-if="index === 1">🥈</span>
+                                        <span v-else-if="index === 2">🥉</span>
+                                    </div>
                                     <div class="text-sm text-muted-foreground">{{ location.total }} catches</div>
+                                </div>
+                                <div v-if="location.city || location.state" class="text-right">
+                                    <div v-if="location.city" class="text-sm font-medium text-lime-700 dark:text-lime-300">{{ location.city }}</div>
+                                    <div v-if="location.state" class="text-xs text-muted-foreground">{{ location.state }}</div>
                                 </div>
                             </div>
                         </div>

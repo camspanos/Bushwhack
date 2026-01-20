@@ -39,6 +39,32 @@ class FishingLogController extends Controller
     {
         $validated = $request->validated();
 
+        // Check if this is a new species for the user
+        $isNewSpecies = false;
+        $isPersonalBest = false;
+        $previousBestSize = null;
+
+        if (!empty($validated['fish_id'])) {
+            $previousCatch = FishingLog::where('user_id', auth()->id())
+                ->where('fish_id', $validated['fish_id'])
+                ->exists();
+
+            $isNewSpecies = !$previousCatch;
+
+            // Check for personal best (only if not a new species and max_size is provided)
+            if (!$isNewSpecies && !empty($validated['max_size'])) {
+                $previousBest = FishingLog::where('user_id', auth()->id())
+                    ->where('fish_id', $validated['fish_id'])
+                    ->whereNotNull('max_size')
+                    ->max('max_size');
+
+                if ($previousBest !== null && $validated['max_size'] > $previousBest) {
+                    $isPersonalBest = true;
+                    $previousBestSize = $previousBest;
+                }
+            }
+        }
+
         // Create the fishing log
         $fishingLog = FishingLog::create([
             'user_id' => auth()->id(),
@@ -58,7 +84,12 @@ class FishingLogController extends Controller
             $fishingLog->friends()->attach($validated['friend_ids']);
         }
 
-        return response()->json($fishingLog->load('friends'), 201);
+        return response()->json([
+            'fishing_log' => $fishingLog->load(['friends', 'fish']),
+            'is_new_species' => $isNewSpecies,
+            'is_personal_best' => $isPersonalBest,
+            'previous_best_size' => $previousBestSize,
+        ], 201);
     }
 
     /**

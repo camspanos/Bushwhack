@@ -13,10 +13,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, ArrowLeft, ChevronDown, X, AlertCircle } from 'lucide-vue-next';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, ArrowLeft, ChevronDown, X, AlertCircle, Trophy, CheckCircle2 } from 'lucide-vue-next';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
+import confetti from 'canvas-confetti';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -95,6 +96,10 @@ const showFishModal = ref(false);
 const showFlyModal = ref(false);
 const showEquipmentModal = ref(false);
 const showFriendModal = ref(false);
+
+// Success notification
+const showSuccessNotification = ref(false);
+const newSpeciesName = ref('');
 
 // Error messages for each modal
 const locationError = ref('');
@@ -316,6 +321,38 @@ const createFriend = async () => {
     }
 };
 
+// Confetti celebration
+const triggerConfetti = () => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    const randomInRange = (min: number, max: number) => {
+        return Math.random() * (max - min) + min;
+    };
+
+    const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+    }, 250);
+};
+
 // Handle form submission
 const handleSubmit = async () => {
     try {
@@ -335,7 +372,20 @@ const handleSubmit = async () => {
         const response = await axios.post('/fishing-logs', submitData);
         console.log('Fishing log created:', response.data);
 
-        // Navigate back to fishing log page
+        // Navigate back to fishing log page with new species data if applicable
+        if (response.data.is_new_species && response.data.fishing_log.fish) {
+            // Store in sessionStorage so it persists through navigation
+            sessionStorage.setItem('newSpecies', response.data.fishing_log.fish.species);
+        }
+        // Store personal best data if applicable (only if not a new species)
+        else if (response.data.is_personal_best && response.data.fishing_log.fish) {
+            sessionStorage.setItem('personalBest', JSON.stringify({
+                species: response.data.fishing_log.fish.species,
+                size: response.data.fishing_log.max_size,
+                previousBest: response.data.previous_best_size
+            }));
+        }
+
         router.visit('/fishing-log');
     } catch (error) {
         console.error('Error saving fishing log:', error);
@@ -354,6 +404,31 @@ const handleCancel = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-4xl">
+                <!-- Success Notification -->
+                <Transition
+                    enter-active-class="transition ease-out duration-300"
+                    enter-from-class="opacity-0 transform translate-y-2"
+                    enter-to-class="opacity-100 transform translate-y-0"
+                    leave-active-class="transition ease-in duration-200"
+                    leave-from-class="opacity-100 transform translate-y-0"
+                    leave-to-class="opacity-0 transform translate-y-2"
+                >
+                    <Alert v-if="showSuccessNotification" variant="success" class="mb-4 relative !gap-x-6">
+                        <CheckCircle2 class="h-5 w-5" />
+                        <button
+                            @click="showSuccessNotification = false"
+                            class="absolute right-2 top-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                            <X class="h-4 w-4" />
+                            <span class="sr-only">Close</span>
+                        </button>
+                        <AlertTitle class="text-base font-semibold pr-6">🎉&nbsp;&nbsp;Congratulations! New Species Caught!</AlertTitle>
+                        <AlertDescription class="text-sm pr-6">
+                            <span class="inline">You've logged your first <span class="font-bold">{{ newSpeciesName }}</span>!</span> This is a new species for you to track.
+                        </AlertDescription>
+                    </Alert>
+                </Transition>
+
                 <Card>
                     <CardHeader>
                         <div class="flex items-center justify-between">

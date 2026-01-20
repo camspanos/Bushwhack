@@ -16,10 +16,11 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X, FileText, AlertCircle } from 'lucide-vue-next';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X, FileText, AlertCircle, CheckCircle2, Trophy } from 'lucide-vue-next';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
+import confetti from 'canvas-confetti';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,6 +45,14 @@ const logToDelete = ref(null);
 // Notes modal
 const showNotesModal = ref(false);
 const selectedNotes = ref('');
+
+// Success notification
+const showSuccessNotification = ref(false);
+const newSpeciesName = ref('');
+const showPersonalBestNotification = ref(false);
+const personalBestSpecies = ref('');
+const personalBestSize = ref(0);
+const previousBestSize = ref(0);
 
 // Fishing logs data
 const fishingLogs = ref([]);
@@ -149,6 +158,43 @@ const newFish = ref({ species: '', water_type: '' });
 const newFly = ref({ name: '', color: '', size: '', type: '' });
 const newEquipment = ref({ rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' });
 const newFriend = ref({ name: '' });
+
+// Check for new species notification on mount
+const checkForNewSpecies = () => {
+    const newSpecies = sessionStorage.getItem('newSpecies');
+    if (newSpecies) {
+        newSpeciesName.value = newSpecies;
+        showSuccessNotification.value = true;
+        triggerConfetti();
+
+        // Clear from sessionStorage
+        sessionStorage.removeItem('newSpecies');
+
+        // Auto-hide notification after 20 seconds
+        setTimeout(() => {
+            showSuccessNotification.value = false;
+        }, 20000);
+    }
+
+    // Check for personal best notification
+    const personalBest = sessionStorage.getItem('personalBest');
+    if (personalBest) {
+        const pbData = JSON.parse(personalBest);
+        personalBestSpecies.value = pbData.species;
+        personalBestSize.value = pbData.size;
+        previousBestSize.value = pbData.previousBest;
+        showPersonalBestNotification.value = true;
+        triggerConfetti();
+
+        // Clear from sessionStorage
+        sessionStorage.removeItem('personalBest');
+
+        // Auto-hide notification after 20 seconds
+        setTimeout(() => {
+            showPersonalBestNotification.value = false;
+        }, 20000);
+    }
+};
 
 // Fetch fishing logs
 const fetchFishingLogs = async (page = 1) => {
@@ -387,6 +433,7 @@ onMounted(() => {
     fetchFish();
     fetchFlies();
     fetchFriends();
+    checkForNewSpecies();
 });
 
 // Open edit dialog with log data
@@ -496,6 +543,31 @@ const handleSubmit = async () => {
             // Create new log
             response = await axios.post('/fishing-logs', submitData);
             console.log('Fishing log created:', response.data);
+
+            // Check if it's a new species
+            if (response.data.is_new_species && response.data.fishing_log.fish) {
+                newSpeciesName.value = response.data.fishing_log.fish.species;
+                showSuccessNotification.value = true;
+                triggerConfetti();
+
+                // Auto-hide notification after 20 seconds
+                setTimeout(() => {
+                    showSuccessNotification.value = false;
+                }, 20000);
+            }
+            // Check if it's a personal best (only show if not a new species)
+            else if (response.data.is_personal_best && response.data.fishing_log.fish) {
+                personalBestSpecies.value = response.data.fishing_log.fish.species;
+                personalBestSize.value = response.data.fishing_log.max_size;
+                previousBestSize.value = response.data.previous_best_size;
+                showPersonalBestNotification.value = true;
+                triggerConfetti();
+
+                // Auto-hide notification after 20 seconds
+                setTimeout(() => {
+                    showPersonalBestNotification.value = false;
+                }, 20000);
+            }
         }
 
         // Reset form
@@ -507,6 +579,38 @@ const handleSubmit = async () => {
     } catch (error) {
         console.error('Error saving fishing log:', error);
     }
+};
+
+// Confetti celebration
+const triggerConfetti = () => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    const randomInRange = (min: number, max: number) => {
+        return Math.random() * (max - min) + min;
+    };
+
+    const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+    }, 250);
 };
 
 // Format date for display
@@ -546,6 +650,56 @@ const viewNotes = (notes: string) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
+                <!-- Success Notification -->
+                <Transition
+                    enter-active-class="transition ease-out duration-300"
+                    enter-from-class="opacity-0 transform translate-y-2"
+                    enter-to-class="opacity-100 transform translate-y-0"
+                    leave-active-class="transition ease-in duration-200"
+                    leave-from-class="opacity-100 transform translate-y-0"
+                    leave-to-class="opacity-0 transform translate-y-2"
+                >
+                    <Alert v-if="showSuccessNotification" variant="success" class="mb-4 relative !gap-x-6">
+                        <CheckCircle2 class="h-5 w-5" />
+                        <button
+                            @click="showSuccessNotification = false"
+                            class="absolute right-2 top-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                            <X class="h-4 w-4" />
+                            <span class="sr-only">Close</span>
+                        </button>
+                        <AlertTitle class="text-base font-semibold pr-6">🎉&nbsp;&nbsp;Congratulations! New Species Caught!</AlertTitle>
+                        <AlertDescription class="text-sm pr-6">
+                            <span class="inline">You've logged your first <span class="font-bold">{{ newSpeciesName }}</span>!</span> This is a new species for you to track.
+                        </AlertDescription>
+                    </Alert>
+                </Transition>
+
+                <!-- Personal Best Notification -->
+                <Transition
+                    enter-active-class="transition ease-out duration-300"
+                    enter-from-class="opacity-0 transform translate-y-2"
+                    enter-to-class="opacity-100 transform translate-y-0"
+                    leave-active-class="transition ease-in duration-200"
+                    leave-from-class="opacity-100 transform translate-y-0"
+                    leave-to-class="opacity-0 transform translate-y-2"
+                >
+                    <Alert v-if="showPersonalBestNotification" variant="success" class="mb-4 relative !gap-x-6">
+                        <Trophy class="h-5 w-5" />
+                        <button
+                            @click="showPersonalBestNotification = false"
+                            class="absolute right-2 top-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                            <X class="h-4 w-4" />
+                            <span class="sr-only">Close</span>
+                        </button>
+                        <AlertTitle class="text-base font-semibold pr-6">🏆&nbsp;&nbsp;Personal Best! New Record!</AlertTitle>
+                        <AlertDescription class="text-sm pr-6">
+                            <span class="inline">You caught a <span class="font-bold">{{ personalBestSize }}"</span> <span class="font-bold">{{ personalBestSpecies }}</span>!</span> That beats your previous best of {{ previousBestSize }}".
+                        </AlertDescription>
+                    </Alert>
+                </Transition>
+
                 <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                     <CardHeader>
                         <div class="flex items-center justify-between">

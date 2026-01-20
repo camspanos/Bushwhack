@@ -417,7 +417,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 export const update = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -432,7 +432,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 update.url = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -459,7 +459,7 @@ update.url = (args: { fishing_log: string | number } | [fishing_log: string | nu
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 update.put = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -469,7 +469,7 @@ update.put = (args: { fishing_log: string | number } | [fishing_log: string | nu
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 update.patch = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -479,7 +479,7 @@ update.patch = (args: { fishing_log: string | number } | [fishing_log: string | 
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 const updateForm = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -494,7 +494,7 @@ const updateForm = (args: { fishing_log: string | number } | [fishing_log: strin
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 updateForm.put = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -509,7 +509,7 @@ updateForm.put = (args: { fishing_log: string | number } | [fishing_log: string 
 
 /**
 * @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:70
+* @see app/Http/Controllers/FishingLogController.php:101
 * @route '/fishing-logs/{fishing_log}'
 */
 updateForm.patch = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -526,7 +526,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:107
+* @see app/Http/Controllers/FishingLogController.php:138
 * @route '/fishing-logs/{fishing_log}'
 */
 export const destroy = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -541,7 +541,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:107
+* @see app/Http/Controllers/FishingLogController.php:138
 * @route '/fishing-logs/{fishing_log}'
 */
 destroy.url = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -568,7 +568,7 @@ destroy.url = (args: { fishing_log: string | number } | [fishing_log: string | n
 
 /**
 * @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:107
+* @see app/Http/Controllers/FishingLogController.php:138
 * @route '/fishing-logs/{fishing_log}'
 */
 destroy.delete = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -578,7 +578,7 @@ destroy.delete = (args: { fishing_log: string | number } | [fishing_log: string 
 
 /**
 * @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:107
+* @see app/Http/Controllers/FishingLogController.php:138
 * @route '/fishing-logs/{fishing_log}'
 */
 const destroyForm = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -593,7 +593,7 @@ const destroyForm = (args: { fishing_log: string | number } | [fishing_log: stri
 
 /**
 * @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:107
+* @see app/Http/Controllers/FishingLogController.php:138
 * @route '/fishing-logs/{fishing_log}'
 */
 destroyForm.delete = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

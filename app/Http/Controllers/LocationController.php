@@ -36,29 +36,42 @@ class LocationController extends Controller
      */
     public function store(StoreLocationRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Check if location already exists with same details
-        $existing = Location::where('user_id', auth()->id())
-            ->where('name', $validated['name'])
-            ->where('city', $validated['city'] ?? null)
-            ->where('state', $validated['state'] ?? null)
-            ->where('country', $validated['country'] ?? null)
-            ->first();
+            // Check if location already exists with same details
+            $existing = Location::where('user_id', auth()->id())
+                ->where('name', $validated['name'])
+                ->where('city', $validated['city'] ?? null)
+                ->where('state', $validated['state'] ?? null)
+                ->where('country', $validated['country'] ?? null)
+                ->first();
 
-        if ($existing) {
+            if ($existing) {
+                return response()->json([
+                    'message' => 'A location with these details already exists.',
+                    'location' => $existing
+                ], 409);
+            }
+
+            $location = Location::create([
+                'user_id' => auth()->id(),
+                ...$validated,
+            ]);
+
+            return response()->json($location, 201);
+        } catch (\Exception $e) {
+            \Log::error('Error creating location: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $request->all(),
+                'exception' => $e
+            ]);
+
             return response()->json([
-                'message' => 'A location with these details already exists.',
-                'location' => $existing
-            ], 409);
+                'message' => 'Failed to create location. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        $location = Location::create([
-            'user_id' => auth()->id(),
-            ...$validated,
-        ]);
-
-        return response()->json($location, 201);
     }
 
     /**

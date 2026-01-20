@@ -417,7 +417,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 export const update = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -432,7 +432,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 update.url = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -465,7 +465,7 @@ update.url = (args: { fly: number | { id: number } } | [fly: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 update.put = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -475,7 +475,7 @@ update.put = (args: { fly: number | { id: number } } | [fly: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 update.patch = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -485,7 +485,7 @@ update.patch = (args: { fly: number | { id: number } } | [fly: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 const updateForm = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -500,7 +500,7 @@ const updateForm = (args: { fly: number | { id: number } } | [fly: number | { id
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 updateForm.put = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -515,7 +515,7 @@ updateForm.put = (args: { fly: number | { id: number } } | [fly: number | { id: 
 
 /**
 * @see \App\Http\Controllers\FlyController::update
-* @see app/Http/Controllers/FlyController.php:67
+* @see app/Http/Controllers/FlyController.php:80
 * @route '/flies/{fly}'
 */
 updateForm.patch = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -532,7 +532,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:101
+* @see app/Http/Controllers/FlyController.php:114
 * @route '/flies/{fly}'
 */
 export const destroy = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -547,7 +547,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:101
+* @see app/Http/Controllers/FlyController.php:114
 * @route '/flies/{fly}'
 */
 destroy.url = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -580,7 +580,7 @@ destroy.url = (args: { fly: number | { id: number } } | [fly: number | { id: num
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:101
+* @see app/Http/Controllers/FlyController.php:114
 * @route '/flies/{fly}'
 */
 destroy.delete = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -590,7 +590,7 @@ destroy.delete = (args: { fly: number | { id: number } } | [fly: number | { id: 
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:101
+* @see app/Http/Controllers/FlyController.php:114
 * @route '/flies/{fly}'
 */
 const destroyForm = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -605,7 +605,7 @@ const destroyForm = (args: { fly: number | { id: number } } | [fly: number | { i
 
 /**
 * @see \App\Http\Controllers\FlyController::destroy
-* @see app/Http/Controllers/FlyController.php:101
+* @see app/Http/Controllers/FlyController.php:114
 * @route '/flies/{fly}'
 */
 destroyForm.delete = (args: { fly: number | { id: number } } | [fly: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -622,7 +622,7 @@ destroy.form = destroyForm
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -637,7 +637,7 @@ statistics.definition = {
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 statistics.url = (options?: RouteQueryOptions) => {
@@ -646,7 +646,7 @@ statistics.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -656,7 +656,7 @@ statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -666,7 +666,7 @@ statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -676,7 +676,7 @@ const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -686,7 +686,7 @@ statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\FlyController::statistics
-* @see app/Http/Controllers/FlyController.php:122
+* @see app/Http/Controllers/FlyController.php:135
 * @route '/flies/stats/all'
 */
 statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

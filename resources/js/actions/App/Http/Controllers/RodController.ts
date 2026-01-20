@@ -417,7 +417,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 export const update = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -432,7 +432,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 update.url = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -465,7 +465,7 @@ update.url = (args: { rod: number | { id: number } } | [rod: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 update.put = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -475,7 +475,7 @@ update.put = (args: { rod: number | { id: number } } | [rod: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 update.patch = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -485,7 +485,7 @@ update.patch = (args: { rod: number | { id: number } } | [rod: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 const updateForm = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -500,7 +500,7 @@ const updateForm = (args: { rod: number | { id: number } } | [rod: number | { id
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 updateForm.put = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -515,7 +515,7 @@ updateForm.put = (args: { rod: number | { id: number } } | [rod: number | { id: 
 
 /**
 * @see \App\Http\Controllers\RodController::update
-* @see app/Http/Controllers/RodController.php:68
+* @see app/Http/Controllers/RodController.php:81
 * @route '/rods/{rod}'
 */
 updateForm.patch = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -532,7 +532,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\RodController::destroy
-* @see app/Http/Controllers/RodController.php:103
+* @see app/Http/Controllers/RodController.php:116
 * @route '/rods/{rod}'
 */
 export const destroy = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -547,7 +547,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RodController::destroy
-* @see app/Http/Controllers/RodController.php:103
+* @see app/Http/Controllers/RodController.php:116
 * @route '/rods/{rod}'
 */
 destroy.url = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -580,7 +580,7 @@ destroy.url = (args: { rod: number | { id: number } } | [rod: number | { id: num
 
 /**
 * @see \App\Http\Controllers\RodController::destroy
-* @see app/Http/Controllers/RodController.php:103
+* @see app/Http/Controllers/RodController.php:116
 * @route '/rods/{rod}'
 */
 destroy.delete = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -590,7 +590,7 @@ destroy.delete = (args: { rod: number | { id: number } } | [rod: number | { id: 
 
 /**
 * @see \App\Http\Controllers\RodController::destroy
-* @see app/Http/Controllers/RodController.php:103
+* @see app/Http/Controllers/RodController.php:116
 * @route '/rods/{rod}'
 */
 const destroyForm = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -605,7 +605,7 @@ const destroyForm = (args: { rod: number | { id: number } } | [rod: number | { i
 
 /**
 * @see \App\Http\Controllers\RodController::destroy
-* @see app/Http/Controllers/RodController.php:103
+* @see app/Http/Controllers/RodController.php:116
 * @route '/rods/{rod}'
 */
 destroyForm.delete = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -622,7 +622,7 @@ destroy.form = destroyForm
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -637,7 +637,7 @@ statistics.definition = {
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 statistics.url = (options?: RouteQueryOptions) => {
@@ -646,7 +646,7 @@ statistics.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -656,7 +656,7 @@ statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -666,7 +666,7 @@ statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -676,7 +676,7 @@ const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -686,7 +686,7 @@ statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\RodController::statistics
-* @see app/Http/Controllers/RodController.php:124
+* @see app/Http/Controllers/RodController.php:137
 * @route '/rods/stats/all'
 */
 statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -37,26 +37,39 @@ class FriendController extends Controller
      */
     public function store(StoreFriendRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Check if friend already exists with same name
-        $existing = Friend::where('user_id', auth()->id())
-            ->where('name', $validated['name'])
-            ->first();
+            // Check if friend already exists with same name
+            $existing = Friend::where('user_id', auth()->id())
+                ->where('name', $validated['name'])
+                ->first();
 
-        if ($existing) {
+            if ($existing) {
+                return response()->json([
+                    'message' => 'A friend with this name already exists.',
+                    'friend' => $existing
+                ], 409);
+            }
+
+            $friend = Friend::create([
+                'user_id' => auth()->id(),
+                ...$validated,
+            ]);
+
+            return response()->json($friend, 201);
+        } catch (\Exception $e) {
+            \Log::error('Error creating friend: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $request->all(),
+                'exception' => $e
+            ]);
+
             return response()->json([
-                'message' => 'A friend with this name already exists.',
-                'friend' => $existing
-            ], 409);
+                'message' => 'Failed to create friend. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        $friend = Friend::create([
-            'user_id' => auth()->id(),
-            ...$validated,
-        ]);
-
-        return response()->json($friend, 201);
     }
 
     /**

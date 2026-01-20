@@ -34,27 +34,40 @@ class FishController extends Controller
      */
     public function store(StoreFishRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Check if fish species already exists with same details
-        $existing = Fish::where('user_id', auth()->id())
-            ->where('species', $validated['species'])
-            ->where('water_type', $validated['water_type'] ?? null)
-            ->first();
+            // Check if fish species already exists with same details
+            $existing = Fish::where('user_id', auth()->id())
+                ->where('species', $validated['species'])
+                ->where('water_type', $validated['water_type'] ?? null)
+                ->first();
 
-        if ($existing) {
+            if ($existing) {
+                return response()->json([
+                    'message' => 'A fish species with these details already exists.',
+                    'fish' => $existing
+                ], 409);
+            }
+
+            $fish = Fish::create([
+                'user_id' => auth()->id(),
+                ...$validated,
+            ]);
+
+            return response()->json($fish, 201);
+        } catch (\Exception $e) {
+            \Log::error('Error creating fish species: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $request->all(),
+                'exception' => $e
+            ]);
+
             return response()->json([
-                'message' => 'A fish species with these details already exists.',
-                'fish' => $existing
-            ], 409);
+                'message' => 'Failed to create fish species. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        $fish = Fish::create([
-            'user_id' => auth()->id(),
-            ...$validated,
-        ]);
-
-        return response()->json($fish, 201);
     }
 
     /**

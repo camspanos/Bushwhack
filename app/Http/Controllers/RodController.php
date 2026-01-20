@@ -34,30 +34,43 @@ class RodController extends Controller
      */
     public function store(StoreRodRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Check if rod already exists with same details
-        $existing = Rod::where('user_id', auth()->id())
-            ->where('rod_name', $validated['rod_name'])
-            ->where('rod_weight', $validated['rod_weight'] ?? null)
-            ->where('rod_length', $validated['rod_length'] ?? null)
-            ->where('reel', $validated['reel'] ?? null)
-            ->where('line', $validated['line'] ?? null)
-            ->first();
+            // Check if rod already exists with same details
+            $existing = Rod::where('user_id', auth()->id())
+                ->where('rod_name', $validated['rod_name'])
+                ->where('rod_weight', $validated['rod_weight'] ?? null)
+                ->where('rod_length', $validated['rod_length'] ?? null)
+                ->where('reel', $validated['reel'] ?? null)
+                ->where('line', $validated['line'] ?? null)
+                ->first();
 
-        if ($existing) {
+            if ($existing) {
+                return response()->json([
+                    'message' => 'A rod with these details already exists.',
+                    'rod' => $existing
+                ], 409);
+            }
+
+            $rod = Rod::create([
+                'user_id' => auth()->id(),
+                ...$validated,
+            ]);
+
+            return response()->json($rod, 201);
+        } catch (\Exception $e) {
+            \Log::error('Error creating rod: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $request->all(),
+                'exception' => $e
+            ]);
+
             return response()->json([
-                'message' => 'A rod with these details already exists.',
-                'rod' => $existing
-            ], 409);
+                'message' => 'Failed to create rod. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        $rod = Rod::create([
-            'user_id' => auth()->id(),
-            ...$validated,
-        ]);
-
-        return response()->json($rod, 201);
     }
 
     /**

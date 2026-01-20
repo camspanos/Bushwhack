@@ -34,29 +34,42 @@ class FlyController extends Controller
      */
     public function store(StoreFlyRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Check if fly already exists with same details
-        $existing = Fly::where('user_id', auth()->id())
-            ->where('name', $validated['name'])
-            ->where('color', $validated['color'] ?? null)
-            ->where('size', $validated['size'] ?? null)
-            ->where('type', $validated['type'] ?? null)
-            ->first();
+            // Check if fly already exists with same details
+            $existing = Fly::where('user_id', auth()->id())
+                ->where('name', $validated['name'])
+                ->where('color', $validated['color'] ?? null)
+                ->where('size', $validated['size'] ?? null)
+                ->where('type', $validated['type'] ?? null)
+                ->first();
 
-        if ($existing) {
+            if ($existing) {
+                return response()->json([
+                    'message' => 'A fly with these details already exists.',
+                    'fly' => $existing
+                ], 409);
+            }
+
+            $fly = Fly::create([
+                'user_id' => auth()->id(),
+                ...$validated,
+            ]);
+
+            return response()->json($fly, 201);
+        } catch (\Exception $e) {
+            \Log::error('Error creating fly: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $request->all(),
+                'exception' => $e
+            ]);
+
             return response()->json([
-                'message' => 'A fly with these details already exists.',
-                'fly' => $existing
-            ], 409);
+                'message' => 'Failed to create fly. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        $fly = Fly::create([
-            'user_id' => auth()->id(),
-            ...$validated,
-        ]);
-
-        return response()->json($fly, 201);
     }
 
     /**

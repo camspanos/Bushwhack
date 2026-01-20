@@ -214,6 +214,10 @@ const createLocation = async () => {
         console.error('Error creating location:', error);
         if (error.response?.status === 409) {
             locationError.value = error.response.data.message || 'This location already exists.';
+        } else if (error.response?.status === 500) {
+            locationError.value = error.response.data.message || 'Server error. Please try again.';
+        } else if (error.response?.data?.message) {
+            locationError.value = error.response.data.message;
         } else {
             locationError.value = 'An error occurred while creating the location.';
         }
@@ -233,6 +237,10 @@ const createFish = async () => {
         console.error('Error creating fish:', error);
         if (error.response?.status === 409) {
             fishError.value = error.response.data.message || 'This fish species already exists.';
+        } else if (error.response?.status === 500) {
+            fishError.value = error.response.data.message || 'Server error. Please try again.';
+        } else if (error.response?.data?.message) {
+            fishError.value = error.response.data.message;
         } else {
             fishError.value = 'An error occurred while creating the fish species.';
         }
@@ -252,6 +260,10 @@ const createFly = async () => {
         console.error('Error creating fly:', error);
         if (error.response?.status === 409) {
             flyError.value = error.response.data.message || 'This fly already exists.';
+        } else if (error.response?.status === 500) {
+            flyError.value = error.response.data.message || 'Server error. Please try again.';
+        } else if (error.response?.data?.message) {
+            flyError.value = error.response.data.message;
         } else {
             flyError.value = 'An error occurred while creating the fly.';
         }
@@ -271,6 +283,10 @@ const createEquipment = async () => {
         console.error('Error creating equipment:', error);
         if (error.response?.status === 409) {
             equipmentError.value = error.response.data.message || 'This rod already exists.';
+        } else if (error.response?.status === 500) {
+            equipmentError.value = error.response.data.message || 'Server error. Please try again.';
+        } else if (error.response?.data?.message) {
+            equipmentError.value = error.response.data.message;
         } else {
             equipmentError.value = 'An error occurred while creating the rod.';
         }
@@ -290,6 +306,10 @@ const createFriend = async () => {
         console.error('Error creating friend:', error);
         if (error.response?.status === 409) {
             friendError.value = error.response.data.message || 'This friend already exists.';
+        } else if (error.response?.status === 500) {
+            friendError.value = error.response.data.message || 'Server error. Please try again.';
+        } else if (error.response?.data?.message) {
+            friendError.value = error.response.data.message;
         } else {
             friendError.value = 'An error occurred while creating the friend.';
         }

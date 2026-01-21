@@ -352,38 +352,38 @@ onMounted(() => {
                                     <CardContent class="space-y-3">
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <CalendarIcon class="h-4 w-4" />
+                                                <CalendarIcon class="h-4 w-4 text-blue-500 dark:text-blue-400" />
                                                 Trips Together
                                             </span>
-                                            <span class="font-bold">{{ friend.totalTrips }}</span>
+                                            <span class="font-bold text-blue-700 dark:text-blue-300">{{ friend.totalTrips }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Fish class="h-4 w-4" />
+                                                <Fish class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                                                 Total Fish
                                             </span>
-                                            <span class="font-bold">{{ friend.totalFish }}</span>
+                                            <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ friend.totalFish }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Award class="h-4 w-4" />
+                                                <Award class="h-4 w-4 text-amber-500 dark:text-amber-400" />
                                                 Biggest Fish
                                             </span>
-                                            <span class="font-bold">{{ formatSize(friend.biggestFish) }}"</span>
+                                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ formatSize(friend.biggestFish) }}"</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <TrendingUp class="h-4 w-4" />
+                                                <TrendingUp class="h-4 w-4 text-red-500 dark:text-red-400" />
                                                 Success Rate
                                             </span>
-                                            <span class="font-bold">{{ friend.successRate }}%</span>
+                                            <span class="font-bold text-red-700 dark:text-red-300">{{ friend.successRate }}%</span>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </div>
 
                             <!-- Empty State -->
-                            <Card v-if="friendStats.length === 0">
+                            <Card v-if="friendStats.length === 0" class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
                                 <CardContent class="py-8">
                                     <div class="text-center text-muted-foreground">
                                         No friend statistics available yet. Start logging your fishing trips!

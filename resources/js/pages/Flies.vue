@@ -383,31 +383,31 @@ onMounted(() => {
                                     <CardContent class="space-y-3">
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Fish class="h-4 w-4" />
+                                                <Fish class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                                                 Total Caught
                                             </span>
-                                            <span class="font-bold">{{ fly.totalCaught }}</span>
+                                            <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ fly.totalCaught }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <CalendarIcon class="h-4 w-4" />
+                                                <CalendarIcon class="h-4 w-4 text-blue-500 dark:text-blue-400" />
                                                 Total Trips
                                             </span>
-                                            <span class="font-bold">{{ fly.totalTrips }}</span>
+                                            <span class="font-bold text-blue-700 dark:text-blue-300">{{ fly.totalTrips }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Award class="h-4 w-4" />
+                                                <Award class="h-4 w-4 text-amber-500 dark:text-amber-400" />
                                                 Biggest Fish
                                             </span>
-                                            <span class="font-bold">{{ formatSize(fly.biggestFish) }}"</span>
+                                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ formatSize(fly.biggestFish) }}"</span>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </div>
 
                             <!-- Empty State -->
-                            <Card v-if="flyStats.length === 0">
+                            <Card v-if="flyStats.length === 0" class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
                                 <CardContent class="py-8">
                                     <div class="text-center text-muted-foreground">
                                         No fly statistics available yet. Start logging your fishing trips!

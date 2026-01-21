@@ -346,7 +346,7 @@ const topSpecies = computed(() => {
                     </CardContent>
                 </Card>
 
-                <Card v-else>
+                <Card v-else class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">

@@ -134,7 +134,7 @@ class FishController extends Controller
 
         $fish = Fish::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'fish_id', 'quantity', 'max_size', 'date');
+                $query->select('id', 'fish_id', 'quantity', 'max_size', 'date', 'location_id');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }
@@ -143,7 +143,12 @@ class FishController extends Controller
             ->map(function ($fishSpecies) {
                 $logs = $fishSpecies->fishingLogs;
                 $totalCaught = $logs->sum('quantity');
-                $totalTrips = $logs->count();
+
+                // Count unique trips by date and location
+                $totalTrips = $logs->groupBy(function ($log) {
+                    return $log->date->format('Y-m-d') . '-' . $log->location_id;
+                })->count();
+
                 $biggestFish = $logs->max('max_size') ?? 0;
                 $avgSize = $totalCaught > 0
                     ? round($logs->sum('max_size') / $totalCaught, 1)

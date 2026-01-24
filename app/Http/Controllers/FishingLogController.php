@@ -147,4 +147,24 @@ class FishingLogController extends Controller
 
         return response()->json(['message' => 'Fishing log deleted successfully']);
     }
+
+    /**
+     * Get available years from fishing logs.
+     *
+     * Returns a list of distinct years from the user's fishing logs,
+     * ordered from most recent to oldest.
+     */
+    public function availableYears(): JsonResponse
+    {
+        $years = FishingLog::where('user_id', auth()->id())
+            ->selectRaw('DISTINCT YEAR(date) as year')
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->filter()
+            ->map(fn($year) => (string) $year)
+            ->values()
+            ->toArray();
+
+        return response()->json($years);
+    }
 }

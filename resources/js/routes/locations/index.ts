@@ -1,5 +1,86 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+statistics.definition = {
+    methods: ["get","head"],
+    url: '/locations/stats/all',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+statistics.url = (options?: RouteQueryOptions) => {
+    return statistics.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statistics.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\LocationController::statistics
+* @see app/Http/Controllers/LocationController.php:137
+* @route '/locations/stats/all'
+*/
+statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+statistics.form = statisticsForm
+
+/**
 * @see \App\Http\Controllers\LocationController::index
 * @see app/Http/Controllers/LocationController.php:20
 * @route '/locations'
@@ -620,88 +701,8 @@ destroyForm.delete = (args: { location: number | { id: number } } | [location: n
 
 destroy.form = destroyForm
 
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: statistics.url(options),
-    method: 'get',
-})
-
-statistics.definition = {
-    methods: ["get","head"],
-    url: '/locations/stats/all',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-statistics.url = (options?: RouteQueryOptions) => {
-    return statistics.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: statistics.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: statistics.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: statistics.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: statistics.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
-* @route '/locations/stats/all'
-*/
-statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: statistics.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-statistics.form = statisticsForm
-
 const locations = {
+    statistics: Object.assign(statistics, statistics),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),
@@ -709,7 +710,6 @@ const locations = {
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
-    statistics: Object.assign(statistics, statistics),
 }
 
 export default locations

@@ -154,10 +154,8 @@ const formatSize = (size: number) => {
 // Fetch available years
 const fetchAvailableYears = async () => {
     try {
-        const response = await axios.get('/fishing-logs');
-        const logs = response.data.data;
-        const years = [...new Set(logs.map((log: any) => new Date(log.date).getFullYear().toString()))];
-        availableYears.value = years.sort((a, b) => parseInt(b) - parseInt(a));
+        const response = await axios.get('/fishing-logs/available-years');
+        availableYears.value = response.data;
     } catch (error) {
         console.error('Error fetching available years:', error);
     }

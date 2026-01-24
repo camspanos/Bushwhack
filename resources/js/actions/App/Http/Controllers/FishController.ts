@@ -1,5 +1,86 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+statistics.definition = {
+    methods: ["get","head"],
+    url: '/fish/stats/all',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+statistics.url = (options?: RouteQueryOptions) => {
+    return statistics.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statistics.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FishController::statistics
+* @see app/Http/Controllers/FishController.php:131
+* @route '/fish/stats/all'
+*/
+statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statistics.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+statistics.form = statisticsForm
+
+/**
 * @see \App\Http\Controllers\FishController::index
 * @see app/Http/Controllers/FishController.php:18
 * @route '/fish'
@@ -620,87 +701,6 @@ destroyForm.delete = (args: { fish: number | { id: number } } | [fish: number | 
 
 destroy.form = destroyForm
 
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: statistics.url(options),
-    method: 'get',
-})
-
-statistics.definition = {
-    methods: ["get","head"],
-    url: '/fish/stats/all',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-statistics.url = (options?: RouteQueryOptions) => {
-    return statistics.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: statistics.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: statistics.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: statistics.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: statistics.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
-* @route '/fish/stats/all'
-*/
-statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: statistics.url({
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-statistics.form = statisticsForm
-
-const FishController = { index, create, store, show, edit, update, destroy, statistics }
+const FishController = { statistics, index, create, store, show, edit, update, destroy }
 
 export default FishController

@@ -1,5 +1,86 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+export const availableYears = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: availableYears.url(options),
+    method: 'get',
+})
+
+availableYears.definition = {
+    methods: ["get","head"],
+    url: '/fishing-logs/available-years',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+availableYears.url = (options?: RouteQueryOptions) => {
+    return availableYears.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+availableYears.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: availableYears.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+availableYears.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: availableYears.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+const availableYearsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: availableYears.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+availableYearsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: availableYears.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\FishingLogController::availableYears
+* @see app/Http/Controllers/FishingLogController.php:157
+* @route '/fishing-logs/available-years'
+*/
+availableYearsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: availableYears.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+availableYears.form = availableYearsForm
+
+/**
 * @see \App\Http\Controllers\FishingLogController::index
 * @see app/Http/Controllers/FishingLogController.php:19
 * @route '/fishing-logs'
@@ -609,6 +690,7 @@ destroyForm.delete = (args: { fishing_log: string | number } | [fishing_log: str
 destroy.form = destroyForm
 
 const fishingLogs = {
+    availableYears: Object.assign(availableYears, availableYears),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),

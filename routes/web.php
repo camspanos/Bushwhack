@@ -55,19 +55,23 @@ Route::get('about', function () {
 
 // CRUD Routes for Fishing Log Resources
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Statistics Routes (must be before resource routes to avoid conflicts)
+    Route::get('locations/stats/all', [LocationController::class, 'statistics'])->name('locations.statistics');
+    Route::get('rods/stats/all', [RodController::class, 'statistics'])->name('rods.statistics');
+    Route::get('fish/stats/all', [FishController::class, 'statistics'])->name('fish.statistics');
+    Route::get('flies/stats/all', [FlyController::class, 'statistics'])->name('flies.statistics');
+    Route::get('friends/stats/all', [FriendController::class, 'statistics'])->name('friends.statistics');
+
+    // Utility Routes (must be before resource routes to avoid conflicts)
+    Route::get('fishing-logs/available-years', [FishingLogController::class, 'availableYears'])->name('fishing-logs.available-years');
+
+    // Resource Routes
     Route::resource('locations', LocationController::class);
     Route::resource('rods', RodController::class);
     Route::resource('fish', FishController::class);
     Route::resource('flies', FlyController::class);
     Route::resource('friends', FriendController::class);
     Route::resource('fishing-logs', FishingLogController::class);
-
-    // Statistics Routes
-    Route::get('locations/stats/all', [LocationController::class, 'statistics'])->name('locations.statistics');
-    Route::get('rods/stats/all', [RodController::class, 'statistics'])->name('rods.statistics');
-    Route::get('fish/stats/all', [FishController::class, 'statistics'])->name('fish.statistics');
-    Route::get('flies/stats/all', [FlyController::class, 'statistics'])->name('flies.statistics');
-    Route::get('friends/stats/all', [FriendController::class, 'statistics'])->name('friends.statistics');
 });
 
 require __DIR__.'/settings.php';

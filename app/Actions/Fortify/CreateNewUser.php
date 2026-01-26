@@ -30,10 +30,18 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        // Automatically follow user_id 1 (if it exists and is not the new user)
+        $defaultUserToFollow = User::find(1);
+        if ($defaultUserToFollow && $user->id !== 1) {
+            $user->follow($defaultUserToFollow);
+        }
+
+        return $user;
     }
 }

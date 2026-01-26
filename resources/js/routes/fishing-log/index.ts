@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ create.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ create.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:28
+* @see routes/web.php:30
 * @route '/fishing-log/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

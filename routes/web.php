@@ -5,8 +5,10 @@ use App\Http\Controllers\RodController;
 use App\Http\Controllers\FishController;
 use App\Http\Controllers\FishingLogController;
 use App\Http\Controllers\FlyController;
+use App\Http\Controllers\FollowingController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PublicDashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -52,6 +54,15 @@ Route::get('friends-page', function () {
 Route::get('about', function () {
     return Inertia::render('About');
 })->middleware(['auth', 'verified'])->name('about');
+
+// Following Routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('following', [FollowingController::class, 'index'])->name('following');
+    Route::post('users/{user}/follow', [FollowingController::class, 'follow'])->name('users.follow');
+    Route::delete('users/{user}/unfollow', [FollowingController::class, 'unfollow'])->name('users.unfollow');
+    Route::get('users/search', [FollowingController::class, 'search'])->name('users.search');
+    Route::get('users/{user}/dashboard', [PublicDashboardController::class, 'show'])->name('users.dashboard');
+});
 
 // CRUD Routes for Fishing Log Resources
 Route::middleware(['auth', 'verified'])->group(function () {

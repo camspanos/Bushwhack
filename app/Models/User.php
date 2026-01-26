@@ -49,4 +49,48 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the users that this user is following.
+     */
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the users who are following this user.
+     */
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if this user is following another user.
+     */
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()->where('following_id', $user->id)->exists();
+    }
+
+    /**
+     * Follow another user.
+     */
+    public function follow(User $user): void
+    {
+        if (!$this->isFollowing($user) && $this->id !== $user->id) {
+            $this->following()->attach($user->id);
+        }
+    }
+
+    /**
+     * Unfollow another user.
+     */
+    public function unfollow(User $user): void
+    {
+        $this->following()->detach($user->id);
+    }
 }

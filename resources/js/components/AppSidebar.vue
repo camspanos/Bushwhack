@@ -11,10 +11,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, fishingLog, locationsPage, rodsPage, fishPage, fliesPage, friendsPage, about, home } from '@/routes';
+import { dashboard, fishingLog, locationsPage, rodsPage, fishPage, fliesPage, friendsPage, following, about, home } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Info, LayoutGrid, Fish, MapPin, Wrench, Bug, Users } from 'lucide-vue-next';
+import { Info, LayoutGrid, Fish, MapPin, Wrench, Bug, Users, UserPlus } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -56,6 +56,11 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
+    {
+        title: 'Following',
+        href: following(),
+        icon: UserPlus,
+    },
     {
         title: 'About Us',
         href: about(),

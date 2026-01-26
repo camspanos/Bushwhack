@@ -2,11 +2,19 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { following, usersDashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { UserPlus, UserMinus, Search, Eye } from 'lucide-vue-next';
+import { UserPlus, UserMinus, Search, Eye, AlertCircle } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 
@@ -49,6 +57,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const searchQuery = ref('');
 const searchResults = ref<SearchUser[]>([]);
 const isSearching = ref(false);
+const showUnfollowConfirm = ref(false);
+const userToUnfollow = ref<FollowingUser | null>(null);
 
 async function searchUsers() {
     if (!searchQuery.value.trim()) {
@@ -79,9 +89,23 @@ async function followUser(userId: number) {
     }
 }
 
-async function unfollowUser(userId: number) {
+function confirmUnfollow(user: FollowingUser) {
+    userToUnfollow.value = user;
+    showUnfollowConfirm.value = true;
+}
+
+function cancelUnfollow() {
+    showUnfollowConfirm.value = false;
+    userToUnfollow.value = null;
+}
+
+async function unfollowUser() {
+    if (!userToUnfollow.value) return;
+
     try {
-        await axios.delete(`/users/${userId}/unfollow`);
+        await axios.delete(`/users/${userToUnfollow.value.id}/unfollow`);
+        showUnfollowConfirm.value = false;
+        userToUnfollow.value = null;
         router.reload({ only: ['following'] });
     } catch (error) {
         console.error('Error unfollowing user:', error);
@@ -206,7 +230,7 @@ function viewDashboard(userId: number) {
                                     View Dashboard
                                 </Button>
                                 <Button
-                                    @click="unfollowUser(user.id)"
+                                    @click="confirmUnfollow(user)"
                                     size="sm"
                                     variant="destructive"
                                 >
@@ -226,5 +250,38 @@ function viewDashboard(userId: number) {
                 </CardContent>
             </Card>
         </div>
+
+        <!-- Unfollow Confirmation Dialog -->
+        <Dialog v-model:open="showUnfollowConfirm">
+            <DialogContent class="max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2 text-destructive">
+                        <AlertCircle class="h-5 w-5" />
+                        Unfollow User
+                    </DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to unfollow this user? You will no longer see their fishing activity.
+                    </DialogDescription>
+                </DialogHeader>
+                <div v-if="userToUnfollow" class="py-4">
+                    <div class="rounded-lg bg-muted p-4 space-y-2">
+                        <p class="text-sm font-medium">User Details:</p>
+                        <p class="text-sm text-muted-foreground">
+                            <strong>Name:</strong> {{ userToUnfollow.name }}
+                        </p>
+                        <p class="text-sm text-muted-foreground">
+                            <strong>Email:</strong> {{ userToUnfollow.email }}
+                        </p>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" @click="cancelUnfollow">Cancel</Button>
+                    <Button type="button" variant="destructive" @click="unfollowUser">
+                        <UserMinus class="h-4 w-4 mr-2" />
+                        Unfollow
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

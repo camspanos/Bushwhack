@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class PublicRodsController extends Controller
 {
-    public function index(User $user): Response
+    public function index(User $user, Request $request): Response
     {
         // Check if the authenticated user is following this user
         if (!auth()->user()->isFollowing($user)) {
@@ -20,60 +20,54 @@ class PublicRodsController extends Controller
         }
 
         $userId = $user->id;
+        $yearFilter = $request->input('year', 'lifetime');
+
+        // Get available years from fishing logs
+        $availableYears = FishingLog::where('user_id', $userId)
+            ->selectRaw('DISTINCT YEAR(date) as year')
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->map(fn($year) => (string) $year)
+            ->toArray();
 
         // Get all rods for this user with usage statistics
+        // Using the same query structure as RodController::statistics()
         $rods = Rod::where('user_id', $userId)
-            ->withCount(['fishingLogs as total_trips' => function ($query) {
-                $query->select(DB::raw('COUNT(DISTINCT date)'));
-            }])
-            ->withCount(['fishingLogs as total_catches' => function ($query) {
-                $query->select(DB::raw('COALESCE(SUM(quantity), 0)'));
-            }])
-            ->with(['fishingLogs' => function ($query) {
-                $query->select('equipment_id', DB::raw('MAX(max_size) as biggest_fish'))
-                    ->whereNotNull('max_size')
-                    ->where('max_size', '>', 0)
-                    ->groupBy('equipment_id');
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('id', 'equipment_id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
             }])
             ->get()
-            ->map(function ($rod) {
-                // Get the biggest fish caught with this rod
-                $biggestFish = FishingLog::where('equipment_id', $rod->id)
-                    ->whereNotNull('max_size')
-                    ->where('max_size', '>', 0)
-                    ->orderByDesc('max_size')
-                    ->first();
-
-                // Get most caught species with this rod
-                $topSpecies = FishingLog::where('equipment_id', $rod->id)
-                    ->join('user_fish', 'fishing_logs.fish_id', '=', 'user_fish.id')
-                    ->select('user_fish.species', DB::raw('SUM(fishing_logs.quantity) as total'))
-                    ->whereNotNull('fishing_logs.fish_id')
-                    ->groupBy('user_fish.species')
-                    ->orderByDesc('total')
-                    ->first();
+            ->map(function ($item) {
+                $logs = $item->fishingLogs;
+                $totalTrips = $logs->count();
+                $totalFish = $logs->sum('quantity');
+                $biggestFish = $logs->max('max_size') ?? 0;
+                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+                $successRate = $totalTrips > 0
+                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    : 0;
 
                 return [
-                    'id' => $rod->id,
-                    'rod_name' => $rod->rod_name,
-                    'rod_weight' => $rod->rod_weight,
-                    'rod_length' => $rod->rod_length,
-                    'reel' => $rod->reel,
-                    'line' => $rod->line,
-                    'total_trips' => $rod->total_trips ?? 0,
-                    'total_catches' => $rod->total_catches ?? 0,
-                    'biggest_fish' => $biggestFish ? [
-                        'size' => $biggestFish->max_size,
-                        'species' => $biggestFish->fish?->species,
-                        'date' => $biggestFish->date->format('M d, Y'),
-                    ] : null,
-                    'top_species' => $topSpecies ? [
-                        'species' => $topSpecies->species,
-                        'total' => $topSpecies->total,
-                    ] : null,
+                    'id' => $item->id,
+                    'rod_name' => $item->rod_name,
+                    'rod_weight' => $item->rod_weight,
+                    'rod_length' => $item->rod_length,
+                    'reel' => $item->reel,
+                    'line' => $item->line,
+                    'totalTrips' => $totalTrips,
+                    'totalFish' => $totalFish,
+                    'biggestFish' => (float) $biggestFish,
+                    'successRate' => $successRate,
                 ];
             })
-            ->sortByDesc('total_catches')
+            ->filter(function ($rod) {
+                // Only include rods that have trips in the filtered date range
+                return $rod['totalTrips'] > 0;
+            })
+            ->sortByDesc('totalFish')
             ->values();
 
         return Inertia::render('PublicRods', [
@@ -84,6 +78,8 @@ class PublicRodsController extends Controller
                 'member_since' => $user->created_at->format('M Y'),
             ],
             'rods' => $rods,
+            'availableYears' => $availableYears,
+            'selectedYear' => $yearFilter,
         ]);
     }
 }

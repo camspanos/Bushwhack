@@ -2,9 +2,11 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Fish, Calendar, Award, MapPin, Target } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Fish, Calendar, Award, MapPin, Target, TrendingUp } from 'lucide-vue-next';
+import { ref, computed, watch } from 'vue';
 
 interface UserInfo {
     id: number;
@@ -17,28 +19,17 @@ interface FishData {
     id: number;
     species: string;
     water_type: string | null;
-    total_catches: number;
-    total_trips: number;
-    biggest_catch: {
-        size: number;
-        date: string;
-        location: string;
-    } | null;
-    top_location: {
-        name: string;
-        city: string | null;
-        state: string | null;
-        total: number;
-    } | null;
-    top_fly: {
-        name: string;
-        total: number;
-    } | null;
+    totalCaught: number;
+    totalTrips: number;
+    biggestFish: number;
+    avgSize: number;
 }
 
 const props = defineProps<{
     user: UserInfo;
     fishSpecies: FishData[];
+    availableYears: string[];
+    selectedYear: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -47,9 +38,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     { label: 'Fish' },
 ];
 
-const formatSize = (size: number | null | undefined): string => {
-    if (!size) return '0';
-    return size.toFixed(1);
+const selectedYearFilter = ref(props.selectedYear);
+
+const yearLabel = computed(() => {
+    return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
+});
+
+watch(selectedYearFilter, (newYear) => {
+    router.visit(`/users/${props.user.id}/fish`, {
+        data: { year: newYear },
+        preserveState: true,
+        preserveScroll: true,
+    });
+});
+
+// Format size for display (remove .0 decimals)
+const formatSize = (size: number) => {
+    const num = parseFloat(size.toString());
+    return num % 1 === 0 ? Math.floor(num).toString() : num.toString();
 };
 </script>
 
@@ -96,86 +102,71 @@ const formatSize = (size: number | null | undefined): string => {
                 </TabsList>
             </Tabs>
 
-            <!-- User Info Header -->
-            <Card class="bg-gradient-to-br from-teal-50/50 to-transparent dark:from-teal-950/20">
-                <CardHeader>
-                    <CardTitle class="text-2xl">{{ user.name }}'s Fish Species</CardTitle>
-                    <CardDescription>
-                        {{ user.email }} • Member since {{ user.member_since }}
-                    </CardDescription>
-                </CardHeader>
-            </Card>
+            <!-- Header with Year Filter -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                        <Fish class="h-6 w-6" />
+                        {{ user.name }}'s Fish Species
+                    </h3>
+                    <p class="text-muted-foreground">
+                        {{ user.email }} • Member since {{ user.member_since }} •
+                        Statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="fish-year-filter" class="text-sm font-medium">Filter by:</label>
+                    <NativeSelect v-model="selectedYearFilter" id="fish-year-filter" class="w-[140px]">
+                        <NativeSelectOption value="lifetime">Lifetime</NativeSelectOption>
+                        <NativeSelectOption v-for="year in availableYears" :key="year" :value="year">
+                            {{ year }}
+                        </NativeSelectOption>
+                    </NativeSelect>
+                </div>
+            </div>
 
             <!-- Fish Species Grid -->
             <div v-if="fishSpecies.length > 0" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card v-for="fish in fishSpecies" :key="fish.id" class="bg-gradient-to-br from-green-50/30 to-transparent dark:from-green-950/10">
-                    <CardHeader class="pb-3">
-                        <CardTitle class="text-lg">{{ fish.species }}</CardTitle>
-                        <CardDescription v-if="fish.water_type">
-                            {{ fish.water_type }}
+                <Card v-for="fish in fishSpecies" :key="fish.id" class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
+                    <CardHeader>
+                        <CardTitle class="text-lg flex items-center gap-2">
+                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                <Fish class="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            {{ fish.species }}
+                        </CardTitle>
+                        <CardDescription>
+                            {{ fish.water_type || 'No water type specified' }}
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-3">
-                        <!-- Stats -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="flex items-center gap-2 rounded-lg bg-green-100 dark:bg-green-900/30 p-2">
-                                <Fish class="h-4 w-4 text-green-600 dark:text-green-400" />
-                                <div>
-                                    <div class="text-lg font-bold text-green-700 dark:text-green-300">{{ fish.total_catches }}</div>
-                                    <div class="text-xs text-muted-foreground">Catches</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 p-2">
-                                <Calendar class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                <div>
-                                    <div class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ fish.total_trips }}</div>
-                                    <div class="text-xs text-muted-foreground">Trips</div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <Fish class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                Total Caught
+                            </span>
+                            <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ fish.totalCaught }}</span>
                         </div>
-
-
-
-                        <!-- Biggest Catch -->
-                        <div v-if="fish.biggest_catch" class="rounded-lg border bg-card p-3">
-                            <div class="flex items-start gap-2">
-                                <Award class="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5" />
-                                <div class="flex-1">
-                                    <div class="text-xs font-medium text-muted-foreground">Biggest Catch</div>
-                                    <div class="font-semibold">{{ formatSize(fish.biggest_catch.size) }}"</div>
-                                    <div class="text-xs text-muted-foreground">{{ fish.biggest_catch.date }}</div>
-                                    <div v-if="fish.biggest_catch.location" class="text-xs text-muted-foreground">{{ fish.biggest_catch.location }}</div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <Calendar class="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                                Total Trips
+                            </span>
+                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ fish.totalTrips }}</span>
                         </div>
-
-                        <!-- Top Location -->
-                        <div v-if="fish.top_location" class="rounded-lg border bg-card p-3">
-                            <div class="flex items-start gap-2">
-                                <MapPin class="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
-                                <div class="flex-1">
-                                    <div class="text-xs font-medium text-muted-foreground">Top Location</div>
-                                    <div class="font-semibold">{{ fish.top_location.name }}</div>
-                                    <div class="text-xs text-muted-foreground">
-                                        {{ fish.top_location.total }} caught
-                                        <span v-if="fish.top_location.city || fish.top_location.state">
-                                            • {{ fish.top_location.city }}{{ fish.top_location.city && fish.top_location.state ? ', ' : '' }}{{ fish.top_location.state }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <Award class="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                                Biggest Catch
+                            </span>
+                            <span class="font-bold text-blue-700 dark:text-blue-300">{{ formatSize(fish.biggestFish) }}"</span>
                         </div>
-
-                        <!-- Top Fly -->
-                        <div v-if="fish.top_fly" class="rounded-lg border bg-card p-3">
-                            <div class="flex items-start gap-2">
-                                <Target class="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5" />
-                                <div class="flex-1">
-                                    <div class="text-xs font-medium text-muted-foreground">Top Fly</div>
-                                    <div class="font-semibold">{{ fish.top_fly.name }}</div>
-                                    <div class="text-xs text-muted-foreground">{{ fish.top_fly.total }} caught</div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <TrendingUp class="h-4 w-4 text-red-500 dark:text-red-400" />
+                                Avg Size
+                            </span>
+                            <span class="font-bold text-red-700 dark:text-red-300">{{ formatSize(fish.avgSize) }}"</span>
                         </div>
                     </CardContent>
                 </Card>

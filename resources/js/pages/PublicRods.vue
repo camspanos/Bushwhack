@@ -2,9 +2,11 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { Fish, Calendar, Award, Target } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Fish, Calendar, Award, TrendingUp, Wrench } from 'lucide-vue-next';
+import { ref, computed, watch } from 'vue';
 
 interface UserInfo {
     id: number;
@@ -20,22 +22,17 @@ interface RodData {
     rod_length: string | null;
     reel: string | null;
     line: string | null;
-    total_trips: number;
-    total_catches: number;
-    biggest_fish: {
-        size: number;
-        species: string;
-        date: string;
-    } | null;
-    top_species: {
-        species: string;
-        total: number;
-    } | null;
+    totalTrips: number;
+    totalFish: number;
+    biggestFish: number;
+    successRate: number;
 }
 
 const props = defineProps<{
     user: UserInfo;
     rods: RodData[];
+    availableYears: string[];
+    selectedYear: string;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,9 +41,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     { label: 'Rods' },
 ];
 
-const formatSize = (size: number | null | undefined): string => {
-    if (!size) return '0';
-    return size.toFixed(1);
+const selectedYearFilter = ref(props.selectedYear);
+
+const yearLabel = computed(() => {
+    return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
+});
+
+watch(selectedYearFilter, (newYear) => {
+    router.visit(`/users/${props.user.id}/rods`, {
+        data: { year: newYear },
+        preserveState: true,
+        preserveScroll: true,
+    });
+});
+
+// Format size for display (remove .0 decimals)
+const formatSize = (size: number) => {
+    const num = parseFloat(size.toString());
+    return num % 1 === 0 ? Math.floor(num).toString() : num.toString();
 };
 </script>
 
@@ -93,71 +105,71 @@ const formatSize = (size: number | null | undefined): string => {
                 </TabsList>
             </Tabs>
 
-            <!-- User Info Header -->
-            <Card class="bg-gradient-to-br from-teal-50/50 to-transparent dark:from-teal-950/20">
-                <CardHeader>
-                    <CardTitle class="text-2xl">{{ user.name }}'s Rods</CardTitle>
-                    <CardDescription>
-                        {{ user.email }} • Member since {{ user.member_since }}
-                    </CardDescription>
-                </CardHeader>
-            </Card>
+            <!-- Header with Year Filter -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                        <Wrench class="h-6 w-6" />
+                        {{ user.name }}'s Rods
+                    </h3>
+                    <p class="text-muted-foreground">
+                        {{ user.email }} • Member since {{ user.member_since }} •
+                        Statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="rod-year-filter" class="text-sm font-medium">Filter by:</label>
+                    <NativeSelect v-model="selectedYearFilter" id="rod-year-filter" class="w-[140px]">
+                        <NativeSelectOption value="lifetime">Lifetime</NativeSelectOption>
+                        <NativeSelectOption v-for="year in availableYears" :key="year" :value="year">
+                            {{ year }}
+                        </NativeSelectOption>
+                    </NativeSelect>
+                </div>
+            </div>
 
             <!-- Rods Grid -->
             <div v-if="rods.length > 0" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card v-for="rod in rods" :key="rod.id" class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10">
-                    <CardHeader class="pb-3">
-                        <CardTitle class="text-lg">{{ rod.rod_name }}</CardTitle>
-                        <CardDescription>
-                            <div class="space-y-1 text-sm">
-                                <div v-if="rod.rod_weight">Weight: {{ rod.rod_weight }}</div>
-                                <div v-if="rod.rod_length">Length: {{ rod.rod_length }}</div>
-                                <div v-if="rod.reel">Reel: {{ rod.reel }}</div>
-                                <div v-if="rod.line">Line: {{ rod.line }}</div>
+                    <CardHeader>
+                        <CardTitle class="text-lg flex items-center gap-2">
+                            <div class="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
+                                <Wrench class="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </div>
+                            {{ rod.rod_name }}
+                        </CardTitle>
+                        <CardDescription>
+                            {{ rod.rod_weight || 'No weight specified' }}
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-3">
-                        <!-- Stats -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="flex items-center gap-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 p-2">
-                                <Fish class="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                <div>
-                                    <div class="text-lg font-bold text-blue-700 dark:text-blue-300">{{ rod.total_catches }}</div>
-                                    <div class="text-xs text-muted-foreground">Catches</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 p-2">
-                                <Calendar class="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
-                                <div>
-                                    <div class="text-lg font-bold text-cyan-700 dark:text-cyan-300">{{ rod.total_trips }}</div>
-                                    <div class="text-xs text-muted-foreground">Trips</div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <Calendar class="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                                Total Trips
+                            </span>
+                            <span class="font-bold text-blue-700 dark:text-blue-300">{{ rod.totalTrips }}</span>
                         </div>
-
-                        <!-- Biggest Fish -->
-                        <div v-if="rod.biggest_fish" class="rounded-lg border bg-card p-3">
-                            <div class="flex items-start gap-2">
-                                <Award class="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5" />
-                                <div class="flex-1">
-                                    <div class="text-xs font-medium text-muted-foreground">Biggest Fish</div>
-                                    <div class="font-semibold">{{ formatSize(rod.biggest_fish.size) }}" {{ rod.biggest_fish.species }}</div>
-                                    <div class="text-xs text-muted-foreground">{{ rod.biggest_fish.date }}</div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <Fish class="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                                Total Fish
+                            </span>
+                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ rod.totalFish }}</span>
                         </div>
-
-                        <!-- Top Species -->
-                        <div v-if="rod.top_species" class="rounded-lg border bg-card p-3">
-                            <div class="flex items-start gap-2">
-                                <Target class="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5" />
-                                <div class="flex-1">
-                                    <div class="text-xs font-medium text-muted-foreground">Top Species</div>
-                                    <div class="font-semibold">{{ rod.top_species.species }}</div>
-                                    <div class="text-xs text-muted-foreground">{{ rod.top_species.total }} caught</div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <Award class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                Biggest Fish
+                            </span>
+                            <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ formatSize(rod.biggestFish) }}"</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                <TrendingUp class="h-4 w-4 text-red-500 dark:text-red-400" />
+                                Success Rate
+                            </span>
+                            <span class="font-bold text-red-700 dark:text-red-300">{{ rod.successRate }}%</span>
                         </div>
                     </CardContent>
                 </Card>

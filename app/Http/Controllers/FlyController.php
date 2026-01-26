@@ -144,22 +144,36 @@ class FlyController extends Controller
                 }
             }])
             ->get()
-            ->map(function ($fly) {
-                $logs = $fly->fishingLogs;
-                $totalCaught = $logs->sum('quantity');
-                $totalTrips = $logs->count();
-                $biggestFish = $logs->max('max_size') ?? 0;
-                $successfulTrips = $logs->where('quantity', '>', 0)->count();
+            ->groupBy('name')
+            ->map(function ($flyGroup) {
+                // Combine stats from all flies with the same name
+                $allLogs = $flyGroup->flatMap->fishingLogs;
+                $totalCaught = $allLogs->sum('quantity');
+                $totalTrips = $allLogs->count();
+                $biggestFish = $allLogs->max('max_size') ?? 0;
+                $successfulTrips = $allLogs->where('quantity', '>', 0)->count();
                 $successRate = $totalTrips > 0
                     ? round(($successfulTrips / $totalTrips) * 100, 1)
                     : 0;
 
+                // Find the most used color (favorite color)
+                $colorStats = $flyGroup->map(function ($fly) {
+                    return [
+                        'color' => $fly->color,
+                        'caught' => $fly->fishingLogs->sum('quantity'),
+                    ];
+                })->sortByDesc('caught');
+
+                $favoriteColor = $colorStats->first()['color'] ?? null;
+
+                // Get the first fly for basic info
+                $firstFly = $flyGroup->first();
+
                 return [
-                    'id' => $fly->id,
-                    'name' => $fly->name,
-                    'color' => $fly->color,
-                    'size' => $fly->size,
-                    'type' => $fly->type,
+                    'id' => $firstFly->id,
+                    'name' => $firstFly->name,
+                    'type' => $firstFly->type,
+                    'favoriteColor' => $favoriteColor,
                     'totalCaught' => $totalCaught,
                     'totalTrips' => $totalTrips,
                     'biggestFish' => (float) $biggestFish,

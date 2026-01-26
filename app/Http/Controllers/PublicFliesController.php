@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class PublicFliesController extends Controller
 {
-    public function index(User $user): Response
+    public function index(User $user, Request $request): Response
     {
         // Check if the authenticated user is following this user
         if (!auth()->user()->isFollowing($user)) {
@@ -20,75 +20,67 @@ class PublicFliesController extends Controller
         }
 
         $userId = $user->id;
+        $yearFilter = $request->input('year', 'lifetime');
+
+        // Get available years from fishing logs
+        $availableYears = FishingLog::where('user_id', $userId)
+            ->selectRaw('DISTINCT YEAR(date) as year')
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->map(fn($year) => (string) $year)
+            ->toArray();
 
         // Get all flies for this user with usage statistics
+        // Using the same query structure as FlyController::statistics()
         $flies = Fly::where('user_id', $userId)
+            ->with(['fishingLogs' => function ($query) use ($yearFilter) {
+                $query->select('id', 'fly_id', 'quantity', 'max_size', 'date');
+                if ($yearFilter !== 'lifetime') {
+                    $query->whereYear('date', $yearFilter);
+                }
+            }])
             ->get()
-            ->map(function ($fly) use ($userId) {
-                // Get total catches with this fly
-                $totalCatches = FishingLog::where('user_id', $userId)
-                    ->where('fly_id', $fly->id)
-                    ->sum('quantity') ?? 0;
+            ->groupBy('name')
+            ->map(function ($flyGroup) {
+                // Combine stats from all flies with the same name
+                $allLogs = $flyGroup->flatMap->fishingLogs;
+                $totalCaught = $allLogs->sum('quantity');
+                $totalTrips = $allLogs->count();
+                $biggestFish = $allLogs->max('max_size') ?? 0;
+                $successfulTrips = $allLogs->where('quantity', '>', 0)->count();
+                $successRate = $totalTrips > 0
+                    ? round(($successfulTrips / $totalTrips) * 100, 1)
+                    : 0;
 
-                // Get total trips where this fly was used
-                $totalTrips = FishingLog::where('user_id', $userId)
-                    ->where('fly_id', $fly->id)
-                    ->distinct('date')
-                    ->count('date');
+                // Find the most used color (favorite color)
+                $colorStats = $flyGroup->map(function ($fly) {
+                    return [
+                        'color' => $fly->color,
+                        'caught' => $fly->fishingLogs->sum('quantity'),
+                    ];
+                })->sortByDesc('caught');
 
-                // Get biggest fish caught with this fly
-                $biggestFish = FishingLog::where('user_id', $userId)
-                    ->where('fly_id', $fly->id)
-                    ->whereNotNull('max_size')
-                    ->where('max_size', '>', 0)
-                    ->orderByDesc('max_size')
-                    ->first();
+                $favoriteColor = $colorStats->first()['color'] ?? null;
 
-                // Get most caught species with this fly
-                $topSpecies = FishingLog::where('user_id', $userId)
-                    ->where('fly_id', $fly->id)
-                    ->join('user_fish', 'fishing_logs.fish_id', '=', 'user_fish.id')
-                    ->select('user_fish.species', DB::raw('SUM(fishing_logs.quantity) as total'))
-                    ->whereNotNull('fishing_logs.fish_id')
-                    ->groupBy('user_fish.id', 'user_fish.species')
-                    ->orderByDesc('total')
-                    ->first();
-
-                // Get most successful location with this fly
-                $topLocation = FishingLog::where('user_id', $userId)
-                    ->where('fly_id', $fly->id)
-                    ->join('locations', 'fishing_logs.location_id', '=', 'locations.id')
-                    ->select('locations.name', DB::raw('SUM(fishing_logs.quantity) as total'))
-                    ->whereNotNull('fishing_logs.location_id')
-                    ->groupBy('locations.id', 'locations.name')
-                    ->orderByDesc('total')
-                    ->first();
+                // Get the first fly for basic info
+                $firstFly = $flyGroup->first();
 
                 return [
-                    'id' => $fly->id,
-                    'name' => $fly->name,
-                    'color' => $fly->color,
-                    'size' => $fly->size,
-                    'type' => $fly->type,
-                    'total_catches' => $totalCatches,
-                    'total_trips' => $totalTrips,
-                    'biggest_fish' => $biggestFish ? [
-                        'size' => $biggestFish->max_size,
-                        'species' => $biggestFish->fish?->species,
-                        'date' => $biggestFish->date->format('M d, Y'),
-                    ] : null,
-                    'top_species' => $topSpecies ? [
-                        'species' => $topSpecies->species,
-                        'total' => $topSpecies->total,
-                    ] : null,
-                    'top_location' => $topLocation ? [
-                        'name' => $topLocation->name,
-                        'total' => $topLocation->total,
-                    ] : null,
+                    'id' => $firstFly->id,
+                    'name' => $firstFly->name,
+                    'type' => $firstFly->type,
+                    'favoriteColor' => $favoriteColor,
+                    'totalCaught' => $totalCaught,
+                    'totalTrips' => $totalTrips,
+                    'biggestFish' => (float) $biggestFish,
+                    'successRate' => $successRate,
                 ];
             })
-            ->filter(fn($fly) => $fly['total_catches'] > 0)
-            ->sortByDesc('total_catches')
+            ->filter(function ($fly) {
+                // Only include flies that have trips in the filtered date range
+                return $fly['totalTrips'] > 0;
+            })
+            ->sortByDesc('totalCaught')
             ->values();
 
         return Inertia::render('PublicFlies', [
@@ -99,6 +91,8 @@ class PublicFliesController extends Controller
                 'member_since' => $user->created_at->format('M Y'),
             ],
             'flies' => $flies,
+            'availableYears' => $availableYears,
+            'selectedYear' => $yearFilter,
         ]);
     }
 }

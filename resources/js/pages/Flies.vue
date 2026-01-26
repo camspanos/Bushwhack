@@ -12,7 +12,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed, watch } from 'vue';
-import { Bug, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon, AlertCircle } from 'lucide-vue-next';
+import { Bug, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon, AlertCircle, Palette } from 'lucide-vue-next';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 
@@ -375,7 +375,7 @@ onMounted(() => {
                                             {{ fly.name }}
                                         </CardTitle>
                                         <CardDescription>
-                                            {{ fly.color }} - Size {{ fly.size }} - {{ fly.type }}
+                                            {{ fly.type }}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent class="space-y-3">
@@ -399,6 +399,13 @@ onMounted(() => {
                                                 Biggest Fish
                                             </span>
                                             <span class="font-bold text-amber-700 dark:text-amber-300">{{ formatSize(fly.biggestFish) }}"</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm text-muted-foreground flex items-center gap-2">
+                                                <Palette class="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                                                Favorite Color
+                                            </span>
+                                            <span class="font-bold text-purple-700 dark:text-purple-300">{{ fly.favoriteColor }}</span>
                                         </div>
                                     </CardContent>
                                 </Card>

@@ -192,7 +192,7 @@ onMounted(() => {
 
 <template>
     <Head title="Flies" />
-    <AppLayout title="Flies" :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
                 <!-- Error Alert -->

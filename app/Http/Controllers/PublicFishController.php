@@ -20,7 +20,6 @@ class PublicFishController extends Controller
         }
 
         $userId = $user->id;
-        $yearFilter = $request->input('year', 'lifetime');
 
         // Get available years from fishing logs
         $availableYears = FishingLog::where('user_id', $userId)
@@ -29,6 +28,12 @@ class PublicFishController extends Controller
             ->pluck('year')
             ->map(fn($year) => (string) $year)
             ->toArray();
+
+        // Get the year filter from request, default to current year if it has data, otherwise lifetime
+        $currentYear = now()->year;
+        $hasCurrentYearData = in_array((string) $currentYear, $availableYears);
+        $defaultYear = $hasCurrentYearData ? (string) $currentYear : 'lifetime';
+        $yearFilter = $request->input('year', $defaultYear);
 
         // Get all fish species for this user with catch statistics
         // Using the same query structure as FishController::statistics()

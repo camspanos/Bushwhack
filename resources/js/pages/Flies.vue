@@ -156,6 +156,14 @@ const fetchAvailableYears = async () => {
     try {
         const response = await axios.get('/fishing-logs/available-years');
         availableYears.value = response.data;
+
+        // Set default year: current year if it has data, otherwise lifetime
+        const hasCurrentYearData = availableYears.value.includes(currentYear);
+        if (hasCurrentYearData) {
+            selectedYearFilter.value = currentYear;
+        } else {
+            selectedYearFilter.value = 'lifetime';
+        }
     } catch (error) {
         console.error('Error fetching available years:', error);
     }
@@ -183,10 +191,10 @@ const yearLabel = computed(() => {
     return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
 });
 
-onMounted(() => {
+onMounted(async () => {
     fetchFlies();
-    fetchAvailableYears();
-    fetchFlyStats();
+    await fetchAvailableYears(); // Wait for years to be fetched and default year to be set
+    fetchFlyStats(); // Now fetch stats with the correct default year
 });
 </script>
 

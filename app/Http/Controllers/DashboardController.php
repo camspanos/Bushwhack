@@ -18,10 +18,6 @@ class DashboardController extends Controller
     {
         $userId = auth()->id();
 
-        // Get the year filter from request, default to current year
-        $currentYear = date('Y');
-        $yearFilter = $request->input('year', $currentYear);
-
         // Get available years from fishing logs
         $availableYears = FishingLog::where('user_id', $userId)
             ->selectRaw('DISTINCT YEAR(date) as year')
@@ -30,6 +26,12 @@ class DashboardController extends Controller
             ->filter()
             ->values()
             ->toArray();
+
+        // Get the year filter from request, default to current year if it has data, otherwise lifetime
+        $currentYear = now()->year;
+        $hasCurrentYearData = in_array($currentYear, $availableYears);
+        $defaultYear = $hasCurrentYearData ? (string) $currentYear : 'lifetime';
+        $yearFilter = $request->input('year', $defaultYear);
 
         // Build base query with year filter
         $baseQuery = FishingLog::where('user_id', $userId);
@@ -252,9 +254,13 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Streak tracker - calculate streaks of consecutive calendar days with catches
-        $allTripsOrdered = FishingLog::where('user_id', $userId)
-            ->where('quantity', '>', 0)
+        // Streak tracker - calculate streaks of consecutive calendar days with catches (filtered by year)
+        $streakQuery = FishingLog::where('user_id', $userId)
+            ->where('quantity', '>', 0);
+        if ($yearFilter !== 'lifetime') {
+            $streakQuery->whereYear('date', $yearFilter);
+        }
+        $allTripsOrdered = $streakQuery
             ->orderBy('date')
             ->get()
             ->groupBy(function($log) {
@@ -284,10 +290,14 @@ class DashboardController extends Controller
         }
         $longestStreak = max($longestStreak, $tempStreak);
 
-        // Calculate current streak (only counts if you fished today or yesterday)
+        // Calculate current streak (only counts if you fished today or yesterday, filtered by year)
         $today = \Carbon\Carbon::today();
-        $recentTrips = FishingLog::where('user_id', $userId)
-            ->where('quantity', '>', 0)
+        $recentTripsQuery = FishingLog::where('user_id', $userId)
+            ->where('quantity', '>', 0);
+        if ($yearFilter !== 'lifetime') {
+            $recentTripsQuery->whereYear('date', $yearFilter);
+        }
+        $recentTrips = $recentTripsQuery
             ->orderByDesc('date')
             ->get()
             ->groupBy(function($log) {

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rod extends Model
 {
+    protected $table = 'user_rods';
+
     protected $fillable = [
         'user_id',
         'rod_name',

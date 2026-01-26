@@ -89,7 +89,7 @@ class FishingLog extends Model
     /**
      * Get the friends that were present during this fishing trip.
      *
-     * This is a many-to-many relationship using the fishing_log_friend pivot table.
+     * This is a many-to-many relationship using the fishing_log_user_friend pivot table.
      * A fishing log can have multiple friends, and a friend can be associated with
      * multiple fishing logs.
      *
@@ -97,6 +97,6 @@ class FishingLog extends Model
      */
     public function friends(): BelongsToMany
     {
-        return $this->belongsToMany(Friend::class, 'fishing_log_friend');
+        return $this->belongsToMany(Friend::class, 'fishing_log_user_friend');
     }
 }

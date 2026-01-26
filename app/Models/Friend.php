@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Friend extends Model
 {
+    protected $table = 'user_friends';
+
     protected $fillable = [
         'user_id',
         'name',
@@ -26,7 +28,7 @@ class Friend extends Model
     /**
      * Get the fishing logs that this friend was present for.
      *
-     * This is a many-to-many relationship using the fishing_log_friend pivot table.
+     * This is a many-to-many relationship using the fishing_log_user_friend pivot table.
      * A friend can be associated with multiple fishing logs, and a fishing log can
      * have multiple friends.
      *
@@ -34,6 +36,6 @@ class Friend extends Model
      */
     public function fishingLogs(): BelongsToMany
     {
-        return $this->belongsToMany(FishingLog::class, 'fishing_log_friend');
+        return $this->belongsToMany(FishingLog::class, 'fishing_log_user_friend');
     }
 }

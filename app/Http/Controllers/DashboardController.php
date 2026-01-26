@@ -196,12 +196,12 @@ class DashboardController extends Controller
             $mostSuccessfulFlyQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $mostSuccessfulFly = $mostSuccessfulFlyQuery
-            ->join('flies', 'fishing_logs.fly_id', '=', 'flies.id')
-            ->select('flies.name', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
+            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->select('user_flies.name', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
             ->whereNotNull('fishing_logs.fly_id')
             ->where('fishing_logs.quantity', '>', 0)
-            ->where('flies.user_id', $userId)
-            ->groupBy('flies.name')
+            ->where('user_flies.user_id', $userId)
+            ->groupBy('user_flies.name')
             ->orderByDesc('total_caught')
             ->first();
 
@@ -211,13 +211,13 @@ class DashboardController extends Controller
             $biggestFishFlyQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $biggestFishFly = $biggestFishFlyQuery
-            ->join('flies', 'fishing_logs.fly_id', '=', 'flies.id')
-            ->select('flies.name', DB::raw('MAX(fishing_logs.max_size) as biggest_size'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
+            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->select('user_flies.name', DB::raw('MAX(fishing_logs.max_size) as biggest_size'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
             ->whereNotNull('fishing_logs.fly_id')
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
-            ->where('flies.user_id', $userId)
-            ->groupBy('flies.name')
+            ->where('user_flies.user_id', $userId)
+            ->groupBy('user_flies.name')
             ->orderByDesc('biggest_size')
             ->first();
 

@@ -1,6 +1,9 @@
 import DashboardController from './DashboardController'
 import FollowingController from './FollowingController'
 import PublicDashboardController from './PublicDashboardController'
+import PublicRodsController from './PublicRodsController'
+import PublicFishController from './PublicFishController'
+import PublicFliesController from './PublicFliesController'
 import LocationController from './LocationController'
 import RodController from './RodController'
 import FishController from './FishController'
@@ -13,6 +16,9 @@ const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
     FollowingController: Object.assign(FollowingController, FollowingController),
     PublicDashboardController: Object.assign(PublicDashboardController, PublicDashboardController),
+    PublicRodsController: Object.assign(PublicRodsController, PublicRodsController),
+    PublicFishController: Object.assign(PublicFishController, PublicFishController),
+    PublicFliesController: Object.assign(PublicFliesController, PublicFliesController),
     LocationController: Object.assign(LocationController, LocationController),
     RodController: Object.assign(RodController, RodController),
     FishController: Object.assign(FishController, FishController),

@@ -9,6 +9,9 @@ use App\Http\Controllers\FollowingController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PublicDashboardController;
+use App\Http\Controllers\PublicRodsController;
+use App\Http\Controllers\PublicFishController;
+use App\Http\Controllers\PublicFliesController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -62,6 +65,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('users/{user}/unfollow', [FollowingController::class, 'unfollow'])->name('users.unfollow');
     Route::get('users/search', [FollowingController::class, 'search'])->name('users.search');
     Route::get('users/{user}/dashboard', [PublicDashboardController::class, 'show'])->name('users.dashboard');
+    Route::get('users/{user}/rods', [PublicRodsController::class, 'index'])->name('users.rods');
+    Route::get('users/{user}/fish', [PublicFishController::class, 'index'])->name('users.fish');
+    Route::get('users/{user}/flies', [PublicFliesController::class, 'index'])->name('users.flies');
 });
 
 // CRUD Routes for Fishing Log Resources

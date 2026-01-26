@@ -395,17 +395,17 @@ onMounted(() => {
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Fish class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                                <Fish class="h-4 w-4 text-amber-500 dark:text-amber-400" />
                                                 Total Fish
                                             </span>
-                                            <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ equip.totalFish }}</span>
+                                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ equip.totalFish }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Award class="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                                                <Award class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                                                 Biggest Fish
                                             </span>
-                                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ formatSize(equip.biggestFish) }}"</span>
+                                            <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ formatSize(equip.biggestFish) }}"</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">

@@ -384,10 +384,10 @@ onMounted(() => {
                                     <CardContent class="space-y-3">
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <CalendarIcon class="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                                                <CalendarIcon class="h-4 w-4 text-amber-500 dark:text-amber-400" />
                                                 Total Trips
                                             </span>
-                                            <span class="font-bold text-blue-700 dark:text-blue-300">{{ location.totalTrips }}</span>
+                                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ location.totalTrips }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
@@ -398,10 +398,10 @@ onMounted(() => {
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Award class="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                                                <Award class="h-4 w-4 text-blue-500 dark:text-blue-400" />
                                                 Biggest Fish
                                             </span>
-                                            <span class="font-bold text-amber-700 dark:text-amber-300">{{ location.biggestFish }}"</span>
+                                            <span class="font-bold text-blue-700 dark:text-blue-300">{{ location.biggestFish }}"</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">

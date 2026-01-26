@@ -1,4 +1,5 @@
 import DashboardController from './DashboardController'
+import LeaderboardController from './LeaderboardController'
 import FollowingController from './FollowingController'
 import PublicDashboardController from './PublicDashboardController'
 import PublicRodsController from './PublicRodsController'
@@ -14,6 +15,7 @@ import Settings from './Settings'
 
 const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
+    LeaderboardController: Object.assign(LeaderboardController, LeaderboardController),
     FollowingController: Object.assign(FollowingController, FollowingController),
     PublicDashboardController: Object.assign(PublicDashboardController, PublicDashboardController),
     PublicRodsController: Object.assign(PublicRodsController, PublicRodsController),

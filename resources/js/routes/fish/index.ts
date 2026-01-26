@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ statistics.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 statistics.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ statistics.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\FishController::statistics
-* @see app/Http/Controllers/FishController.php:131
+* @see app/Http/Controllers/FishController.php:142
 * @route '/fish/stats/all'
 */
 statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ statistics.form = statisticsForm
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::index
-* @see app/Http/Controllers/FishController.php:18
+* @see app/Http/Controllers/FishController.php:19
 * @route '/fish'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -244,7 +244,7 @@ create.form = createForm
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:35
+* @see app/Http/Controllers/FishController.php:36
 * @route '/fish'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -259,7 +259,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:35
+* @see app/Http/Controllers/FishController.php:36
 * @route '/fish'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -268,7 +268,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:35
+* @see app/Http/Controllers/FishController.php:36
 * @route '/fish'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -278,7 +278,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:35
+* @see app/Http/Controllers/FishController.php:36
 * @route '/fish'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -288,7 +288,7 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\FishController::store
-* @see app/Http/Controllers/FishController.php:35
+* @see app/Http/Controllers/FishController.php:36
 * @route '/fish'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -498,7 +498,7 @@ edit.form = editForm
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 export const update = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -513,7 +513,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 update.url = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -546,7 +546,7 @@ update.url = (args: { fish: number | { id: number } } | [fish: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 update.put = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -556,7 +556,7 @@ update.put = (args: { fish: number | { id: number } } | [fish: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 update.patch = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -566,7 +566,7 @@ update.patch = (args: { fish: number | { id: number } } | [fish: number | { id: 
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 const updateForm = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -581,7 +581,7 @@ const updateForm = (args: { fish: number | { id: number } } | [fish: number | { 
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 updateForm.put = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -596,7 +596,7 @@ updateForm.put = (args: { fish: number | { id: number } } | [fish: number | { id
 
 /**
 * @see \App\Http\Controllers\FishController::update
-* @see app/Http/Controllers/FishController.php:78
+* @see app/Http/Controllers/FishController.php:83
 * @route '/fish/{fish}'
 */
 updateForm.patch = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -613,7 +613,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:110
+* @see app/Http/Controllers/FishController.php:121
 * @route '/fish/{fish}'
 */
 export const destroy = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -628,7 +628,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:110
+* @see app/Http/Controllers/FishController.php:121
 * @route '/fish/{fish}'
 */
 destroy.url = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -661,7 +661,7 @@ destroy.url = (args: { fish: number | { id: number } } | [fish: number | { id: n
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:110
+* @see app/Http/Controllers/FishController.php:121
 * @route '/fish/{fish}'
 */
 destroy.delete = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -671,7 +671,7 @@ destroy.delete = (args: { fish: number | { id: number } } | [fish: number | { id
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:110
+* @see app/Http/Controllers/FishController.php:121
 * @route '/fish/{fish}'
 */
 const destroyForm = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -686,7 +686,7 @@ const destroyForm = (args: { fish: number | { id: number } } | [fish: number | {
 
 /**
 * @see \App\Http\Controllers\FishController::destroy
-* @see app/Http/Controllers/FishController.php:110
+* @see app/Http/Controllers/FishController.php:121
 * @route '/fish/{fish}'
 */
 destroyForm.delete = (args: { fish: number | { id: number } } | [fish: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

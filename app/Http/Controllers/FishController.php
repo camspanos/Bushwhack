@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFishRequest;
 use App\Models\Fish;
+use App\Models\FishSpecies;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,8 +51,12 @@ class FishController extends Controller
                 ], 409);
             }
 
+            // Try to link to global fish species
+            $fishSpeciesId = $this->findMatchingFishSpecies($validated['species'], $validated['water_type'] ?? null);
+
             $fish = Fish::create([
                 'user_id' => auth()->id(),
+                'fish_species_id' => $fishSpeciesId,
                 ...$validated,
             ]);
 
@@ -97,7 +102,13 @@ class FishController extends Controller
             ], 409);
         }
 
-        $fish->update($validated);
+        // Try to link to global fish species
+        $fishSpeciesId = $this->findMatchingFishSpecies($validated['species'], $validated['water_type'] ?? null);
+
+        $fish->update([
+            'fish_species_id' => $fishSpeciesId,
+            ...$validated,
+        ]);
 
         return response()->json($fish);
     }
@@ -172,5 +183,46 @@ class FishController extends Controller
             ->values();
 
         return response()->json($fish);
+    }
+
+    /**
+     * Find a matching global fish species based on species name.
+     *
+     * Attempts to match the user's fish species name to a global fish species
+     * using case-insensitive partial matching. If a match is found, returns
+     * the fish_species_id, otherwise returns null.
+     *
+     * Note: This does NOT create new entries in fish_species table.
+     * Only the seeder should populate fish_species.
+     */
+    private function findMatchingFishSpecies(string $species, ?string $waterType): ?int
+    {
+        // Try exact match first
+        $fishSpecies = FishSpecies::whereRaw('LOWER(species) = ?', [strtolower($species)])
+            ->first();
+
+        if ($fishSpecies) {
+            return $fishSpecies->id;
+        }
+
+        // Try partial match - check if user's species contains global species name
+        $fishSpecies = FishSpecies::whereRaw('LOWER(?) LIKE CONCAT("%", LOWER(species), "%")', [$species])
+            ->first();
+
+        if ($fishSpecies) {
+            return $fishSpecies->id;
+        }
+
+        // Try reverse partial match - check if global species contains user's species name
+        $fishSpecies = FishSpecies::whereRaw('LOWER(species) LIKE ?', ['%' . strtolower($species) . '%'])
+            ->first();
+
+        if ($fishSpecies) {
+            return $fishSpecies->id;
+        }
+
+        // If no match found, return null (do not create new fish_species entries)
+        // Only the seeder should populate the fish_species table
+        return null;
     }
 }

@@ -14,6 +14,7 @@ class Fish extends Model
         'user_id',
         'species',
         'water_type',
+        'fish_species_id',
     ];
 
     /**
@@ -34,5 +35,15 @@ class Fish extends Model
     public function fishingLogs(): HasMany
     {
         return $this->hasMany(FishingLog::class);
+    }
+
+    /**
+     * Get the global fish species this user fish belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function fishSpecies(): BelongsTo
+    {
+        return $this->belongsTo(FishSpecies::class);
     }
 }

@@ -58,6 +58,9 @@ Route::get('about', function () {
     return Inertia::render('About');
 })->middleware(['auth', 'verified'])->name('about');
 
+// Leaderboard Route (public)
+Route::get('leaderboard', [App\Http\Controllers\LeaderboardController::class, 'index'])->name('leaderboard');
+
 // Following Routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('following', [FollowingController::class, 'index'])->name('following');

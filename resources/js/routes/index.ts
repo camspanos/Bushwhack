@@ -891,6 +891,87 @@ aboutForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 about.form = aboutForm
 
 /**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+export const leaderboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: leaderboard.url(options),
+    method: 'get',
+})
+
+leaderboard.definition = {
+    methods: ["get","head"],
+    url: '/leaderboard',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+leaderboard.url = (options?: RouteQueryOptions) => {
+    return leaderboard.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+leaderboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: leaderboard.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+leaderboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: leaderboard.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+const leaderboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: leaderboard.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+leaderboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: leaderboard.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\LeaderboardController::leaderboard
+* @see app/Http/Controllers/LeaderboardController.php:17
+* @route '/leaderboard'
+*/
+leaderboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: leaderboard.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+leaderboard.form = leaderboardForm
+
+/**
 * @see \App\Http\Controllers\FollowingController::following
 * @see app/Http/Controllers/FollowingController.php:16
 * @route '/following'

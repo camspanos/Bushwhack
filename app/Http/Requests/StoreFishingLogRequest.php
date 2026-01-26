@@ -24,14 +24,14 @@ class StoreFishingLogRequest extends FormRequest
         return [
             'date' => 'required|date',
             'location_id' => 'nullable|exists:locations,id',
-            'fish_id' => 'nullable|exists:fish,id',
+            'fish_id' => 'nullable|exists:user_fish,id',
             'quantity' => 'nullable|integer|min:0',
             'max_size' => 'nullable|numeric|min:0',
-            'fly_id' => 'nullable|exists:flies,id',
-            'equipment_id' => 'nullable|exists:rods,id',
+            'fly_id' => 'nullable|exists:user_flies,id',
+            'equipment_id' => 'nullable|exists:user_rods,id',
             'style' => 'nullable|string|max:255',
             'friend_ids' => 'nullable|array',
-            'friend_ids.*' => 'exists:friends,id',
+            'friend_ids.*' => 'exists:user_friends,id',
             'notes' => 'nullable|string',
         ];
     }

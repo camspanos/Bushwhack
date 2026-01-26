@@ -68,6 +68,7 @@ class FollowingController extends Controller
         $query = $request->input('query');
 
         $users = User::where('id', '!=', auth()->id())
+            ->where('allow_followers', true)
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('email', 'like', "%{$query}%");

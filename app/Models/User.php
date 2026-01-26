@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'allow_followers',
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'allow_followers' => 'boolean',
         ];
     }
 
@@ -81,7 +83,7 @@ class User extends Authenticatable
      */
     public function follow(User $user): void
     {
-        if (!$this->isFollowing($user) && $this->id !== $user->id) {
+        if (!$this->isFollowing($user) && $this->id !== $user->id && $user->allow_followers) {
             $this->following()->attach($user->id);
         }
     }

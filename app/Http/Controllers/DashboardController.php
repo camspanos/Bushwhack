@@ -119,6 +119,26 @@ class DashboardController extends Controller
                 ];
             });
 
+        // Top 7 species by biggest fish size (filtered by year)
+        $topSpeciesBySize = (clone $baseQuery)
+            ->select('fish_id', DB::raw('MAX(max_size) as biggest_size'), DB::raw('SUM(quantity) as total_caught'))
+            ->whereNotNull('fish_id')
+            ->whereNotNull('max_size')
+            ->where('max_size', '>', 0)
+            ->groupBy('fish_id')
+            ->orderByDesc('biggest_size')
+            ->with('fish')
+            ->limit(7)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'species' => $item->fish?->species ?? 'Unknown',
+                    'water_type' => $item->fish?->water_type ?? null,
+                    'biggest_size' => $item->biggest_size ?? 0,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
         // Catches by month (filtered by year or last 6 months for lifetime)
         $monthQuery = FishingLog::where('user_id', $userId);
         if ($yearFilter === 'lifetime') {
@@ -156,6 +176,26 @@ class DashboardController extends Controller
                     'city' => $item->location->city ?? null,
                     'state' => $item->location->state ?? null,
                     'total' => $item->total_caught ?? 0,
+                ];
+            });
+
+        // Top 7 locations by biggest fish size (filtered by year)
+        $topLocationsBySize = (clone $baseQuery)
+            ->select('location_id', DB::raw('MAX(max_size) as biggest_size'))
+            ->whereNotNull('location_id')
+            ->whereNotNull('max_size')
+            ->where('max_size', '>', 0)
+            ->groupBy('location_id')
+            ->orderByDesc('biggest_size')
+            ->with('location')
+            ->limit(7)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->location->name ?? 'Unknown',
+                    'city' => $item->location->city ?? null,
+                    'state' => $item->location->state ?? null,
+                    'biggest_size' => $item->biggest_size ?? 0,
                 ];
             });
 
@@ -458,6 +498,8 @@ class DashboardController extends Controller
             'catchesByMonthPie' => $catchesByMonthPie,
             'catchesByMoonPhase' => $catchesByMoonPhase,
             'topLocations' => $topLocations,
+            'topLocationsBySize' => $topLocationsBySize,
+            'topSpeciesBySize' => $topSpeciesBySize,
             'mostProductiveLocation' => $mostProductiveLocation ? [
                 'name' => $mostProductiveLocation->location?->name,
                 'total' => $mostProductiveLocation->total_caught ?? 0,

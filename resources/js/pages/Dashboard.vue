@@ -62,6 +62,20 @@ interface LocationData {
     total: number;
 }
 
+interface LocationSizeData {
+    name: string;
+    city: string | null;
+    state: string | null;
+    biggest_size: number;
+}
+
+interface SpeciesSizeData {
+    species: string;
+    water_type: string | null;
+    biggest_size: number;
+    total_caught: number;
+}
+
 interface TopPerformer {
     name: string;
     total: number;
@@ -114,6 +128,8 @@ const props = defineProps<{
     catchesByMonthPie: MonthData[];
     catchesByMoonPhase: MoonPhaseData[];
     topLocations: LocationData[];
+    topLocationsBySize: LocationSizeData[];
+    topSpeciesBySize: SpeciesSizeData[];
     mostProductiveLocation: TopPerformer | null;
     mostSuccessfulFly: TopPerformer | null;
     biggestFishFly: BiggestFishFly | null;
@@ -1175,14 +1191,14 @@ const hoveredMoonSlice = ref<number | null>(null);
 
             <!-- Top Species & Top Locations -->
             <div class="grid gap-4 md:grid-cols-2">
-                <!-- Top Species Caught -->
+                <!-- Top Species Caught by Count -->
                 <Card class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
                                 <Fish class="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                             </div>
-                            Top Species Caught
+                            Top Species by Count
                         </CardTitle>
                         <CardDescription>Your most caught species</CardDescription>
                     </CardHeader>
@@ -1214,14 +1230,55 @@ const hoveredMoonSlice = ref<number | null>(null);
                     </CardContent>
                 </Card>
 
-                <!-- Top Locations -->
+                <!-- Top Species by Size -->
+                <Card class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
+                                <Award class="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            Top Species by Size
+                        </CardTitle>
+                        <CardDescription>Biggest fish per species</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="topSpeciesBySize.length > 0" class="space-y-2">
+                            <div v-for="(species, index) in topSpeciesBySize" :key="species.species" class="flex items-center gap-3 pb-2 border-b last:border-0">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-sm font-bold flex-shrink-0">
+                                    {{ index + 1 }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">{{ species.species }}</span>
+                                        <span v-if="species.water_type" class="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+                                            {{ species.water_type }}
+                                        </span>
+                                        <span v-if="index === 0">🥇</span>
+                                        <span v-else-if="index === 1">🥈</span>
+                                        <span v-else-if="index === 2">🥉</span>
+                                    </div>
+                                    <div class="text-sm text-muted-foreground flex items-center gap-2">
+                                        <span>Largest catch:</span>
+                                        <span class="font-medium text-orange-700 dark:text-orange-300">{{ formatSize(species.biggest_size) }}"</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-muted-foreground">{{ species.total_caught }} catches</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No species data available</p>
+                    </CardContent>
+                </Card>
+
+                <!-- Top Locations by Count -->
                 <Card class="bg-gradient-to-br from-lime-50/30 to-transparent dark:from-lime-950/10">
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-lime-100 p-1.5 dark:bg-lime-900/30">
                                 <MapPin class="h-5 w-5 text-lime-600 dark:text-lime-400" />
                             </div>
-                            Top Locations
+                            Top Locations by Count
                         </CardTitle>
                         <CardDescription>Your most productive spots</CardDescription>
                     </CardHeader>
@@ -1242,6 +1299,45 @@ const hoveredMoonSlice = ref<number | null>(null);
                                 </div>
                                 <div v-if="location.city || location.state" class="text-right">
                                     <div v-if="location.city" class="text-sm font-medium text-lime-700 dark:text-lime-300">{{ location.city }}</div>
+                                    <div v-if="location.state" class="text-xs text-muted-foreground">{{ location.state }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No location data available</p>
+                    </CardContent>
+                </Card>
+
+                <!-- Top Locations by Size -->
+                <Card class="bg-gradient-to-br from-emerald-50/30 to-transparent dark:from-emerald-950/10">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-emerald-100 p-1.5 dark:bg-emerald-900/30">
+                                <Award class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            Top Locations by Size
+                        </CardTitle>
+                        <CardDescription>Biggest fish per location</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="topLocationsBySize.length > 0" class="space-y-2">
+                            <div v-for="(location, index) in topLocationsBySize" :key="location.name" class="flex items-center gap-3 pb-2 border-b last:border-0">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-bold flex-shrink-0">
+                                    {{ index + 1 }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium">{{ location.name }}</span>
+                                        <span v-if="index === 0">🥇</span>
+                                        <span v-else-if="index === 1">🥈</span>
+                                        <span v-else-if="index === 2">🥉</span>
+                                    </div>
+                                    <div class="text-sm text-muted-foreground flex items-center gap-2">
+                                        <span>Largest catch:</span>
+                                        <span class="font-medium text-emerald-700 dark:text-emerald-300">{{ formatSize(location.biggest_size) }}"</span>
+                                    </div>
+                                </div>
+                                <div v-if="location.city || location.state" class="text-right">
+                                    <div v-if="location.city" class="text-sm font-medium text-emerald-700 dark:text-emerald-300">{{ location.city }}</div>
                                     <div v-if="location.state" class="text-xs text-muted-foreground">{{ location.state }}</div>
                                 </div>
                             </div>

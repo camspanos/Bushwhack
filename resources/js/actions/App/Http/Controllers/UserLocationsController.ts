@@ -501,7 +501,7 @@ edit.form = editForm
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-export const update = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -516,9 +516,13 @@ update.definition = {
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-update.url = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions) => {
+update.url = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { location: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { location: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -530,7 +534,9 @@ update.url = (args: { location: string | number } | [location: string | number ]
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        location: args.location,
+        location: typeof args.location === 'object'
+        ? args.location.id
+        : args.location,
     }
 
     return update.definition.url
@@ -543,7 +549,7 @@ update.url = (args: { location: string | number } | [location: string | number ]
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-update.put = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -553,7 +559,7 @@ update.put = (args: { location: string | number } | [location: string | number ]
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-update.patch = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -563,7 +569,7 @@ update.patch = (args: { location: string | number } | [location: string | number
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-const updateForm = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -578,7 +584,7 @@ const updateForm = (args: { location: string | number } | [location: string | nu
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-updateForm.put = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -593,7 +599,7 @@ updateForm.put = (args: { location: string | number } | [location: string | numb
 * @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-updateForm.patch = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -610,7 +616,7 @@ update.form = updateForm
 * @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-export const destroy = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -625,9 +631,13 @@ destroy.definition = {
 * @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-destroy.url = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { location: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { location: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -639,7 +649,9 @@ destroy.url = (args: { location: string | number } | [location: string | number 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        location: args.location,
+        location: typeof args.location === 'object'
+        ? args.location.id
+        : args.location,
     }
 
     return destroy.definition.url
@@ -652,7 +664,7 @@ destroy.url = (args: { location: string | number } | [location: string | number 
 * @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-destroy.delete = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -662,7 +674,7 @@ destroy.delete = (args: { location: string | number } | [location: string | numb
 * @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-const destroyForm = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -677,7 +689,7 @@ const destroyForm = (args: { location: string | number } | [location: string | n
 * @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-destroyForm.delete = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { location: number | { id: number } } | [location: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

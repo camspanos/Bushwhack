@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\FishingLog;
 use App\Services\TimeOfDayCalculator;
+use Illuminate\Support\Facades\Cache;
 
 class FishingLogsObserver
 {
@@ -26,6 +27,23 @@ class FishingLogsObserver
         if ($fishingLog->isDirty(['time', 'date', 'user_location_id'])) {
             $this->calculateTimeOfDay($fishingLog);
         }
+    }
+
+    /**
+     * Handle the FishingLog "saved" event.
+     * This runs after the model is saved to the database (both create and update).
+     */
+    public function saved(FishingLog $fishingLog): void
+    {
+        $this->clearLeaderboardCache($fishingLog);
+    }
+
+    /**
+     * Handle the FishingLog "deleted" event.
+     */
+    public function deleted(FishingLog $fishingLog): void
+    {
+        $this->clearLeaderboardCache($fishingLog);
     }
 
     /**
@@ -55,5 +73,31 @@ class FishingLogsObserver
             $latitude,
             $longitude
         );
+    }
+
+    /**
+     * Clear leaderboard cache when a fishing log is created, updated, or deleted.
+     * Clears cache for the month/year of the fishing log for both water types.
+     */
+    private function clearLeaderboardCache(FishingLog $fishingLog): void
+    {
+        // Only clear cache if the user is premium (since leaderboard only shows premium users)
+        if (!$fishingLog->user || !$fishingLog->user->is_premium) {
+            return;
+        }
+
+        $date = $fishingLog->date;
+
+        // Clear cache for the specific month
+        $month = $date->format('Y-m');
+        Cache::forget("leaderboard_{$month}_all");
+        Cache::forget("leaderboard_{$month}_freshwater");
+        Cache::forget("leaderboard_{$month}_saltwater");
+
+        // Clear cache for the year
+        $year = $date->format('Y');
+        Cache::forget("leaderboard_{$year}_all");
+        Cache::forget("leaderboard_{$year}_freshwater");
+        Cache::forget("leaderboard_{$year}_saltwater");
     }
 }

@@ -6,6 +6,7 @@ use App\Models\FishSpecies;
 use App\Models\FishingLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,76 +20,112 @@ class LeaderboardController extends Controller
         $month = $request->input('month', now()->format('Y-m'));
         $waterType = $request->input('water_type', 'all');
 
-        // Parse the month input - handle both Y-m format and year-only format
-        if (strlen($month) === 4 && is_numeric($month)) {
-            // Year only - get full year range
-            $startDate = Carbon::parse($month . '-01-01')->startOfYear();
-            $endDate = Carbon::parse($month . '-12-31')->endOfYear();
-        } else {
-            // Month format (Y-m)
-            $date = Carbon::parse($month . '-01');
-            $startDate = $date->copy()->startOfMonth();
-            $endDate = $date->copy()->endOfMonth();
-        }
+        // Create a cache key based on the filters
+        $cacheKey = "leaderboard_{$month}_{$waterType}";
 
-        // Get fish species based on water type filter
-        $speciesQuery = FishSpecies::query();
-        if ($waterType !== 'all') {
-            $speciesQuery->where('water_type', $waterType);
-        }
-        $species = $speciesQuery->orderBy('species')->get();
-
-        // Build leaderboard data for each species
-        $leaderboard = $species->map(function ($fishSpecies) use ($startDate, $endDate) {
-            // Get biggest fish for this species in the time period
-            // Join through user_fish to get fish_species_id and users table to filter by premium status
-            $biggestLog = FishingLog::join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
-                ->join('users', 'fishing_logs.user_id', '=', 'users.id')
-                ->where('user_fish.fish_species_id', $fishSpecies->id)
-                ->where('users.is_premium', true) // Only include premium users
-                ->whereBetween('fishing_logs.date', [$startDate, $endDate])
-                ->whereNotNull('fishing_logs.max_size')
-                ->orderByDesc('fishing_logs.max_size')
-                ->with('user')
-                ->select('fishing_logs.*')
-                ->first();
-
-            // Get most caught for this species in the time period
-            $mostCaughtData = FishingLog::join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
-                ->join('users', 'fishing_logs.user_id', '=', 'users.id')
-                ->where('user_fish.fish_species_id', $fishSpecies->id)
-                ->where('users.is_premium', true) // Only include premium users
-                ->whereBetween('fishing_logs.date', [$startDate, $endDate])
-                ->selectRaw('fishing_logs.user_id, SUM(fishing_logs.quantity) as total_caught')
-                ->groupBy('fishing_logs.user_id')
-                ->orderByDesc('total_caught')
-                ->first();
-
-            // Load the user for most caught (can't use with() on grouped queries)
-            $mostCaughtUser = null;
-            if ($mostCaughtData) {
-                $mostCaughtUser = \App\Models\User::find($mostCaughtData->user_id);
+        // Cache the leaderboard data for 1 hour
+        $leaderboard = Cache::remember($cacheKey, 3600, function () use ($month, $waterType) {
+            // Parse the month input - handle both Y-m format and year-only format
+            if (strlen($month) === 4 && is_numeric($month)) {
+                // Year only - get full year range
+                $startDate = Carbon::parse($month . '-01-01')->startOfYear();
+                $endDate = Carbon::parse($month . '-12-31')->endOfYear();
+            } else {
+                // Month format (Y-m)
+                $date = Carbon::parse($month . '-01');
+                $startDate = $date->copy()->startOfMonth();
+                $endDate = $date->copy()->endOfMonth();
             }
 
-            return [
-                'species' => $fishSpecies->species,
-                'water_type' => $fishSpecies->water_type,
-                'biggest_fish' => $biggestLog && $biggestLog->user->is_premium ? [
-                    'user_name' => $biggestLog->user->name,
-                    'user_id' => $biggestLog->user->id,
-                    'size' => $biggestLog->max_size,
-                    'date' => $biggestLog->date->format('M d, Y'),
-                ] : null,
-                'most_caught' => $mostCaughtData && $mostCaughtUser && $mostCaughtUser->is_premium ? [
-                    'user_name' => $mostCaughtUser->name,
-                    'user_id' => $mostCaughtUser->id,
-                    'total' => $mostCaughtData->total_caught,
-                ] : null,
-            ];
-        })->filter(function ($item) {
-            // Only include species that have at least one premium leader
-            return $item['biggest_fish'] !== null || $item['most_caught'] !== null;
-        })->values();
+            // OPTIMIZED: Get all biggest fish in one query using window functions
+            $biggestFishQuery = FishingLog::join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+                ->join('users', 'fishing_logs.user_id', '=', 'users.id')
+                ->join('fish_species', 'user_fish.fish_species_id', '=', 'fish_species.id')
+                ->where('users.is_premium', true)
+                ->whereBetween('fishing_logs.date', [$startDate, $endDate])
+                ->whereNotNull('fishing_logs.max_size');
+
+            if ($waterType !== 'all') {
+                $biggestFishQuery->where('fish_species.water_type', $waterType);
+            }
+
+            $biggestFish = $biggestFishQuery
+                ->selectRaw('
+                    fish_species.id as species_id,
+                    fish_species.species,
+                    fish_species.water_type,
+                    fishing_logs.max_size,
+                    fishing_logs.date,
+                    users.id as user_id,
+                    users.name as user_name,
+                    ROW_NUMBER() OVER (PARTITION BY fish_species.id ORDER BY fishing_logs.max_size DESC) as rn
+                ')
+                ->get()
+                ->where('rn', 1)
+                ->keyBy('species_id');
+
+            // OPTIMIZED: Get all most caught in one query
+            $mostCaughtQuery = FishingLog::join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+                ->join('users', 'fishing_logs.user_id', '=', 'users.id')
+                ->join('fish_species', 'user_fish.fish_species_id', '=', 'fish_species.id')
+                ->where('users.is_premium', true)
+                ->whereBetween('fishing_logs.date', [$startDate, $endDate]);
+
+            if ($waterType !== 'all') {
+                $mostCaughtQuery->where('fish_species.water_type', $waterType);
+            }
+
+            $mostCaughtRaw = $mostCaughtQuery
+                ->selectRaw('
+                    fish_species.id as species_id,
+                    fishing_logs.user_id,
+                    users.name as user_name,
+                    SUM(fishing_logs.quantity) as total_caught
+                ')
+                ->groupBy('fish_species.id', 'fishing_logs.user_id', 'users.name')
+                ->get();
+
+            // Get the top catcher for each species
+            $mostCaught = $mostCaughtRaw
+                ->groupBy('species_id')
+                ->map(function ($group) {
+                    return $group->sortByDesc('total_caught')->first();
+                });
+
+            // Get fish species based on water type filter
+            $speciesQuery = FishSpecies::query();
+            if ($waterType !== 'all') {
+                $speciesQuery->where('water_type', $waterType);
+            }
+            $species = $speciesQuery->orderBy('species')->get();
+
+            // Build leaderboard data by combining the results
+            $leaderboard = $species->map(function ($fishSpecies) use ($biggestFish, $mostCaught) {
+                $biggest = $biggestFish->get($fishSpecies->id);
+                $caught = $mostCaught->get($fishSpecies->id);
+
+                return [
+                    'species' => $fishSpecies->species,
+                    'water_type' => $fishSpecies->water_type,
+                    'biggest_fish' => $biggest ? [
+                        'user_name' => $biggest->user_name,
+                        'user_id' => $biggest->user_id,
+                        'size' => (float) $biggest->max_size,
+                        'date' => Carbon::parse($biggest->date)->format('M d, Y'),
+                    ] : null,
+                    'most_caught' => $caught ? [
+                        'user_name' => $caught->user_name,
+                        'user_id' => $caught->user_id,
+                        'total' => (int) $caught->total_caught,
+                    ] : null,
+                ];
+            })->filter(function ($item) {
+                // Only include species that have at least one premium leader
+                return $item['biggest_fish'] !== null || $item['most_caught'] !== null;
+            })->values();
+
+            return $leaderboard;
+        });
 
         // Generate month options (current month + previous 11 months)
         $monthOptions = collect(range(0, 11))->map(function ($i) {

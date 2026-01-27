@@ -7,7 +7,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown } from 'lucide-vue-next';
+import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun } from 'lucide-vue-next';
 import { computed, ref, watch, nextTick } from 'vue';
 
 interface Stats {
@@ -1025,7 +1025,7 @@ const hoveredSunSlice = ref<number | null>(null);
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-slate-100 p-1.5 dark:bg-slate-900/30">
-                                <span class="text-lg">🌙</span>
+                                <Moon class="h-5 w-5 text-slate-600 dark:text-slate-400" />
                             </div>
                             Fish Caught by Moon Phase
                         </CardTitle>
@@ -1119,7 +1119,7 @@ const hoveredSunSlice = ref<number | null>(null);
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
-                                <span class="text-lg">☀️</span>
+                                <Sun class="h-5 w-5 text-amber-600 dark:text-amber-400" />
                             </div>
                             Fish Caught by Sun Phase
                         </CardTitle>

@@ -121,12 +121,18 @@ interface MoonPhaseData {
     total_caught: number;
 }
 
+interface SunPhaseData {
+    time_of_day: string;
+    total_caught: number;
+}
+
 const props = defineProps<{
     stats: Stats;
     allSpecies: SpeciesData[];
     catchesByMonth: ChartData[];
     catchesByMonthPie: MonthData[];
     catchesByMoonPhase: MoonPhaseData[];
+    catchesBySunPhase: SunPhaseData[];
     topLocations: LocationData[];
     topLocationsBySize: LocationSizeData[];
     topSpeciesBySize: SpeciesSizeData[];
@@ -398,9 +404,52 @@ const moonPhasePieSlices = computed(() => {
     return slices;
 });
 
+// Sun phase pie chart colors
+const sunPhaseColors: Record<string, string> = {
+    'Pre-dawn': '#7c3aed', // violet
+    'Morning': '#f59e0b', // amber
+    'Midday': '#eab308', // yellow
+    'Afternoon': '#f97316', // orange
+    'Evening': '#ec4899', // pink
+    'Night': '#1e293b', // slate-800
+};
+
+const getSunPhaseColor = (phase: string) => {
+    return sunPhaseColors[phase] || '#64748b';
+};
+
+// Sun phase pie chart slices
+const sunPhasePieSlices = computed(() => {
+    const total = props.catchesBySunPhase.reduce((sum, phase) => sum + Number(phase.total_caught), 0);
+    if (total === 0) return [];
+
+    const slices = [];
+    let currentAngle = -90;
+
+    props.catchesBySunPhase.forEach((phase) => {
+        const caught = Number(phase.total_caught);
+        const percentage = caught / total;
+        // For a single item (100%), use 359.99 degrees to avoid full circle rendering issue
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getSunPhaseColor(phase.time_of_day),
+            percentage: Math.round(percentage * 100),
+            phase: phase.time_of_day,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
 // Hover state for pie charts
 const hoveredMonthSlice = ref<number | null>(null);
 const hoveredMoonSlice = ref<number | null>(null);
+const hoveredSunSlice = ref<number | null>(null);
 </script>
 
 <template>
@@ -876,8 +925,8 @@ const hoveredMoonSlice = ref<number | null>(null);
                 </Card>
             </div>
 
-            <!-- Month & Moon Phase Pie Charts -->
-            <div class="grid gap-4 md:grid-cols-2">
+            <!-- Month, Moon Phase & Sun Phase Pie Charts -->
+            <div class="grid gap-4 md:grid-cols-3">
                 <!-- Fish Caught per Month -->
                 <Card class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10">
                     <CardHeader class="pb-1">
@@ -1060,6 +1109,99 @@ const hoveredMoonSlice = ref<number | null>(null);
                             <p class="text-muted-foreground text-sm mb-2">No moon phase data yet</p>
                             <Link :href="fishingLog()" class="text-sm text-primary hover:underline">
                                 Log catches with moon phases →
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Fish Caught by Sun Phase -->
+                <Card class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10">
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
+                                <span class="text-lg">☀️</span>
+                            </div>
+                            Fish Caught by Sun Phase
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesBySunPhase.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in sunPhasePieSlices" :key="`sun-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredSunSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100"
+                                            @mouseenter="hoveredSunSlice = index"
+                                            @mouseleave="hoveredSunSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesBySunPhase.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Phases
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(phase, index) in catchesBySunPhase"
+                                    :key="phase.time_of_day"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredSunSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredSunSlice = index"
+                                    @mouseleave="hoveredSunSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getSunPhaseColor(phase.time_of_day) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ phase.time_of_day }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ phase.total_caught }}</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ sunPhasePieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-4">
+                            <p class="text-muted-foreground text-sm mb-2">No sun phase data yet</p>
+                            <Link :href="fishingLog()" class="text-sm text-primary hover:underline">
+                                Log catches with times →
                             </Link>
                         </div>
                     </CardContent>

@@ -368,6 +368,28 @@ class DashboardController extends Controller
                 ];
             });
 
+        // Fish caught by sun phase (for pie chart, filtered by year)
+        $catchesBySunPhaseQuery = FishingLog::where('user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $catchesBySunPhaseQuery->whereYear('date', $yearFilter);
+        }
+        $catchesBySunPhase = $catchesBySunPhaseQuery
+            ->select(
+                'time_of_day',
+                DB::raw('SUM(quantity) as total_caught')
+            )
+            ->whereNotNull('time_of_day')
+            ->where('quantity', '>', 0)
+            ->groupBy('time_of_day')
+            ->orderByRaw("FIELD(time_of_day, 'Pre-dawn', 'Morning', 'Midday', 'Afternoon', 'Evening', 'Night')")
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'time_of_day' => $item->time_of_day,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
         // Catches over time - for line chart (filtered by year)
         // Aggregate by week or month depending on data volume
         $catchesOverTimeQuery = (clone $baseQuery);
@@ -497,6 +519,7 @@ class DashboardController extends Controller
             'catchesByMonth' => $catchesByMonth,
             'catchesByMonthPie' => $catchesByMonthPie,
             'catchesByMoonPhase' => $catchesByMoonPhase,
+            'catchesBySunPhase' => $catchesBySunPhase,
             'topLocations' => $topLocations,
             'topLocationsBySize' => $topLocationsBySize,
             'topSpeciesBySize' => $topSpeciesBySize,

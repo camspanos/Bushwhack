@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\UserFish;
 use App\Models\FishingLog;
 use App\Models\UserFly;
-use App\Models\Friend;
+use App\Models\UserFriend;
 use App\Models\UserLocation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,6 +19,21 @@ class DashboardController extends Controller
     {
         $userId = auth()->id();
         $user = auth()->user();
+
+        // Create cache key based on user and year filter
+        $yearFilter = $request->input('year', (string) now()->year);
+        $cacheKey = "dashboard_{$userId}_{$yearFilter}";
+
+        // Cache dashboard data for 1 hour
+        $data = Cache::remember($cacheKey, 3600, function () use ($userId, $user, $request) {
+            return $this->getDashboardData($userId, $user, $request);
+        });
+
+        return Inertia::render('Dashboard', $data);
+    }
+
+    private function getDashboardData($userId, $user, Request $request): array
+    {
 
         // Get available years from fishing logs (show all years to everyone)
         $availableYears = FishingLog::where('user_id', $userId)
@@ -66,7 +82,7 @@ class DashboardController extends Controller
             $totalFriends->whereYear('fishing_logs.date', $yearFilter);
         }
 
-        $totalFriends = $totalFriends->distinct('fishing_log_user_friend.friend_id')->count('fishing_log_user_friend.friend_id');
+        $totalFriends = $totalFriends->distinct('fishing_log_user_friend.user_friend_id')->count('fishing_log_user_friend.user_friend_id');
 
         // Favorite location (most visited, filtered by year)
         $favoriteLocation = (clone $baseQuery)
@@ -483,7 +499,7 @@ class DashboardController extends Controller
             }
         }
 
-        return Inertia::render('Dashboard', [
+        return [
             'stats' => [
                 'totalCatches' => $totalCatches,
                 'totalTrips' => $totalTrips,
@@ -562,6 +578,6 @@ class DashboardController extends Controller
             ],
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
-        ]);
+        ];
     }
 }

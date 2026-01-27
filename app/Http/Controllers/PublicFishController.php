@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\UserFish;
 use App\Models\FishingLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,45 @@ class PublicFishController extends Controller
         $userId = $user->id;
         $authUser = auth()->user();
 
+        // Determine year filter
+        $yearFilter = $this->getYearFilter($userId, $authUser, $request);
+
+        // Create cache key
+        $cacheKey = "public_fish_{$userId}_{$yearFilter}";
+
+        // Cache data for 1 hour
+        $data = Cache::remember($cacheKey, 3600, function () use ($user, $userId, $authUser, $request) {
+            return $this->getPublicFishData($user, $userId, $authUser, $request);
+        });
+
+        return Inertia::render('PublicFish', $data);
+    }
+
+    private function getYearFilter($userId, $authUser, Request $request): string
+    {
+        // Free users can only view current year data on public pages, UNLESS viewing user_id 1
+        if (!$authUser->canFilterByYear() && $userId !== 1) {
+            return (string) now()->year;
+        }
+
+        // Get available years from fishing logs
+        $availableYears = FishingLog::where('user_id', $userId)
+            ->selectRaw('DISTINCT YEAR(date) as year')
+            ->orderByDesc('year')
+            ->pluck('year')
+            ->map(fn($year) => (string) $year)
+            ->toArray();
+
+        // Get the year filter from request, default to current year if it has data, otherwise lifetime
+        $currentYear = now()->year;
+        $hasCurrentYearData = in_array((string) $currentYear, $availableYears);
+        $defaultYear = $hasCurrentYearData ? (string) $currentYear : 'lifetime';
+
+        return $request->input('year', $defaultYear);
+    }
+
+    private function getPublicFishData(User $user, $userId, $authUser, Request $request): array
+    {
         // Free users can only view current year data on public pages, UNLESS viewing user_id 1
         if (!$authUser->canFilterByYear() && $userId !== 1) {
             $yearFilter = (string) now()->year;
@@ -83,7 +123,7 @@ class PublicFishController extends Controller
             ->sortByDesc('totalCaught')
             ->values();
 
-        return Inertia::render('PublicFish', [
+        return [
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -93,7 +133,7 @@ class PublicFishController extends Controller
             'fishSpecies' => $fishSpecies,
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
-        ]);
+        ];
     }
 }
 

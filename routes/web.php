@@ -6,7 +6,7 @@ use App\Http\Controllers\UserFishController;
 use App\Http\Controllers\FishingLogsController;
 use App\Http\Controllers\UserFliesController;
 use App\Http\Controllers\FollowingController;
-use App\Http\Controllers\FriendController;
+use App\Http\Controllers\UserFriendsController;
 use App\Http\Controllers\UserLocationsController;
 use App\Http\Controllers\PublicDashboardController;
 use App\Http\Controllers\PublicRodsController;
@@ -80,7 +80,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('rods/stats/all', [UserRodsController::class, 'statistics'])->name('rods.statistics');
     Route::get('fish/stats/all', [UserFishController::class, 'statistics'])->name('fish.statistics');
     Route::get('flies/stats/all', [UserFliesController::class, 'statistics'])->name('flies.statistics');
-    Route::get('friends/stats/all', [FriendController::class, 'statistics'])->name('friends.statistics');
+    Route::get('friends/stats/all', [UserFriendsController::class, 'statistics'])->name('friends.statistics');
 
     // Utility Routes (must be before resource routes to avoid conflicts)
     Route::get('fishing-logs/available-years', [FishingLogsController::class, 'availableYears'])->name('fishing-logs.available-years');
@@ -90,7 +90,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('rods', UserRodsController::class);
     Route::resource('fish', UserFishController::class);
     Route::resource('flies', UserFliesController::class);
-    Route::resource('friends', FriendController::class);
+    Route::resource('friends', UserFriendsController::class);
     Route::resource('fishing-logs', FishingLogsController::class);
 });
 

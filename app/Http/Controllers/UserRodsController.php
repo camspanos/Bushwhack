@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserRodRequest;
 use App\Models\UserRod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserRodsController extends Controller
 {
@@ -138,13 +139,20 @@ class UserRodsController extends Controller
     {
         // Free users can only view current year data
         $user = auth()->user();
+        $userId = auth()->id();
+
         if (!$user->canFilterByYear()) {
             $yearFilter = (string) now()->year;
         } else {
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $rods = UserRod::where('user_id', auth()->id())
+        // Create cache key
+        $cacheKey = "rods_stats_{$userId}_{$yearFilter}";
+
+        // Cache data for 1 hour
+        $rods = Cache::remember($cacheKey, 3600, function () use ($userId, $yearFilter) {
+            return UserRod::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('id', 'user_rod_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
@@ -181,6 +189,7 @@ class UserRodsController extends Controller
             })
             ->sortByDesc('totalFish')
             ->values();
+        });
 
         return response()->json($rods);
     }

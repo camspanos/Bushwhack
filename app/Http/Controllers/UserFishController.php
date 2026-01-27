@@ -7,6 +7,7 @@ use App\Models\UserFish;
 use App\Models\FishSpecies;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserFishController extends Controller
 {
@@ -143,13 +144,20 @@ class UserFishController extends Controller
     {
         // Free users can only view current year data
         $user = auth()->user();
+        $userId = auth()->id();
+
         if (!$user->canFilterByYear()) {
             $yearFilter = (string) now()->year;
         } else {
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $fish = UserFish::where('user_id', auth()->id())
+        // Create cache key
+        $cacheKey = "fish_stats_{$userId}_{$yearFilter}";
+
+        // Cache data for 1 hour
+        $fish = Cache::remember($cacheKey, 3600, function () use ($userId, $yearFilter) {
+            return UserFish::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('id', 'user_fish_id', 'quantity', 'max_size', 'date', 'user_location_id');
                 if ($yearFilter !== 'lifetime') {
@@ -187,6 +195,7 @@ class UserFishController extends Controller
             })
             ->sortByDesc('totalCaught')
             ->values();
+        });
 
         return response()->json($fish);
     }

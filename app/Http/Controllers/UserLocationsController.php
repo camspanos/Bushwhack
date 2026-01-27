@@ -7,6 +7,7 @@ use App\Models\UserLocation;
 use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class UserLocationsController extends Controller
@@ -138,13 +139,20 @@ class UserLocationsController extends Controller
     {
         // Free users can only view current year data
         $user = auth()->user();
+        $userId = auth()->id();
+
         if (!$user->canFilterByYear()) {
             $yearFilter = (string) now()->year;
         } else {
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $locations = UserLocation::where('user_id', auth()->id())
+        // Create cache key
+        $cacheKey = "locations_stats_{$userId}_{$yearFilter}";
+
+        // Cache data for 1 hour
+        $locations = Cache::remember($cacheKey, 3600, function () use ($userId, $yearFilter) {
+            return UserLocation::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('id', 'user_location_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
@@ -180,6 +188,7 @@ class UserLocationsController extends Controller
             })
             ->sortByDesc('totalFish')
             ->values();
+        });
 
         return response()->json($locations);
     }

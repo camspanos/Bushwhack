@@ -76,26 +76,55 @@ class FishingLogsObserver
     }
 
     /**
-     * Clear leaderboard cache when a fishing log is created, updated, or deleted.
+     * Clear leaderboard and dashboard caches when a fishing log is created, updated, or deleted.
      * Clears cache for the month/year of the fishing log for both water types.
      */
     private function clearLeaderboardCache(FishingLog $fishingLog): void
     {
-        // Only clear cache if the user is premium (since leaderboard only shows premium users)
+        $userId = $fishingLog->user_id;
+        $date = $fishingLog->date;
+        $year = $date->format('Y');
+
+        // Clear dashboard cache for the user (for the year and lifetime)
+        Cache::forget("dashboard_{$userId}_{$year}");
+        Cache::forget("dashboard_{$userId}_lifetime");
+
+        // Clear public dashboard cache for the user (for the year and lifetime)
+        Cache::forget("public_dashboard_{$userId}_{$year}");
+        Cache::forget("public_dashboard_{$userId}_lifetime");
+
+        // Clear public profile pages cache (for the year and lifetime)
+        Cache::forget("public_rods_{$userId}_{$year}");
+        Cache::forget("public_rods_{$userId}_lifetime");
+        Cache::forget("public_fish_{$userId}_{$year}");
+        Cache::forget("public_fish_{$userId}_lifetime");
+        Cache::forget("public_flies_{$userId}_{$year}");
+        Cache::forget("public_flies_{$userId}_lifetime");
+
+        // Clear user statistics pages cache (for the year and lifetime)
+        Cache::forget("locations_stats_{$userId}_{$year}");
+        Cache::forget("locations_stats_{$userId}_lifetime");
+        Cache::forget("rods_stats_{$userId}_{$year}");
+        Cache::forget("rods_stats_{$userId}_lifetime");
+        Cache::forget("fish_stats_{$userId}_{$year}");
+        Cache::forget("fish_stats_{$userId}_lifetime");
+        Cache::forget("flies_stats_{$userId}_{$year}");
+        Cache::forget("flies_stats_{$userId}_lifetime");
+        Cache::forget("friends_stats_{$userId}_{$year}");
+        Cache::forget("friends_stats_{$userId}_lifetime");
+
+        // Only clear leaderboard cache if the user is premium (since leaderboard only shows premium users)
         if (!$fishingLog->user || !$fishingLog->user->is_premium) {
             return;
         }
 
-        $date = $fishingLog->date;
-
-        // Clear cache for the specific month
+        // Clear leaderboard cache for the specific month
         $month = $date->format('Y-m');
         Cache::forget("leaderboard_{$month}_all");
         Cache::forget("leaderboard_{$month}_freshwater");
         Cache::forget("leaderboard_{$month}_saltwater");
 
-        // Clear cache for the year
-        $year = $date->format('Y');
+        // Clear leaderboard cache for the year
         Cache::forget("leaderboard_{$year}_all");
         Cache::forget("leaderboard_{$year}_freshwater");
         Cache::forget("leaderboard_{$year}_saltwater");

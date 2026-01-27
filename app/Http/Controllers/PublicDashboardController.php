@@ -7,6 +7,7 @@ use App\Models\FishingLog;
 use App\Models\UserFly;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +23,21 @@ class PublicDashboardController extends Controller
 
         $userId = $user->id;
         $authUser = auth()->user();
+
+        // Create cache key based on viewed user and year filter
+        $yearFilter = $request->input('year', (string) now()->year);
+        $cacheKey = "public_dashboard_{$userId}_{$yearFilter}";
+
+        // Cache dashboard data for 1 hour
+        $data = Cache::remember($cacheKey, 3600, function () use ($user, $userId, $authUser, $request) {
+            return $this->getPublicDashboardData($user, $userId, $authUser, $request);
+        });
+
+        return Inertia::render('PublicDashboard', $data);
+    }
+
+    private function getPublicDashboardData(User $user, $userId, $authUser, Request $request): array
+    {
 
         // Free users can only view current year data on public dashboards, UNLESS viewing user_id 1
         if (!$authUser->canFilterByYear() && $userId !== 1) {
@@ -289,7 +305,7 @@ class PublicDashboardController extends Controller
             }
         }
 
-        return Inertia::render('PublicDashboard', [
+        return [
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -336,7 +352,7 @@ class PublicDashboardController extends Controller
             ],
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
-        ]);
+        ];
     }
 }
 

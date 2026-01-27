@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreFriendRequest;
-use App\Models\Friend;
+use App\Http\Requests\StoreUserFriendRequest;
+use App\Models\UserFriend;
 use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-class FriendController extends Controller
+class UserFriendsController extends Controller
 {
     /**
      * Display a listing of the authenticated user's friends.
@@ -21,7 +22,7 @@ class FriendController extends Controller
     {
         $perPage = $request->input('per_page', 15);
 
-        $friends = Friend::where('user_id', auth()->id())
+        $friends = UserFriend::where('user_id', auth()->id())
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -35,13 +36,13 @@ class FriendController extends Controller
      * provided name. Friends can be associated with fishing logs through
      * a many-to-many relationship.
      */
-    public function store(StoreFriendRequest $request): JsonResponse
+    public function store(StoreUserFriendRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
 
             // Check if friend already exists with same name
-            $existing = Friend::where('user_id', auth()->id())
+            $existing = UserFriend::where('user_id', auth()->id())
                 ->where('name', $validated['name'])
                 ->first();
 
@@ -52,7 +53,7 @@ class FriendController extends Controller
                 ], 409);
             }
 
-            $friend = Friend::create([
+            $friend = UserFriend::create([
                 'user_id' => auth()->id(),
                 ...$validated,
             ]);
@@ -77,7 +78,7 @@ class FriendController extends Controller
      *
      * Updates a friend record for the authenticated user.
      */
-    public function update(StoreFriendRequest $request, Friend $friend): JsonResponse
+    public function update(StoreUserFriendRequest $request, UserFriend $friend): JsonResponse
     {
         // Ensure the user owns this friend
         if ($friend->user_id !== auth()->id()) {
@@ -87,7 +88,7 @@ class FriendController extends Controller
         $validated = $request->validated();
 
         // Check if another friend already exists with same name
-        $existing = Friend::where('user_id', auth()->id())
+        $existing = UserFriend::where('user_id', auth()->id())
             ->where('id', '!=', $friend->id)
             ->where('name', $validated['name'])
             ->first();
@@ -108,7 +109,7 @@ class FriendController extends Controller
      *
      * Deletes a friend entry for the authenticated user.
      */
-    public function destroy(Friend $friend): JsonResponse
+    public function destroy(UserFriend $friend): JsonResponse
     {
         // Ensure the user owns this friend
         if ($friend->user_id !== auth()->id()) {
@@ -131,9 +132,15 @@ class FriendController extends Controller
      */
     public function statistics(Request $request): JsonResponse
     {
+        $userId = auth()->id();
         $yearFilter = $request->input('year', 'lifetime');
 
-        $friends = Friend::where('user_id', auth()->id())
+        // Create cache key
+        $cacheKey = "friends_stats_{$userId}_{$yearFilter}";
+
+        // Cache data for 1 hour
+        $friends = Cache::remember($cacheKey, 3600, function () use ($userId, $yearFilter) {
+            return UserFriend::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('fishing_logs.id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
@@ -166,6 +173,7 @@ class FriendController extends Controller
             })
             ->sortByDesc('totalTrips')
             ->values();
+        });
 
         return response()->json($friends);
     }

@@ -102,7 +102,7 @@ class FishingLog extends Model
      */
     public function friends(): BelongsToMany
     {
-        return $this->belongsToMany(Friend::class, 'fishing_log_user_friend');
+        return $this->belongsToMany(UserFriend::class, 'fishing_log_user_friend', 'fishing_log_id', 'user_friend_id');
     }
 
     /**

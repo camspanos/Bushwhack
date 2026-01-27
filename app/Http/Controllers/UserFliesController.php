@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserFlyRequest;
 use App\Models\UserFly;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserFliesController extends Controller
 {
@@ -136,13 +137,20 @@ class UserFliesController extends Controller
     {
         // Free users can only view current year data
         $user = auth()->user();
+        $userId = auth()->id();
+
         if (!$user->canFilterByYear()) {
             $yearFilter = (string) now()->year;
         } else {
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $flies = UserFly::where('user_id', auth()->id())
+        // Create cache key
+        $cacheKey = "flies_stats_{$userId}_{$yearFilter}";
+
+        // Cache data for 1 hour
+        $flies = Cache::remember($cacheKey, 3600, function () use ($userId, $yearFilter) {
+            return UserFly::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('id', 'user_fly_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
@@ -192,6 +200,7 @@ class UserFliesController extends Controller
             })
             ->sortByDesc('totalCaught')
             ->values();
+        });
 
         return response()->json($flies);
     }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Friend extends Model
+class UserFriend extends Model
 {
     protected $table = 'user_friends';
 
@@ -36,6 +36,6 @@ class Friend extends Model
      */
     public function fishingLogs(): BelongsToMany
     {
-        return $this->belongsToMany(FishingLog::class, 'fishing_log_user_friend');
+        return $this->belongsToMany(FishingLog::class, 'fishing_log_user_friend', 'user_friend_id', 'fishing_log_id');
     }
 }

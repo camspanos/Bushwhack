@@ -23,10 +23,15 @@ class TimeOfDayCalculator
      * @param float|null $longitude
      * @return string|null
      */
-    public static function calculate(?string $time, string $date, ?float $latitude, ?float $longitude): ?string
+    public static function calculate(?string $time, $date, ?float $latitude, ?float $longitude): ?string
     {
         if (!$time) {
             return null;
+        }
+
+        // Convert date to string if it's a Carbon instance
+        if ($date instanceof Carbon) {
+            $date = $date->format('Y-m-d');
         }
 
         // Parse the time

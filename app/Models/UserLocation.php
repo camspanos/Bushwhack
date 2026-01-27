@@ -6,20 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Fly extends Model
+class UserLocation extends Model
 {
-    protected $table = 'user_flies';
+    protected $table = 'user_locations';
 
     protected $fillable = [
         'user_id',
         'name',
-        'color',
-        'size',
-        'type',
+        'city',
+        'state',
+        'country',
+        'latitude',
+        'longitude',
     ];
 
     /**
-     * Get the user that owns this fly.
+     * Get the user that owns this location.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -29,12 +31,12 @@ class Fly extends Model
     }
 
     /**
-     * Get the fishing logs where this fly was used.
+     * Get the fishing logs associated with this location.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function fishingLogs(): HasMany
     {
-        return $this->hasMany(FishingLog::class);
+        return $this->hasMany(FishingLog::class, 'user_location_id');
     }
 }

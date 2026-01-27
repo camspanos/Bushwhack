@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 export const statistics = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ statistics.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 statistics.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ statistics.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ statistics.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +44,8 @@ statistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,8 +54,8 @@ const statisticsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,8 +64,8 @@ statisticsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::statistics
-* @see app/Http/Controllers/LocationController.php:137
+* @see \App\Http\Controllers\UserLocationsController::statistics
+* @see app/Http/Controllers/UserLocationsController.php:137
 * @route '/locations/stats/all'
 */
 statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,8 +81,8 @@ statisticsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 statistics.form = statisticsForm
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,8 +96,8 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -105,8 +105,8 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,8 +115,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,8 +125,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,8 +135,8 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,8 +145,8 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::index
-* @see app/Http/Controllers/LocationController.php:20
+* @see \App\Http\Controllers\UserLocationsController::index
+* @see app/Http/Controllers/UserLocationsController.php:20
 * @route '/locations'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -162,8 +162,8 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -177,8 +177,8 @@ create.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -186,8 +186,8 @@ create.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -196,8 +196,8 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -206,8 +206,8 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -216,8 +216,8 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -226,8 +226,8 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::create
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::create
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -243,8 +243,8 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 create.form = createForm
 
 /**
-* @see \App\Http\Controllers\LocationController::store
-* @see app/Http/Controllers/LocationController.php:37
+* @see \App\Http\Controllers\UserLocationsController::store
+* @see app/Http/Controllers/UserLocationsController.php:37
 * @route '/locations'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -258,8 +258,8 @@ store.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::store
-* @see app/Http/Controllers/LocationController.php:37
+* @see \App\Http\Controllers\UserLocationsController::store
+* @see app/Http/Controllers/UserLocationsController.php:37
 * @route '/locations'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -267,8 +267,8 @@ store.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::store
-* @see app/Http/Controllers/LocationController.php:37
+* @see \App\Http\Controllers\UserLocationsController::store
+* @see app/Http/Controllers/UserLocationsController.php:37
 * @route '/locations'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -277,8 +277,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::store
-* @see app/Http/Controllers/LocationController.php:37
+* @see \App\Http\Controllers\UserLocationsController::store
+* @see app/Http/Controllers/UserLocationsController.php:37
 * @route '/locations'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -287,8 +287,8 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::store
-* @see app/Http/Controllers/LocationController.php:37
+* @see \App\Http\Controllers\UserLocationsController::store
+* @see app/Http/Controllers/UserLocationsController.php:37
 * @route '/locations'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -299,8 +299,8 @@ storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 store.form = storeForm
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 export const show = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -314,8 +314,8 @@ show.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 show.url = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -341,8 +341,8 @@ show.url = (args: { location: string | number } | [location: string | number ] |
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 show.get = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -351,8 +351,8 @@ show.get = (args: { location: string | number } | [location: string | number ] |
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 show.head = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -361,8 +361,8 @@ show.head = (args: { location: string | number } | [location: string | number ] 
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 const showForm = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -371,8 +371,8 @@ const showForm = (args: { location: string | number } | [location: string | numb
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 showForm.get = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,8 +381,8 @@ showForm.get = (args: { location: string | number } | [location: string | number
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::show
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::show
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}'
 */
 showForm.head = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -398,8 +398,8 @@ showForm.head = (args: { location: string | number } | [location: string | numbe
 show.form = showForm
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 export const edit = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -413,8 +413,8 @@ edit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 edit.url = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -440,8 +440,8 @@ edit.url = (args: { location: string | number } | [location: string | number ] |
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 edit.get = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -450,8 +450,8 @@ edit.get = (args: { location: string | number } | [location: string | number ] |
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 edit.head = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -460,8 +460,8 @@ edit.head = (args: { location: string | number } | [location: string | number ] 
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 const editForm = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -470,8 +470,8 @@ const editForm = (args: { location: string | number } | [location: string | numb
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 editForm.get = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -480,8 +480,8 @@ editForm.get = (args: { location: string | number } | [location: string | number
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::edit
-* @see app/Http/Controllers/LocationController.php:0
+* @see \App\Http\Controllers\UserLocationsController::edit
+* @see app/Http/Controllers/UserLocationsController.php:0
 * @route '/locations/{location}/edit'
 */
 editForm.head = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -497,11 +497,11 @@ editForm.head = (args: { location: string | number } | [location: string | numbe
 edit.form = editForm
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-export const update = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -512,17 +512,13 @@ update.definition = {
 } satisfies RouteDefinition<["put","patch"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-update.url = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { location: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { location: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -534,9 +530,7 @@ update.url = (args: { location: string | number | { id: string | number } } | [l
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        location: typeof args.location === 'object'
-        ? args.location.id
-        : args.location,
+        location: args.location,
     }
 
     return update.definition.url
@@ -545,31 +539,31 @@ update.url = (args: { location: string | number | { id: string | number } } | [l
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-update.put = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-update.patch = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-const updateForm = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -580,11 +574,11 @@ const updateForm = (args: { location: string | number | { id: string | number } 
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-updateForm.put = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -595,11 +589,11 @@ updateForm.put = (args: { location: string | number | { id: string | number } } 
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::update
-* @see app/Http/Controllers/LocationController.php:82
+* @see \App\Http\Controllers\UserLocationsController::update
+* @see app/Http/Controllers/UserLocationsController.php:82
 * @route '/locations/{location}'
 */
-updateForm.patch = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -612,11 +606,11 @@ updateForm.patch = (args: { location: string | number | { id: string | number } 
 update.form = updateForm
 
 /**
-* @see \App\Http\Controllers\LocationController::destroy
-* @see app/Http/Controllers/LocationController.php:116
+* @see \App\Http\Controllers\UserLocationsController::destroy
+* @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-export const destroy = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -627,17 +621,13 @@ destroy.definition = {
 } satisfies RouteDefinition<["delete"]>
 
 /**
-* @see \App\Http\Controllers\LocationController::destroy
-* @see app/Http/Controllers/LocationController.php:116
+* @see \App\Http\Controllers\UserLocationsController::destroy
+* @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-destroy.url = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { location: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { location: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -649,9 +639,7 @@ destroy.url = (args: { location: string | number | { id: string | number } } | [
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        location: typeof args.location === 'object'
-        ? args.location.id
-        : args.location,
+        location: args.location,
     }
 
     return destroy.definition.url
@@ -660,21 +648,21 @@ destroy.url = (args: { location: string | number | { id: string | number } } | [
 }
 
 /**
-* @see \App\Http\Controllers\LocationController::destroy
-* @see app/Http/Controllers/LocationController.php:116
+* @see \App\Http\Controllers\UserLocationsController::destroy
+* @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-destroy.delete = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::destroy
-* @see app/Http/Controllers/LocationController.php:116
+* @see \App\Http\Controllers\UserLocationsController::destroy
+* @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-const destroyForm = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -685,11 +673,11 @@ const destroyForm = (args: { location: string | number | { id: string | number }
 })
 
 /**
-* @see \App\Http\Controllers\LocationController::destroy
-* @see app/Http/Controllers/LocationController.php:116
+* @see \App\Http\Controllers\UserLocationsController::destroy
+* @see app/Http/Controllers/UserLocationsController.php:116
 * @route '/locations/{location}'
 */
-destroyForm.delete = (args: { location: string | number | { id: string | number } } | [location: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { location: string | number } | [location: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

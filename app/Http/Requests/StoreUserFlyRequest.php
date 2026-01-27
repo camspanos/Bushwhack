@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreLocationRequest extends FormRequest
+class StoreUserFlyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,9 +23,9 @@ class StoreLocationRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
+            'color' => 'nullable|string|max:255',
+            'size' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
         ];
     }
 }

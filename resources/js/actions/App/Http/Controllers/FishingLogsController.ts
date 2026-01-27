@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 export const availableYears = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ availableYears.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 availableYears.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ availableYears.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 availableYears.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ availableYears.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 availableYears.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +44,8 @@ availableYears.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 const availableYearsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,8 +54,8 @@ const availableYearsForm = (options?: RouteQueryOptions): RouteFormDefinition<'g
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 availableYearsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,8 +64,8 @@ availableYearsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::availableYears
-* @see app/Http/Controllers/FishingLogController.php:163
+* @see \App\Http\Controllers\FishingLogsController::availableYears
+* @see app/Http/Controllers/FishingLogsController.php:163
 * @route '/fishing-logs/available-years'
 */
 availableYearsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,8 +81,8 @@ availableYearsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'ge
 availableYears.form = availableYearsForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,8 +96,8 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -105,8 +105,8 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,8 +115,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,8 +125,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,8 +135,8 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,8 +145,8 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::index
-* @see app/Http/Controllers/FishingLogController.php:19
+* @see \App\Http\Controllers\FishingLogsController::index
+* @see app/Http/Controllers/FishingLogsController.php:19
 * @route '/fishing-logs'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -162,8 +162,8 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -177,8 +177,8 @@ create.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -186,8 +186,8 @@ create.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -196,8 +196,8 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -206,8 +206,8 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -216,8 +216,8 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -226,8 +226,8 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::create
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::create
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -243,8 +243,8 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 create.form = createForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::store
-* @see app/Http/Controllers/FishingLogController.php:38
+* @see \App\Http\Controllers\FishingLogsController::store
+* @see app/Http/Controllers/FishingLogsController.php:38
 * @route '/fishing-logs'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -258,8 +258,8 @@ store.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::store
-* @see app/Http/Controllers/FishingLogController.php:38
+* @see \App\Http\Controllers\FishingLogsController::store
+* @see app/Http/Controllers/FishingLogsController.php:38
 * @route '/fishing-logs'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -267,8 +267,8 @@ store.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::store
-* @see app/Http/Controllers/FishingLogController.php:38
+* @see \App\Http\Controllers\FishingLogsController::store
+* @see app/Http/Controllers/FishingLogsController.php:38
 * @route '/fishing-logs'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -277,8 +277,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::store
-* @see app/Http/Controllers/FishingLogController.php:38
+* @see \App\Http\Controllers\FishingLogsController::store
+* @see app/Http/Controllers/FishingLogsController.php:38
 * @route '/fishing-logs'
 */
 const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -287,8 +287,8 @@ const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::store
-* @see app/Http/Controllers/FishingLogController.php:38
+* @see \App\Http\Controllers\FishingLogsController::store
+* @see app/Http/Controllers/FishingLogsController.php:38
 * @route '/fishing-logs'
 */
 storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -299,8 +299,8 @@ storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 store.form = storeForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 export const show = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -314,8 +314,8 @@ show.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 show.url = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -341,8 +341,8 @@ show.url = (args: { fishing_log: string | number } | [fishing_log: string | numb
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 show.get = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -351,8 +351,8 @@ show.get = (args: { fishing_log: string | number } | [fishing_log: string | numb
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 show.head = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -361,8 +361,8 @@ show.head = (args: { fishing_log: string | number } | [fishing_log: string | num
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 const showForm = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -371,8 +371,8 @@ const showForm = (args: { fishing_log: string | number } | [fishing_log: string 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 showForm.get = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,8 +381,8 @@ showForm.get = (args: { fishing_log: string | number } | [fishing_log: string | 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::show
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::show
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}'
 */
 showForm.head = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -398,8 +398,8 @@ showForm.head = (args: { fishing_log: string | number } | [fishing_log: string |
 show.form = showForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 export const edit = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -413,8 +413,8 @@ edit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 edit.url = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -440,8 +440,8 @@ edit.url = (args: { fishing_log: string | number } | [fishing_log: string | numb
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 edit.get = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -450,8 +450,8 @@ edit.get = (args: { fishing_log: string | number } | [fishing_log: string | numb
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 edit.head = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -460,8 +460,8 @@ edit.head = (args: { fishing_log: string | number } | [fishing_log: string | num
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 const editForm = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -470,8 +470,8 @@ const editForm = (args: { fishing_log: string | number } | [fishing_log: string 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 editForm.get = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -480,8 +480,8 @@ editForm.get = (args: { fishing_log: string | number } | [fishing_log: string | 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::edit
-* @see app/Http/Controllers/FishingLogController.php:0
+* @see \App\Http\Controllers\FishingLogsController::edit
+* @see app/Http/Controllers/FishingLogsController.php:0
 * @route '/fishing-logs/{fishing_log}/edit'
 */
 editForm.head = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -497,8 +497,8 @@ editForm.head = (args: { fishing_log: string | number } | [fishing_log: string |
 edit.form = editForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 export const update = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -512,8 +512,8 @@ update.definition = {
 } satisfies RouteDefinition<["put","patch"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 update.url = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -539,8 +539,8 @@ update.url = (args: { fishing_log: string | number } | [fishing_log: string | nu
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 update.put = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -549,8 +549,8 @@ update.put = (args: { fishing_log: string | number } | [fishing_log: string | nu
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 update.patch = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -559,8 +559,8 @@ update.patch = (args: { fishing_log: string | number } | [fishing_log: string | 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 const updateForm = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -574,8 +574,8 @@ const updateForm = (args: { fishing_log: string | number } | [fishing_log: strin
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 updateForm.put = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -589,8 +589,8 @@ updateForm.put = (args: { fishing_log: string | number } | [fishing_log: string 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::update
-* @see app/Http/Controllers/FishingLogController.php:104
+* @see \App\Http\Controllers\FishingLogsController::update
+* @see app/Http/Controllers/FishingLogsController.php:104
 * @route '/fishing-logs/{fishing_log}'
 */
 updateForm.patch = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -606,8 +606,8 @@ updateForm.patch = (args: { fishing_log: string | number } | [fishing_log: strin
 update.form = updateForm
 
 /**
-* @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:144
+* @see \App\Http\Controllers\FishingLogsController::destroy
+* @see app/Http/Controllers/FishingLogsController.php:144
 * @route '/fishing-logs/{fishing_log}'
 */
 export const destroy = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -621,8 +621,8 @@ destroy.definition = {
 } satisfies RouteDefinition<["delete"]>
 
 /**
-* @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:144
+* @see \App\Http\Controllers\FishingLogsController::destroy
+* @see app/Http/Controllers/FishingLogsController.php:144
 * @route '/fishing-logs/{fishing_log}'
 */
 destroy.url = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -648,8 +648,8 @@ destroy.url = (args: { fishing_log: string | number } | [fishing_log: string | n
 }
 
 /**
-* @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:144
+* @see \App\Http\Controllers\FishingLogsController::destroy
+* @see app/Http/Controllers/FishingLogsController.php:144
 * @route '/fishing-logs/{fishing_log}'
 */
 destroy.delete = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -658,8 +658,8 @@ destroy.delete = (args: { fishing_log: string | number } | [fishing_log: string 
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:144
+* @see \App\Http\Controllers\FishingLogsController::destroy
+* @see app/Http/Controllers/FishingLogsController.php:144
 * @route '/fishing-logs/{fishing_log}'
 */
 const destroyForm = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -673,8 +673,8 @@ const destroyForm = (args: { fishing_log: string | number } | [fishing_log: stri
 })
 
 /**
-* @see \App\Http\Controllers\FishingLogController::destroy
-* @see app/Http/Controllers/FishingLogController.php:144
+* @see \App\Http\Controllers\FishingLogsController::destroy
+* @see app/Http/Controllers/FishingLogsController.php:144
 * @route '/fishing-logs/{fishing_log}'
 */
 destroyForm.delete = (args: { fishing_log: string | number } | [fishing_log: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -689,6 +689,6 @@ destroyForm.delete = (args: { fishing_log: string | number } | [fishing_log: str
 
 destroy.form = destroyForm
 
-const FishingLogController = { availableYears, index, create, store, show, edit, update, destroy }
+const FishingLogsController = { availableYears, index, create, store, show, edit, update, destroy }
 
-export default FishingLogController
+export default FishingLogsController

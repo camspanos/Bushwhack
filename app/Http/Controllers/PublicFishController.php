@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Fish;
+use App\Models\UserFish;
 use App\Models\FishingLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,9 +44,9 @@ class PublicFishController extends Controller
 
         // Get all fish species for this user with catch statistics
         // Using the same query structure as FishController::statistics()
-        $fishSpecies = Fish::where('user_id', $userId)
+        $fishSpecies = UserFish::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'fish_id', 'quantity', 'max_size', 'date', 'location_id');
+                $query->select('id', 'user_fish_id', 'quantity', 'max_size', 'date', 'user_location_id');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

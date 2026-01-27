@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Models\FishingLog;
-use App\Models\Location;
-use App\Observers\FishingLogObserver;
-use App\Observers\LocationObserver;
+use App\Models\UserLocation;
+use App\Observers\FishingLogsObserver;
+use App\Observers\UserLocationsObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        FishingLog::observe(FishingLogObserver::class);
-        Location::observe(LocationObserver::class);
+        FishingLog::observe(FishingLogsObserver::class);
+        UserLocation::observe(UserLocationsObserver::class);
     }
 }

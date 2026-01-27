@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreFishRequest;
-use App\Models\Fish;
+use App\Http\Requests\StoreUserFishRequest;
+use App\Models\UserFish;
 use App\Models\FishSpecies;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class FishController extends Controller
+class UserFishController extends Controller
 {
     /**
      * Display a listing of the authenticated user's fish species.
@@ -20,7 +20,7 @@ class FishController extends Controller
     {
         $perPage = $request->input('per_page', 15);
 
-        $fish = Fish::where('user_id', auth()->id())
+        $fish = UserFish::where('user_id', auth()->id())
             ->orderBy('species')
             ->paginate($perPage);
 
@@ -33,13 +33,13 @@ class FishController extends Controller
      * Creates a new fish species record for the authenticated user with the
      * provided species name and water type information.
      */
-    public function store(StoreFishRequest $request): JsonResponse
+    public function store(StoreUserFishRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
 
             // Check if fish species already exists with same details
-            $existing = Fish::where('user_id', auth()->id())
+            $existing = UserFish::where('user_id', auth()->id())
                 ->where('species', $validated['species'])
                 ->where('water_type', $validated['water_type'] ?? null)
                 ->first();
@@ -54,7 +54,7 @@ class FishController extends Controller
             // Try to link to global fish species
             $fishSpeciesId = $this->findMatchingFishSpecies($validated['species'], $validated['water_type'] ?? null);
 
-            $fish = Fish::create([
+            $fish = UserFish::create([
                 'user_id' => auth()->id(),
                 'fish_species_id' => $fishSpeciesId,
                 ...$validated,
@@ -80,7 +80,7 @@ class FishController extends Controller
      *
      * Updates a fish species record for the authenticated user.
      */
-    public function update(StoreFishRequest $request, Fish $fish): JsonResponse
+    public function update(StoreUserFishRequest $request, Fish $fish): JsonResponse
     {
         // Ensure the user owns this fish species
         if ($fish->user_id !== auth()->id()) {
@@ -90,7 +90,7 @@ class FishController extends Controller
         $validated = $request->validated();
 
         // Check if another fish species already exists with same details
-        $existing = Fish::where('user_id', auth()->id())
+        $existing = UserFish::where('user_id', auth()->id())
             ->where('id', '!=', $fish->id)
             ->where('species', $validated['species'])
             ->where('water_type', $validated['water_type'] ?? null)
@@ -149,9 +149,9 @@ class FishController extends Controller
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $fish = Fish::where('user_id', auth()->id())
+        $fish = UserFish::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'fish_id', 'quantity', 'max_size', 'date', 'location_id');
+                $query->select('id', 'user_fish_id', 'quantity', 'max_size', 'date', 'user_location_id');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

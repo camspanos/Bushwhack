@@ -1,13 +1,13 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\RodController;
-use App\Http\Controllers\FishController;
-use App\Http\Controllers\FishingLogController;
-use App\Http\Controllers\FlyController;
+use App\Http\Controllers\UserRodsController;
+use App\Http\Controllers\UserFishController;
+use App\Http\Controllers\FishingLogsController;
+use App\Http\Controllers\UserFliesController;
 use App\Http\Controllers\FollowingController;
 use App\Http\Controllers\FriendController;
-use App\Http\Controllers\LocationController;
+use App\Http\Controllers\UserLocationsController;
 use App\Http\Controllers\PublicDashboardController;
 use App\Http\Controllers\PublicRodsController;
 use App\Http\Controllers\PublicFishController;
@@ -76,22 +76,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // CRUD Routes for Fishing Log Resources
 Route::middleware(['auth', 'verified'])->group(function () {
     // Statistics Routes (must be before resource routes to avoid conflicts)
-    Route::get('locations/stats/all', [LocationController::class, 'statistics'])->name('locations.statistics');
-    Route::get('rods/stats/all', [RodController::class, 'statistics'])->name('rods.statistics');
-    Route::get('fish/stats/all', [FishController::class, 'statistics'])->name('fish.statistics');
-    Route::get('flies/stats/all', [FlyController::class, 'statistics'])->name('flies.statistics');
+    Route::get('locations/stats/all', [UserLocationsController::class, 'statistics'])->name('locations.statistics');
+    Route::get('rods/stats/all', [UserRodsController::class, 'statistics'])->name('rods.statistics');
+    Route::get('fish/stats/all', [UserFishController::class, 'statistics'])->name('fish.statistics');
+    Route::get('flies/stats/all', [UserFliesController::class, 'statistics'])->name('flies.statistics');
     Route::get('friends/stats/all', [FriendController::class, 'statistics'])->name('friends.statistics');
 
     // Utility Routes (must be before resource routes to avoid conflicts)
-    Route::get('fishing-logs/available-years', [FishingLogController::class, 'availableYears'])->name('fishing-logs.available-years');
+    Route::get('fishing-logs/available-years', [FishingLogsController::class, 'availableYears'])->name('fishing-logs.available-years');
 
     // Resource Routes
-    Route::resource('locations', LocationController::class);
-    Route::resource('rods', RodController::class);
-    Route::resource('fish', FishController::class);
-    Route::resource('flies', FlyController::class);
+    Route::resource('locations', UserLocationsController::class);
+    Route::resource('rods', UserRodsController::class);
+    Route::resource('fish', UserFishController::class);
+    Route::resource('flies', UserFliesController::class);
     Route::resource('friends', FriendController::class);
-    Route::resource('fishing-logs', FishingLogController::class);
+    Route::resource('fishing-logs', FishingLogsController::class);
 });
 
 require __DIR__.'/settings.php';

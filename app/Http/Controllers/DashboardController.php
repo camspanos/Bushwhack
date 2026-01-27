@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Fish;
+use App\Models\UserFish;
 use App\Models\FishingLog;
-use App\Models\Fly;
+use App\Models\UserFly;
 use App\Models\Friend;
-use App\Models\Location;
+use App\Models\UserLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -54,7 +54,7 @@ class DashboardController extends Controller
         $totalTrips = (clone $baseQuery)->distinct()->count('date');
 
         // Total locations (always lifetime)
-        $totalLocations = Location::where('user_id', $userId)->count();
+        $totalLocations = UserLocation::where('user_id', $userId)->count();
 
         // Total friends fished with (filtered by year)
         // Count distinct friends from fishing logs in the date range
@@ -70,18 +70,18 @@ class DashboardController extends Controller
 
         // Favorite location (most visited, filtered by year)
         $favoriteLocation = (clone $baseQuery)
-            ->select('location_id', DB::raw('COUNT(DISTINCT date) as visit_count'))
-            ->whereNotNull('location_id')
-            ->groupBy('location_id')
+            ->select('user_location_id', DB::raw('COUNT(DISTINCT date) as visit_count'))
+            ->whereNotNull('user_location_id')
+            ->groupBy('user_location_id')
             ->orderByDesc('visit_count')
             ->with('location')
             ->first();
 
         // Most caught fish species (filtered by year)
         $topFish = (clone $baseQuery)
-            ->select('fish_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('fish_id')
-            ->groupBy('fish_id')
+            ->select('user_fish_id', DB::raw('SUM(quantity) as total_caught'))
+            ->whereNotNull('user_fish_id')
+            ->groupBy('user_fish_id')
             ->orderByDesc('total_caught')
             ->with('fish')
             ->first();
@@ -103,9 +103,9 @@ class DashboardController extends Controller
 
         // All species caught with statistics (filtered by year)
         $allSpecies = (clone $baseQuery)
-            ->select('fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
-            ->whereNotNull('fish_id')
-            ->groupBy('fish_id')
+            ->select('user_fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
+            ->whereNotNull('user_fish_id')
+            ->groupBy('user_fish_id')
             ->orderByDesc('total_caught')
             ->with('fish')
             ->get()
@@ -121,11 +121,11 @@ class DashboardController extends Controller
 
         // Top 7 species by biggest fish size (filtered by year)
         $topSpeciesBySize = (clone $baseQuery)
-            ->select('fish_id', DB::raw('MAX(max_size) as biggest_size'), DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('fish_id')
+            ->select('user_fish_id', DB::raw('MAX(max_size) as biggest_size'), DB::raw('SUM(quantity) as total_caught'))
+            ->whereNotNull('user_fish_id')
             ->whereNotNull('max_size')
             ->where('max_size', '>', 0)
-            ->groupBy('fish_id')
+            ->groupBy('user_fish_id')
             ->orderByDesc('biggest_size')
             ->with('fish')
             ->limit(7)
@@ -163,9 +163,9 @@ class DashboardController extends Controller
 
         // Top 7 locations by catches (filtered by year)
         $topLocations = (clone $baseQuery)
-            ->select('location_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('location_id')
-            ->groupBy('location_id')
+            ->select('user_location_id', DB::raw('SUM(quantity) as total_caught'))
+            ->whereNotNull('user_location_id')
+            ->groupBy('user_location_id')
             ->orderByDesc('total_caught')
             ->with('location')
             ->limit(7)
@@ -181,11 +181,11 @@ class DashboardController extends Controller
 
         // Top 7 locations by biggest fish size (filtered by year)
         $topLocationsBySize = (clone $baseQuery)
-            ->select('location_id', DB::raw('MAX(max_size) as biggest_size'))
-            ->whereNotNull('location_id')
+            ->select('user_location_id', DB::raw('MAX(max_size) as biggest_size'))
+            ->whereNotNull('user_location_id')
             ->whereNotNull('max_size')
             ->where('max_size', '>', 0)
-            ->groupBy('location_id')
+            ->groupBy('user_location_id')
             ->orderByDesc('biggest_size')
             ->with('location')
             ->limit(7)
@@ -253,10 +253,10 @@ class DashboardController extends Controller
 
         // Most productive location (filtered by year)
         $mostProductiveLocation = (clone $baseQuery)
-            ->select('location_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('location_id')
+            ->select('user_location_id', DB::raw('SUM(quantity) as total_caught'))
+            ->whereNotNull('user_location_id')
             ->where('quantity', '>', 0)
-            ->groupBy('location_id')
+            ->groupBy('user_location_id')
             ->orderByDesc('total_caught')
             ->with('location')
             ->first();
@@ -267,9 +267,9 @@ class DashboardController extends Controller
             $mostSuccessfulFlyQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $mostSuccessfulFly = $mostSuccessfulFlyQuery
-            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
             ->select('user_flies.name', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.user_fly_id')
             ->where('fishing_logs.quantity', '>', 0)
             ->where('user_flies.user_id', $userId)
             ->groupBy('user_flies.name')
@@ -282,9 +282,9 @@ class DashboardController extends Controller
             $biggestFishFlyQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $biggestFishFly = $biggestFishFlyQuery
-            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
             ->select('user_flies.name', DB::raw('MAX(fishing_logs.max_size) as biggest_size'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.user_fly_id')
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
             ->where('user_flies.user_id', $userId)
@@ -298,9 +298,9 @@ class DashboardController extends Controller
             $mostSuccessfulFlyTypeQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $mostSuccessfulFlyType = $mostSuccessfulFlyTypeQuery
-            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
             ->select('user_flies.type', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.user_fly_id')
             ->whereNotNull('user_flies.type')
             ->where('fishing_logs.quantity', '>', 0)
             ->where('user_flies.user_id', $userId)
@@ -314,9 +314,9 @@ class DashboardController extends Controller
             $mostSuccessfulFlyColorQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $mostSuccessfulFlyColor = $mostSuccessfulFlyColorQuery
-            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
             ->select('user_flies.color', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.user_fly_id')
             ->whereNotNull('user_flies.color')
             ->where('fishing_logs.quantity', '>', 0)
             ->where('user_flies.user_id', $userId)

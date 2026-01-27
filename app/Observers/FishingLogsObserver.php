@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Models\FishingLog;
 use App\Services\TimeOfDayCalculator;
 
-class FishingLogObserver
+class FishingLogsObserver
 {
     /**
      * Handle the FishingLog "creating" event.
@@ -23,7 +23,7 @@ class FishingLogObserver
     public function updating(FishingLog $fishingLog): void
     {
         // Only recalculate if time, date, or location changed
-        if ($fishingLog->isDirty(['time', 'date', 'location_id'])) {
+        if ($fishingLog->isDirty(['time', 'date', 'user_location_id'])) {
             $this->calculateTimeOfDay($fishingLog);
         }
     }
@@ -37,7 +37,7 @@ class FishingLogObserver
         $longitude = null;
 
         // Get coordinates from location if available
-        if ($fishingLog->location_id) {
+        if ($fishingLog->user_location_id) {
             // Load location if not already loaded
             if (!$fishingLog->relationLoaded('location')) {
                 $fishingLog->load('location');

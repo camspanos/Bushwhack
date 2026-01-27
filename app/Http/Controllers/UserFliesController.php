@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreFlyRequest;
-use App\Models\Fly;
+use App\Http\Requests\StoreUserFlyRequest;
+use App\Models\UserFly;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class FlyController extends Controller
+class UserFliesController extends Controller
 {
     /**
      * Display a listing of the authenticated user's flies.
@@ -19,7 +19,7 @@ class FlyController extends Controller
     {
         $perPage = $request->input('per_page', 15);
 
-        $flies = Fly::where('user_id', auth()->id())
+        $flies = UserFly::where('user_id', auth()->id())
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -32,13 +32,13 @@ class FlyController extends Controller
      * Creates a new fly record for the authenticated user with the
      * provided name, color, size, and type information.
      */
-    public function store(StoreFlyRequest $request): JsonResponse
+    public function store(StoreUserFlyRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
 
             // Check if fly already exists with same details
-            $existing = Fly::where('user_id', auth()->id())
+            $existing = UserFly::where('user_id', auth()->id())
                 ->where('name', $validated['name'])
                 ->where('color', $validated['color'] ?? null)
                 ->where('size', $validated['size'] ?? null)
@@ -52,7 +52,7 @@ class FlyController extends Controller
                 ], 409);
             }
 
-            $fly = Fly::create([
+            $fly = UserFly::create([
                 'user_id' => auth()->id(),
                 ...$validated,
             ]);
@@ -77,7 +77,7 @@ class FlyController extends Controller
      *
      * Updates a fly record for the authenticated user.
      */
-    public function update(StoreFlyRequest $request, Fly $fly): JsonResponse
+    public function update(StoreUserFlyRequest $request, Fly $fly): JsonResponse
     {
         // Ensure the user owns this fly
         if ($fly->user_id !== auth()->id()) {
@@ -87,7 +87,7 @@ class FlyController extends Controller
         $validated = $request->validated();
 
         // Check if another fly already exists with same details
-        $existing = Fly::where('user_id', auth()->id())
+        $existing = UserFly::where('user_id', auth()->id())
             ->where('id', '!=', $fly->id)
             ->where('name', $validated['name'])
             ->where('color', $validated['color'] ?? null)
@@ -142,9 +142,9 @@ class FlyController extends Controller
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $flies = Fly::where('user_id', auth()->id())
+        $flies = UserFly::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'fly_id', 'quantity', 'max_size', 'date');
+                $query->select('id', 'user_fly_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

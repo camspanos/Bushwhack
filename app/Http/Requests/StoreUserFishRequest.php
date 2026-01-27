@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreFlyRequest extends FormRequest
+class StoreUserFishRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +22,8 @@ class StoreFlyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'color' => 'nullable|string|max:255',
-            'size' => 'nullable|string|max:255',
-            'type' => 'nullable|string|max:255',
+            'species' => 'required|string|max:255',
+            'water_type' => 'nullable|string|max:255',
         ];
     }
 }

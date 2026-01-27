@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreLocationRequest;
-use App\Models\Location;
+use App\Http\Requests\StoreUserLocationRequest;
+use App\Models\UserLocation;
 use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LocationController extends Controller
+class UserLocationsController extends Controller
 {
     /**
      * Display a listing of the authenticated user's locations.
@@ -21,7 +21,7 @@ class LocationController extends Controller
     {
         $perPage = $request->input('per_page', 15);
 
-        $locations = Location::where('user_id', auth()->id())
+        $locations = UserUserLocation::where('user_id', auth()->id())
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -34,13 +34,13 @@ class LocationController extends Controller
      * Creates a new location record for the authenticated user with the
      * provided name, city, state, and country information.
      */
-    public function store(StoreLocationRequest $request): JsonResponse
+    public function store(StoreUserLocationRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
 
             // Check if location already exists with same details
-            $existing = Location::where('user_id', auth()->id())
+            $existing = UserUserLocation::where('user_id', auth()->id())
                 ->where('name', $validated['name'])
                 ->where('city', $validated['city'] ?? null)
                 ->where('state', $validated['state'] ?? null)
@@ -54,7 +54,7 @@ class LocationController extends Controller
                 ], 409);
             }
 
-            $location = Location::create([
+            $location = UserUserLocation::create([
                 'user_id' => auth()->id(),
                 ...$validated,
             ]);
@@ -79,7 +79,7 @@ class LocationController extends Controller
      *
      * Updates a location record for the authenticated user.
      */
-    public function update(StoreLocationRequest $request, Location $location): JsonResponse
+    public function update(StoreUserLocationRequest $request, Location $location): JsonResponse
     {
         // Ensure the user owns this location
         if ($location->user_id !== auth()->id()) {
@@ -89,7 +89,7 @@ class LocationController extends Controller
         $validated = $request->validated();
 
         // Check if another location already exists with same details
-        $existing = Location::where('user_id', auth()->id())
+        $existing = UserUserLocation::where('user_id', auth()->id())
             ->where('id', '!=', $location->id)
             ->where('name', $validated['name'])
             ->where('city', $validated['city'] ?? null)
@@ -144,9 +144,9 @@ class LocationController extends Controller
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $locations = Location::where('user_id', auth()->id())
+        $locations = UserUserLocation::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'location_id', 'quantity', 'max_size', 'date');
+                $query->select('id', 'user_location_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

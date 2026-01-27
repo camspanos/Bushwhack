@@ -2,16 +2,16 @@
 
 namespace App\Observers;
 
-use App\Models\Location;
+use App\Models\UserLocation;
 use App\Services\GeocodingService;
 
-class LocationObserver
+class UserLocationsObserver
 {
     /**
      * Handle the Location "saving" event.
      * This runs before the model is saved to the database (both create and update).
      */
-    public function saving(Location $location): void
+    public function saving(UserLocation $location): void
     {
         // Only geocode if city, state, or country changed (or it's a new record)
         if (!$location->exists || $location->isDirty(['city', 'state', 'country'])) {
@@ -22,7 +22,7 @@ class LocationObserver
     /**
      * Geocode the location and set latitude/longitude.
      */
-    private function geocodeLocation(Location $location): void
+    private function geocodeLocation(UserLocation $location): void
     {
         $coordinates = GeocodingService::getCoordinates(
             $location->city,

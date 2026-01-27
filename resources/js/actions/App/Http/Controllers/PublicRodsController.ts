@@ -106,4 +106,14 @@ index.form = indexForm
 
 const PublicRodsController = { index }
 
+export default PublicRodsController}),
+        }
+    }),
+    method: 'get',
+})
+
+index.form = indexForm
+
+const PublicRodsController = { index }
+
 export default PublicRodsController

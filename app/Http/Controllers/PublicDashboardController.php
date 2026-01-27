@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Fish;
+use App\Models\UserFish;
 use App\Models\FishingLog;
-use App\Models\Fly;
+use App\Models\UserFly;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,9 +56,9 @@ class PublicDashboardController extends Controller
 
         // Most caught fish species (filtered by year)
         $topFish = (clone $baseQuery)
-            ->select('fish_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('fish_id')
-            ->groupBy('fish_id')
+            ->select('user_fish_id', DB::raw('SUM(quantity) as total_caught'))
+            ->whereNotNull('user_fish_id')
+            ->groupBy('user_fish_id')
             ->orderByDesc('total_caught')
             ->with('fish')
             ->first();
@@ -72,9 +72,9 @@ class PublicDashboardController extends Controller
 
         // All species caught with statistics (filtered by year)
         $allSpecies = (clone $baseQuery)
-            ->select('fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
-            ->whereNotNull('fish_id')
-            ->groupBy('fish_id')
+            ->select('user_fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
+            ->whereNotNull('user_fish_id')
+            ->groupBy('user_fish_id')
             ->orderByDesc('total_caught')
             ->with('fish')
             ->get()
@@ -172,9 +172,9 @@ class PublicDashboardController extends Controller
             $mostSuccessfulFlyQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $mostSuccessfulFly = $mostSuccessfulFlyQuery
-            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
             ->select('user_flies.name', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.user_fly_id')
             ->where('fishing_logs.quantity', '>', 0)
             ->where('user_flies.user_id', $userId)
             ->groupBy('user_flies.name')
@@ -187,9 +187,9 @@ class PublicDashboardController extends Controller
             $biggestFishFlyQuery->whereYear('fishing_logs.date', $yearFilter);
         }
         $biggestFishFly = $biggestFishFlyQuery
-            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
             ->select('user_flies.name', DB::raw('MAX(fishing_logs.max_size) as biggest_size'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('fishing_logs.user_fly_id')
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
             ->where('user_flies.user_id', $userId)

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Rod;
+use App\Models\UserRod;
 use App\Models\FishingLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,9 +44,9 @@ class PublicRodsController extends Controller
 
         // Get all rods for this user with usage statistics
         // Using the same query structure as RodController::statistics()
-        $rods = Rod::where('user_id', $userId)
+        $rods = UserRod::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'equipment_id', 'quantity', 'max_size', 'date');
+                $query->select('id', 'user_rod_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

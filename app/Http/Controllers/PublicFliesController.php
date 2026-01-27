@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Fly;
+use App\Models\UserFly;
 use App\Models\FishingLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,9 +44,9 @@ class PublicFliesController extends Controller
 
         // Get all flies for this user with usage statistics
         // Using the same query structure as FlyController::statistics()
-        $flies = Fly::where('user_id', $userId)
+        $flies = UserFly::where('user_id', $userId)
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'fly_id', 'quantity', 'max_size', 'date');
+                $query->select('id', 'user_fly_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

@@ -42,7 +42,7 @@ class LeaderboardController extends Controller
         $leaderboard = $species->map(function ($fishSpecies) use ($startDate, $endDate) {
             // Get biggest fish for this species in the time period
             // Join through user_fish to get fish_species_id and users table to filter by premium status
-            $biggestLog = FishingLog::join('user_fish', 'fishing_logs.fish_id', '=', 'user_fish.id')
+            $biggestLog = FishingLog::join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
                 ->join('users', 'fishing_logs.user_id', '=', 'users.id')
                 ->where('user_fish.fish_species_id', $fishSpecies->id)
                 ->where('users.is_premium', true) // Only include premium users
@@ -54,7 +54,7 @@ class LeaderboardController extends Controller
                 ->first();
 
             // Get most caught for this species in the time period
-            $mostCaughtData = FishingLog::join('user_fish', 'fishing_logs.fish_id', '=', 'user_fish.id')
+            $mostCaughtData = FishingLog::join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
                 ->join('users', 'fishing_logs.user_id', '=', 'users.id')
                 ->where('user_fish.fish_species_id', $fishSpecies->id)
                 ->where('users.is_premium', true) // Only include premium users

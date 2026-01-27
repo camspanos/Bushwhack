@@ -10,11 +10,11 @@ class FishingLog extends Model
 {
     protected $fillable = [
         'user_id',
-        'location_id',
-        'equipment_id',
-        'fish_id',
+        'user_location_id',
+        'user_rod_id',
+        'user_fish_id',
         'fish_species_id',
-        'fly_id',
+        'user_fly_id',
         'date',
         'time',
         'time_of_day',
@@ -48,7 +48,7 @@ class FishingLog extends Model
      */
     public function location(): BelongsTo
     {
-        return $this->belongsTo(Location::class);
+        return $this->belongsTo(UserLocation::class, 'user_location_id');
     }
 
     /**
@@ -58,7 +58,7 @@ class FishingLog extends Model
      */
     public function rod(): BelongsTo
     {
-        return $this->belongsTo(Rod::class, 'equipment_id');
+        return $this->belongsTo(UserRod::class, 'user_rod_id');
     }
 
     /**
@@ -78,7 +78,7 @@ class FishingLog extends Model
      */
     public function fish(): BelongsTo
     {
-        return $this->belongsTo(Fish::class);
+        return $this->belongsTo(UserFish::class, 'user_fish_id');
     }
 
     /**
@@ -88,7 +88,7 @@ class FishingLog extends Model
      */
     public function fly(): BelongsTo
     {
-        return $this->belongsTo(Fly::class);
+        return $this->belongsTo(UserFly::class, 'user_fly_id');
     }
 
     /**

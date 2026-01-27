@@ -7,7 +7,7 @@ use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class FishingLogController extends Controller
+class FishingLogsController extends Controller
 {
     /**
      * Display a listing of the authenticated user's fishing logs.
@@ -44,9 +44,9 @@ class FishingLogController extends Controller
         $isPersonalBest = false;
         $previousBestSize = null;
 
-        if (!empty($validated['fish_id'])) {
+        if (!empty($validated['user_fish_id'])) {
             $previousCatch = FishingLog::where('user_id', auth()->id())
-                ->where('fish_id', $validated['fish_id'])
+                ->where('user_fish_id', $validated['user_fish_id'])
                 ->exists();
 
             $isNewSpecies = !$previousCatch;
@@ -54,7 +54,7 @@ class FishingLogController extends Controller
             // Check for personal best (only if not a new species and max_size is provided)
             if (!$isNewSpecies && !empty($validated['max_size'])) {
                 $previousBest = FishingLog::where('user_id', auth()->id())
-                    ->where('fish_id', $validated['fish_id'])
+                    ->where('user_fish_id', $validated['user_fish_id'])
                     ->whereNotNull('max_size')
                     ->max('max_size');
 
@@ -70,12 +70,12 @@ class FishingLogController extends Controller
             'user_id' => auth()->id(),
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
-            'location_id' => $validated['location_id'] ?? null,
-            'fish_id' => $validated['fish_id'] ?? null,
+            'user_location_id' => $validated['user_location_id'] ?? null,
+            'user_fish_id' => $validated['user_fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
             'max_size' => $validated['max_size'] ?? null,
-            'fly_id' => $validated['fly_id'] ?? null,
-            'equipment_id' => $validated['equipment_id'] ?? null,
+            'user_fly_id' => $validated['user_fly_id'] ?? null,
+            'user_rod_id' => $validated['user_rod_id'] ?? null,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
             'barometric_pressure' => $validated['barometric_pressure'] ?? null,
@@ -114,12 +114,12 @@ class FishingLogController extends Controller
         $fishingLog->update([
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
-            'location_id' => $validated['location_id'] ?? null,
-            'fish_id' => $validated['fish_id'] ?? null,
+            'user_location_id' => $validated['user_location_id'] ?? null,
+            'user_fish_id' => $validated['user_fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
             'max_size' => $validated['max_size'] ?? null,
-            'fly_id' => $validated['fly_id'] ?? null,
-            'equipment_id' => $validated['equipment_id'] ?? null,
+            'user_fly_id' => $validated['user_fly_id'] ?? null,
+            'user_rod_id' => $validated['user_rod_id'] ?? null,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
             'barometric_pressure' => $validated['barometric_pressure'] ?? null,

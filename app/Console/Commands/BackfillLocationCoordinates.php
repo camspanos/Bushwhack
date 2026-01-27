@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Location;
+use App\Models\UserLocation;
 use App\Services\GeocodingService;
 use Illuminate\Console\Command;
 
@@ -30,7 +30,7 @@ class BackfillLocationCoordinates extends Command
         $this->info('Backfilling coordinates for existing locations...');
 
         // Get locations that don't have coordinates but have city/state/country
-        $locations = Location::whereNull('latitude')
+        $locations = UserLocation::whereNull('latitude')
             ->whereNull('longitude')
             ->where(function ($query) {
                 $query->whereNotNull('city')

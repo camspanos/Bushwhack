@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Fish extends Model
+class UserFish extends Model
 {
     protected $table = 'user_fish';
 
@@ -34,7 +34,7 @@ class Fish extends Model
      */
     public function fishingLogs(): HasMany
     {
-        return $this->hasMany(FishingLog::class);
+        return $this->hasMany(FishingLog::class, 'user_fish_id');
     }
 
     /**

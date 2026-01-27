@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRodRequest;
-use App\Models\Rod;
+use App\Http\Requests\StoreUserRodRequest;
+use App\Models\UserRod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class RodController extends Controller
+class UserRodsController extends Controller
 {
     /**
      * Display a listing of the authenticated user's rods.
@@ -19,7 +19,7 @@ class RodController extends Controller
     {
         $perPage = $request->input('per_page', 15);
 
-        $rods = Rod::where('user_id', auth()->id())
+        $rods = UserRod::where('user_id', auth()->id())
             ->orderBy('rod_name')
             ->paginate($perPage);
 
@@ -32,13 +32,13 @@ class RodController extends Controller
      * Creates a new rod record for the authenticated user with the
      * provided rod name, rod weight, rod length, reel, and line information.
      */
-    public function store(StoreRodRequest $request): JsonResponse
+    public function store(StoreUserRodRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
 
             // Check if rod already exists with same details
-            $existing = Rod::where('user_id', auth()->id())
+            $existing = UserRod::where('user_id', auth()->id())
                 ->where('rod_name', $validated['rod_name'])
                 ->where('rod_weight', $validated['rod_weight'] ?? null)
                 ->where('rod_length', $validated['rod_length'] ?? null)
@@ -53,7 +53,7 @@ class RodController extends Controller
                 ], 409);
             }
 
-            $rod = Rod::create([
+            $rod = UserRod::create([
                 'user_id' => auth()->id(),
                 ...$validated,
             ]);
@@ -78,7 +78,7 @@ class RodController extends Controller
      *
      * Updates a rod record for the authenticated user.
      */
-    public function update(StoreRodRequest $request, Rod $rod): JsonResponse
+    public function update(StoreUserRodRequest $request, Rod $rod): JsonResponse
     {
         // Ensure the user owns this rod
         if ($rod->user_id !== auth()->id()) {
@@ -88,7 +88,7 @@ class RodController extends Controller
         $validated = $request->validated();
 
         // Check if another rod already exists with same details
-        $existing = Rod::where('user_id', auth()->id())
+        $existing = UserRod::where('user_id', auth()->id())
             ->where('id', '!=', $rod->id)
             ->where('rod_name', $validated['rod_name'])
             ->where('rod_weight', $validated['rod_weight'] ?? null)
@@ -144,9 +144,9 @@ class RodController extends Controller
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $rods = Rod::where('user_id', auth()->id())
+        $rods = UserRod::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
-                $query->select('id', 'equipment_id', 'quantity', 'max_size', 'date');
+                $query->select('id', 'user_rod_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {
                     $query->whereYear('date', $yearFilter);
                 }

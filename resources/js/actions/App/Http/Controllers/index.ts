@@ -5,12 +5,12 @@ import PublicDashboardController from './PublicDashboardController'
 import PublicRodsController from './PublicRodsController'
 import PublicFishController from './PublicFishController'
 import PublicFliesController from './PublicFliesController'
-import LocationController from './LocationController'
-import RodController from './RodController'
-import FishController from './FishController'
-import FlyController from './FlyController'
+import UserLocationsController from './UserLocationsController'
+import UserRodsController from './UserRodsController'
+import UserFishController from './UserFishController'
+import UserFliesController from './UserFliesController'
 import FriendController from './FriendController'
-import FishingLogController from './FishingLogController'
+import FishingLogsController from './FishingLogsController'
 import Settings from './Settings'
 
 const Controllers = {
@@ -21,12 +21,12 @@ const Controllers = {
     PublicRodsController: Object.assign(PublicRodsController, PublicRodsController),
     PublicFishController: Object.assign(PublicFishController, PublicFishController),
     PublicFliesController: Object.assign(PublicFliesController, PublicFliesController),
-    LocationController: Object.assign(LocationController, LocationController),
-    RodController: Object.assign(RodController, RodController),
-    FishController: Object.assign(FishController, FishController),
-    FlyController: Object.assign(FlyController, FlyController),
+    UserLocationsController: Object.assign(UserLocationsController, UserLocationsController),
+    UserRodsController: Object.assign(UserRodsController, UserRodsController),
+    UserFishController: Object.assign(UserFishController, UserFishController),
+    UserFliesController: Object.assign(UserFliesController, UserFliesController),
     FriendController: Object.assign(FriendController, FriendController),
-    FishingLogController: Object.assign(FishingLogController, FishingLogController),
+    FishingLogsController: Object.assign(FishingLogsController, FishingLogsController),
     Settings: Object.assign(Settings, Settings),
 }
 

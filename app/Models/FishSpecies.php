@@ -19,7 +19,7 @@ class FishSpecies extends Model
      */
     public function userFish(): HasMany
     {
-        return $this->hasMany(Fish::class, 'fish_species_id');
+        return $this->hasMany(UserFish::class, 'fish_species_id');
     }
 
     /**

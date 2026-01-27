@@ -11,6 +11,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { toUrl } from '@/lib/utils';
 import { dashboard, fishingLog, locationsPage, rodsPage, fishPage, fliesPage, friendsPage, leaderboard, following, about, home } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
@@ -80,7 +81,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="home()">
+                        <Link :href="toUrl(home())">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

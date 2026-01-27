@@ -7,6 +7,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useActiveUrl } from '@/composables/useActiveUrl';
+import { toUrl } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
@@ -27,7 +28,7 @@ const { urlIsActive } = useActiveUrl();
                     :is-active="urlIsActive(item.href)"
                     :tooltip="item.title"
                 >
-                    <Link :href="item.href">
+                    <Link :href="toUrl(item.href)">
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
                     </Link>

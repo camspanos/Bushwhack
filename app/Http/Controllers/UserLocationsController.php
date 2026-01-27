@@ -21,7 +21,7 @@ class UserLocationsController extends Controller
     {
         $perPage = $request->input('per_page', 15);
 
-        $locations = UserUserLocation::where('user_id', auth()->id())
+        $locations = UserLocation::where('user_id', auth()->id())
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -40,7 +40,7 @@ class UserLocationsController extends Controller
             $validated = $request->validated();
 
             // Check if location already exists with same details
-            $existing = UserUserLocation::where('user_id', auth()->id())
+            $existing = UserLocation::where('user_id', auth()->id())
                 ->where('name', $validated['name'])
                 ->where('city', $validated['city'] ?? null)
                 ->where('state', $validated['state'] ?? null)
@@ -54,7 +54,7 @@ class UserLocationsController extends Controller
                 ], 409);
             }
 
-            $location = UserUserLocation::create([
+            $location = UserLocation::create([
                 'user_id' => auth()->id(),
                 ...$validated,
             ]);
@@ -79,7 +79,7 @@ class UserLocationsController extends Controller
      *
      * Updates a location record for the authenticated user.
      */
-    public function update(StoreUserLocationRequest $request, Location $location): JsonResponse
+    public function update(StoreUserLocationRequest $request, UserLocation $location): JsonResponse
     {
         // Ensure the user owns this location
         if ($location->user_id !== auth()->id()) {
@@ -89,7 +89,7 @@ class UserLocationsController extends Controller
         $validated = $request->validated();
 
         // Check if another location already exists with same details
-        $existing = UserUserLocation::where('user_id', auth()->id())
+        $existing = UserLocation::where('user_id', auth()->id())
             ->where('id', '!=', $location->id)
             ->where('name', $validated['name'])
             ->where('city', $validated['city'] ?? null)
@@ -113,7 +113,7 @@ class UserLocationsController extends Controller
      *
      * Deletes a location entry for the authenticated user.
      */
-    public function destroy(Location $location): JsonResponse
+    public function destroy(UserLocation $location): JsonResponse
     {
         // Ensure the user owns this location
         if ($location->user_id !== auth()->id()) {
@@ -144,7 +144,7 @@ class UserLocationsController extends Controller
             $yearFilter = $request->input('year', 'lifetime');
         }
 
-        $locations = UserUserLocation::where('user_id', auth()->id())
+        $locations = UserLocation::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {
                 $query->select('id', 'user_location_id', 'quantity', 'max_size', 'date');
                 if ($yearFilter !== 'lifetime') {

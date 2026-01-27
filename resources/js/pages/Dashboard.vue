@@ -29,6 +29,17 @@ interface Stats {
         friends: string[];
         notes: string | null;
     } | null;
+    secondBiggestCatch: {
+        size: number;
+        species: string;
+        location: string;
+        date: string;
+        style: string | null;
+        fly: string | null;
+        rod: string | null;
+        friends: string[];
+        notes: string | null;
+    } | null;
 }
 
 interface SpeciesData {
@@ -86,14 +97,28 @@ interface FavoriteWeekday {
     count: number;
 }
 
+interface MonthData {
+    month: string;
+    total_caught: number;
+}
+
+interface MoonPhaseData {
+    moon_phase: string;
+    total_caught: number;
+}
+
 const props = defineProps<{
     stats: Stats;
     allSpecies: SpeciesData[];
     catchesByMonth: ChartData[];
+    catchesByMonthPie: MonthData[];
+    catchesByMoonPhase: MoonPhaseData[];
     topLocations: LocationData[];
     mostProductiveLocation: TopPerformer | null;
     mostSuccessfulFly: TopPerformer | null;
     biggestFishFly: BiggestFishFly | null;
+    mostSuccessfulFlyType: { type: string; total: number; days: number } | null;
+    mostSuccessfulFlyColor: { color: string; total: number; days: number } | null;
     yearStats: YearStats;
     catchesOverTime: CatchOverTime[];
     streakStats: StreakStats;
@@ -202,7 +227,8 @@ const pieSlices = computed(() => {
     props.allSpecies.forEach((species, index) => {
         const caught = Number(species.total_caught);
         const percentage = caught / total;
-        const angle = percentage * 360;
+        // For a single item (100%), use 359.99 degrees to avoid full circle rendering issue
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
 
         slices.push({
             path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
@@ -263,6 +289,102 @@ const speciesStats = computed(() => {
 const topSpecies = computed(() => {
     return props.allSpecies.slice(0, 7);
 });
+
+// Month pie chart colors
+const monthColors = [
+    '#3b82f6', // January - blue
+    '#8b5cf6', // February - purple
+    '#ec4899', // March - pink
+    '#10b981', // April - green
+    '#f59e0b', // May - amber
+    '#ef4444', // June - red
+    '#06b6d4', // July - cyan
+    '#84cc16', // August - lime
+    '#f97316', // September - orange
+    '#6366f1', // October - indigo
+    '#14b8a6', // November - teal
+    '#0ea5e9', // December - sky
+];
+
+const getMonthColor = (index: number) => {
+    return monthColors[index % monthColors.length];
+};
+
+// Month pie chart slices
+const monthPieSlices = computed(() => {
+    const total = props.catchesByMonthPie.reduce((sum, month) => sum + Number(month.total_caught), 0);
+    if (total === 0) return [];
+
+    const slices = [];
+    let currentAngle = -90;
+
+    props.catchesByMonthPie.forEach((month, index) => {
+        const caught = Number(month.total_caught);
+        const percentage = caught / total;
+        // For a single item (100%), use 359.99 degrees to avoid full circle rendering issue
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getMonthColor(index),
+            percentage: Math.round(percentage * 100),
+            month: month.month,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
+// Moon phase pie chart colors
+const moonPhaseColors: Record<string, string> = {
+    'New Moon': '#1e293b',
+    'Waxing Crescent': '#475569',
+    'First Quarter': '#64748b',
+    'Waxing Gibbous': '#94a3b8',
+    'Full Moon': '#f1f5f9',
+    'Waning Gibbous': '#cbd5e1',
+    'Last Quarter': '#94a3b8',
+    'Waning Crescent': '#64748b',
+};
+
+const getMoonPhaseColor = (phase: string) => {
+    return moonPhaseColors[phase] || '#64748b';
+};
+
+// Moon phase pie chart slices
+const moonPhasePieSlices = computed(() => {
+    const total = props.catchesByMoonPhase.reduce((sum, phase) => sum + Number(phase.total_caught), 0);
+    if (total === 0) return [];
+
+    const slices = [];
+    let currentAngle = -90;
+
+    props.catchesByMoonPhase.forEach((phase) => {
+        const caught = Number(phase.total_caught);
+        const percentage = caught / total;
+        // For a single item (100%), use 359.99 degrees to avoid full circle rendering issue
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getMoonPhaseColor(phase.moon_phase),
+            percentage: Math.round(percentage * 100),
+            phase: phase.moon_phase,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
+// Hover state for pie charts
+const hoveredMonthSlice = ref<number | null>(null);
+const hoveredMoonSlice = ref<number | null>(null);
 </script>
 
 <template>
@@ -349,8 +471,8 @@ const topSpecies = computed(() => {
                 </Card>
             </div>
 
-            <!-- Biggest Catch & Charts Row -->
-            <div class="grid gap-4 md:grid-cols-2">
+            <!-- Biggest Catch & Runner Up & Species Row -->
+            <div class="grid gap-4 md:grid-cols-4">
                 <!-- Biggest Catch -->
                 <Card v-if="stats.biggestCatch" class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
                     <CardHeader class="pb-1">
@@ -404,9 +526,61 @@ const topSpecies = computed(() => {
                     </CardContent>
                 </Card>
 
+                <!-- Runner Up / Second Biggest Catch -->
+                <Card v-if="stats.secondBiggestCatch" class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10">
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
+                                <Award class="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            Runner Up
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div class="space-y-2">
+                            <div class="space-y-1">
+                                <div class="text-3xl font-bold text-orange-700 dark:text-orange-300">{{ formatSize(stats.secondBiggestCatch.size) }}"</div>
+                                <div class="text-lg font-medium">{{ stats.secondBiggestCatch.species }}</div>
+                            </div>
+
+                            <div class="space-y-1 text-sm">
+                                <div class="flex items-start gap-2">
+                                    <MapPin class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.secondBiggestCatch.location }}</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <Calendar class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ formatDate(stats.secondBiggestCatch.date) }}</span>
+                                </div>
+                                <div v-if="stats.secondBiggestCatch.rod" class="flex items-start gap-2">
+                                    <TrendingUp class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.secondBiggestCatch.rod }}</span>
+                                </div>
+                                <div v-if="stats.secondBiggestCatch.fly" class="flex items-start gap-2">
+                                    <Target class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.secondBiggestCatch.fly }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card v-else class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">
+                                <Award class="h-5 w-5 text-gray-400" />
+                            </div>
+                            Runner Up
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <p class="text-muted-foreground">No second catch yet</p>
+                    </CardContent>
+                </Card>
 
                 <!-- Species Distribution Pie Chart -->
-                <Card class="bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10">
+                <Card class="md:col-span-2 bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10">
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
@@ -686,8 +860,198 @@ const topSpecies = computed(() => {
                 </Card>
             </div>
 
-            <!-- Top Performers -->
+            <!-- Month & Moon Phase Pie Charts -->
             <div class="grid gap-4 md:grid-cols-2">
+                <!-- Fish Caught per Month -->
+                <Card class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10">
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
+                                <Calendar class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            Fish Caught per Month
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesByMonthPie.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in monthPieSlices" :key="`month-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredMonthSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100"
+                                            @mouseenter="hoveredMonthSlice = index"
+                                            @mouseleave="hoveredMonthSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesByMonthPie.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Months
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(month, index) in catchesByMonthPie"
+                                    :key="month.month"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredMonthSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredMonthSlice = index"
+                                    @mouseleave="hoveredMonthSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getMonthColor(index) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ month.month }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ month.total_caught }}</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ monthPieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-4">
+                            <p class="text-muted-foreground text-sm mb-2">No catches recorded yet</p>
+                            <Link :href="fishingLog()" class="text-sm text-primary hover:underline">
+                                Log your first catch →
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Fish Caught by Moon Phase -->
+                <Card class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10">
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-slate-100 p-1.5 dark:bg-slate-900/30">
+                                <span class="text-lg">🌙</span>
+                            </div>
+                            Fish Caught by Moon Phase
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesByMoonPhase.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in moonPhasePieSlices" :key="`moon-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredMoonSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-slate-300 dark:stroke-slate-700"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredMoonSlice = index"
+                                            @mouseleave="hoveredMoonSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesByMoonPhase.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Phases
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(phase, index) in catchesByMoonPhase"
+                                    :key="phase.moon_phase"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredMoonSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredMoonSlice = index"
+                                    @mouseleave="hoveredMoonSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-slate-300 dark:border-slate-700"
+                                            :style="{ backgroundColor: getMoonPhaseColor(phase.moon_phase) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ phase.moon_phase }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ phase.total_caught }}</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ moonPhasePieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-4">
+                            <p class="text-muted-foreground text-sm mb-2">No moon phase data yet</p>
+                            <Link :href="fishingLog()" class="text-sm text-primary hover:underline">
+                                Log catches with moon phases →
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="grid gap-4 md:grid-cols-4">
                 <!-- Most Successful Fly (by quantity) -->
                 <Card class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10">
                     <CardHeader class="pb-2">
@@ -739,6 +1103,66 @@ const topSpecies = computed(() => {
                                 </span>
                                 <span class="text-xs text-muted-foreground">
                                     {{ biggestFishFly.days }} days used
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-foreground">
+                            No data yet
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Most Successful Fly Type -->
+                <Card class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-purple-100 p-1.5 dark:bg-purple-900/30">
+                                <Award class="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            Most Successful Type
+                        </CardTitle>
+                        <CardDescription>Best fly type</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulFlyType" class="space-y-2">
+                            <div class="text-xl font-bold text-purple-700 dark:text-purple-300">{{ mostSuccessfulFlyType.type }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                    <span>🎣</span>
+                                    <span>{{ mostSuccessfulFlyType.total }} fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ mostSuccessfulFlyType.days }} days used
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-foreground">
+                            No data yet
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Most Successful Fly Color -->
+                <Card class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-indigo-100 p-1.5 dark:bg-indigo-900/30">
+                                <Award class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            Most Successful Color
+                        </CardTitle>
+                        <CardDescription>Best fly color</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulFlyColor" class="space-y-2">
+                            <div class="text-xl font-bold text-indigo-700 dark:text-indigo-300">{{ mostSuccessfulFlyColor.color }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                                    <span>🎣</span>
+                                    <span>{{ mostSuccessfulFlyColor.total }} fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ mostSuccessfulFlyColor.days }} days used
                                 </span>
                             </div>
                         </div>

@@ -93,6 +93,14 @@ class DashboardController extends Controller
             ->with(['fish', 'location', 'fly', 'rod', 'friends'])
             ->first();
 
+        // Second biggest catch (filtered by year)
+        $secondBiggestCatch = (clone $baseQuery)
+            ->whereNotNull('max_size')
+            ->orderByDesc('max_size')
+            ->with(['fish', 'location', 'fly', 'rod', 'friends'])
+            ->skip(1)
+            ->first();
+
         // All species caught with statistics (filtered by year)
         $allSpecies = (clone $baseQuery)
             ->select('fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
@@ -244,6 +252,82 @@ class DashboardController extends Controller
             ->orderByDesc('biggest_size')
             ->first();
 
+        // Most successful fly type (filtered by year, grouped by fly type)
+        $mostSuccessfulFlyTypeQuery = FishingLog::where('fishing_logs.user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $mostSuccessfulFlyTypeQuery->whereYear('fishing_logs.date', $yearFilter);
+        }
+        $mostSuccessfulFlyType = $mostSuccessfulFlyTypeQuery
+            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->select('user_flies.type', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
+            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('user_flies.type')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->where('user_flies.user_id', $userId)
+            ->groupBy('user_flies.type')
+            ->orderByDesc('total_caught')
+            ->first();
+
+        // Most successful fly color (filtered by year, grouped by fly color)
+        $mostSuccessfulFlyColorQuery = FishingLog::where('fishing_logs.user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $mostSuccessfulFlyColorQuery->whereYear('fishing_logs.date', $yearFilter);
+        }
+        $mostSuccessfulFlyColor = $mostSuccessfulFlyColorQuery
+            ->join('user_flies', 'fishing_logs.fly_id', '=', 'user_flies.id')
+            ->select('user_flies.color', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
+            ->whereNotNull('fishing_logs.fly_id')
+            ->whereNotNull('user_flies.color')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->where('user_flies.user_id', $userId)
+            ->groupBy('user_flies.color')
+            ->orderByDesc('total_caught')
+            ->first();
+
+        // Fish caught per month (for pie chart, filtered by year)
+        $catchesByMonthPieQuery = FishingLog::where('user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $catchesByMonthPieQuery->whereYear('date', $yearFilter);
+        }
+        $catchesByMonthPie = $catchesByMonthPieQuery
+            ->select(
+                DB::raw("DATE_FORMAT(date, '%M') as month"),
+                DB::raw("MONTH(date) as month_number"),
+                DB::raw('SUM(quantity) as total_caught')
+            )
+            ->where('quantity', '>', 0)
+            ->groupBy('month', 'month_number')
+            ->orderBy('month_number')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'month' => $item->month,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
+        // Fish caught by moon phase (for pie chart, filtered by year)
+        $catchesByMoonPhaseQuery = FishingLog::where('user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $catchesByMoonPhaseQuery->whereYear('date', $yearFilter);
+        }
+        $catchesByMoonPhase = $catchesByMoonPhaseQuery
+            ->select(
+                'moon_phase',
+                DB::raw('SUM(quantity) as total_caught')
+            )
+            ->whereNotNull('moon_phase')
+            ->where('quantity', '>', 0)
+            ->groupBy('moon_phase')
+            ->orderByDesc('total_caught')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'moon_phase' => $item->moon_phase,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
         // Catches over time - for line chart (filtered by year)
         // Aggregate by week or month depending on data volume
         $catchesOverTimeQuery = (clone $baseQuery);
@@ -357,9 +441,22 @@ class DashboardController extends Controller
                     'friends' => $biggestCatch->friends->pluck('name')->toArray(),
                     'notes' => $biggestCatch->notes,
                 ] : null,
+                'secondBiggestCatch' => $secondBiggestCatch ? [
+                    'size' => $secondBiggestCatch->max_size,
+                    'species' => $secondBiggestCatch->fish?->species,
+                    'location' => $secondBiggestCatch->location?->name,
+                    'date' => $secondBiggestCatch->date,
+                    'style' => $secondBiggestCatch->style,
+                    'fly' => $secondBiggestCatch->fly?->name,
+                    'rod' => $secondBiggestCatch->rod?->rod_name,
+                    'friends' => $secondBiggestCatch->friends->pluck('name')->toArray(),
+                    'notes' => $secondBiggestCatch->notes,
+                ] : null,
             ],
             'allSpecies' => $allSpecies,
             'catchesByMonth' => $catchesByMonth,
+            'catchesByMonthPie' => $catchesByMonthPie,
+            'catchesByMoonPhase' => $catchesByMoonPhase,
             'topLocations' => $topLocations,
             'mostProductiveLocation' => $mostProductiveLocation ? [
                 'name' => $mostProductiveLocation->location?->name,
@@ -374,6 +471,16 @@ class DashboardController extends Controller
                 'name' => $biggestFishFly->name,
                 'size' => $biggestFishFly->biggest_size ?? 0,
                 'days' => $biggestFishFly->days_used ?? 0,
+            ] : null,
+            'mostSuccessfulFlyType' => $mostSuccessfulFlyType ? [
+                'type' => $mostSuccessfulFlyType->type,
+                'total' => $mostSuccessfulFlyType->total_caught ?? 0,
+                'days' => $mostSuccessfulFlyType->days_used ?? 0,
+            ] : null,
+            'mostSuccessfulFlyColor' => $mostSuccessfulFlyColor ? [
+                'color' => $mostSuccessfulFlyColor->color,
+                'total' => $mostSuccessfulFlyColor->total_caught ?? 0,
+                'days' => $mostSuccessfulFlyColor->days_used ?? 0,
             ] : null,
             'yearStats' => [
                 'daysFished' => $daysFished,

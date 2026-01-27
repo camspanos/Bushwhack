@@ -29,9 +29,16 @@ createInertiaApp({
 document.addEventListener('inertia:error', (event) => {
     const response = (event as any).detail?.response;
     if (response?.status === 419) {
-        // CSRF token expired - reload the page to get a fresh token
-        console.log('CSRF token expired, reloading page...');
-        window.location.reload();
+        // If this is a logout request, just redirect to home
+        // (session expired means user is already logged out)
+        if (response?.config?.url?.includes('/logout')) {
+            console.log('CSRF token expired during logout, redirecting to home...');
+            window.location.href = '/';
+        } else {
+            // For other requests, reload the page to get a fresh token
+            console.log('CSRF token expired, reloading page...');
+            window.location.reload();
+        }
     }
 });
 

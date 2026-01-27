@@ -22,6 +22,7 @@ const handleLogout = () => {
             // Force a full page reload to refresh CSRF token
             window.location.href = '/';
         },
+        // Error handling (including CSRF 419) is done globally in app.ts
     });
 };
 

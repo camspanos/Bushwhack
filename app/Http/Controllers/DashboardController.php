@@ -43,9 +43,20 @@ class DashboardController extends Controller
         $totalCatches = (clone $baseQuery)->sum('quantity') ?? 0;
         $totalTrips = (clone $baseQuery)->distinct()->count('date');
 
-        // Total locations and friends (always lifetime)
+        // Total locations (always lifetime)
         $totalLocations = Location::where('user_id', $userId)->count();
-        $totalFriends = Friend::where('user_id', $userId)->count();
+
+        // Total friends fished with (filtered by year)
+        // Count distinct friends from fishing logs in the date range
+        $totalFriends = DB::table('fishing_log_user_friend')
+            ->join('fishing_logs', 'fishing_log_user_friend.fishing_log_id', '=', 'fishing_logs.id')
+            ->where('fishing_logs.user_id', $userId);
+
+        if ($yearFilter !== 'lifetime') {
+            $totalFriends->whereYear('fishing_logs.date', $yearFilter);
+        }
+
+        $totalFriends = $totalFriends->distinct('fishing_log_user_friend.friend_id')->count('fishing_log_user_friend.friend_id');
 
         // Favorite location (most visited, filtered by year)
         $favoriteLocation = (clone $baseQuery)

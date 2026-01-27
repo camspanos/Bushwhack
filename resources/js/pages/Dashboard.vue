@@ -317,7 +317,7 @@ const topSpecies = computed(() => {
                     </CardHeader>
                     <CardContent class="pb-3">
                         <div class="text-2xl font-bold text-purple-700 dark:text-purple-300">{{ stats.totalFriends }}</div>
-                        <p class="text-xs text-muted-foreground">Friends in your network</p>
+                        <p class="text-xs text-muted-foreground">Friends fished with</p>
                     </CardContent>
                 </Card>
             </div>

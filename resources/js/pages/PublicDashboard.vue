@@ -6,21 +6,17 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame } from 'lucide-vue-next';
+import { Fish, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface Stats {
     totalCatches: number;
     totalTrips: number;
-    totalLocations: number;
-    totalFriends: number;
-    favoriteLocation: string | null;
     topFish: string | null;
     topFishCount: number;
     biggestCatch: {
         size: number;
         species: string;
-        location: string;
         date: string;
     } | null;
 }
@@ -35,13 +31,6 @@ interface SpeciesData {
 
 interface ChartData {
     month: string;
-    total: number;
-}
-
-interface LocationData {
-    name: string;
-    city: string | null;
-    state: string | null;
     total: number;
 }
 
@@ -92,8 +81,6 @@ const props = defineProps<{
     stats: Stats;
     allSpecies: SpeciesData[];
     catchesByMonth: ChartData[];
-    topLocations: LocationData[];
-    mostProductiveLocation: TopPerformer | null;
     mostSuccessfulFly: TopPerformer | null;
     biggestFishFly: BiggestFishFly | null;
     yearStats: YearStats;

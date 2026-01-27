@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Fish;
 use App\Models\FishingLog;
 use App\Models\Fly;
-use App\Models\Friend;
-use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -48,19 +46,6 @@ class PublicDashboardController extends Controller
         // Total counts (filtered by year)
         $totalCatches = (clone $baseQuery)->sum('quantity') ?? 0;
         $totalTrips = (clone $baseQuery)->distinct()->count('date');
-
-        // Total locations and friends (always lifetime)
-        $totalLocations = Location::where('user_id', $userId)->count();
-        $totalFriends = Friend::where('user_id', $userId)->count();
-
-        // Favorite location (most visited, filtered by year)
-        $favoriteLocation = (clone $baseQuery)
-            ->select('location_id', DB::raw('COUNT(DISTINCT date) as visit_count'))
-            ->whereNotNull('location_id')
-            ->groupBy('location_id')
-            ->orderByDesc('visit_count')
-            ->with('location')
-            ->first();
 
         // Most caught fish species (filtered by year)
         $topFish = (clone $baseQuery)
@@ -118,23 +103,7 @@ class PublicDashboardController extends Controller
                 ];
             });
 
-        // Top 7 locations by catches (filtered by year)
-        $topLocations = (clone $baseQuery)
-            ->select('location_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('location_id')
-            ->groupBy('location_id')
-            ->orderByDesc('total_caught')
-            ->with('location')
-            ->limit(7)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'name' => $item->location->name ?? 'Unknown',
-                    'city' => $item->location->city ?? null,
-                    'state' => $item->location->state ?? null,
-                    'total' => $item->total_caught ?? 0,
-                ];
-            });
+
 
         // Filtered fishing logs
         $filteredLogs = (clone $baseQuery)->get();
@@ -188,15 +157,7 @@ class PublicDashboardController extends Controller
             'count' => $weekdayData->trip_count,
         ] : null;
 
-        // Most productive location (filtered by year)
-        $mostProductiveLocation = (clone $baseQuery)
-            ->select('location_id', DB::raw('SUM(quantity) as total_caught'))
-            ->whereNotNull('location_id')
-            ->where('quantity', '>', 0)
-            ->groupBy('location_id')
-            ->orderByDesc('total_caught')
-            ->with('location')
-            ->first();
+
 
         // Most successful fly (filtered by year, grouped by fly name)
         $mostSuccessfulFlyQuery = FishingLog::where('fishing_logs.user_id', $userId);
@@ -331,25 +292,16 @@ class PublicDashboardController extends Controller
             'stats' => [
                 'totalCatches' => $totalCatches,
                 'totalTrips' => $totalTrips,
-                'totalLocations' => $totalLocations,
-                'totalFriends' => $totalFriends,
-                'favoriteLocation' => $favoriteLocation?->location?->name,
                 'topFish' => $topFish?->fish?->species,
                 'topFishCount' => $topFish?->total_caught ?? 0,
                 'biggestCatch' => $biggestCatch ? [
                     'size' => $biggestCatch->max_size,
                     'species' => $biggestCatch->fish?->species,
-                    'location' => $biggestCatch->location?->name,
                     'date' => $biggestCatch->date,
                 ] : null,
             ],
             'allSpecies' => $allSpecies,
             'catchesByMonth' => $catchesByMonth,
-            'topLocations' => $topLocations,
-            'mostProductiveLocation' => $mostProductiveLocation ? [
-                'name' => $mostProductiveLocation->location?->name,
-                'total' => $mostProductiveLocation->total_caught ?? 0,
-            ] : null,
             'mostSuccessfulFly' => $mostSuccessfulFly ? [
                 'name' => $mostSuccessfulFly->name,
                 'total' => $mostSuccessfulFly->total_caught ?? 0,

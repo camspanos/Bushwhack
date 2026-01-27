@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame } from 'lucide-vue-next';
+import { Fish, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, MapPin } from 'lucide-vue-next';
 import { computed, ref, watch, nextTick } from 'vue';
 
 interface Stats {
@@ -19,6 +19,8 @@ interface Stats {
         size: number;
         species: string;
         date: string;
+        fly: string | null;
+        rod: string | null;
     } | null;
 }
 
@@ -379,12 +381,25 @@ const topSpecies = computed(() => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent class="pt-0 pb-3">
-                        <div class="space-y-1">
-                            <div class="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{{ formatSize(stats.biggestCatch.size) }}"</div>
-                            <div class="text-lg font-medium">{{ stats.biggestCatch.species }}</div>
-                            <div class="text-sm text-muted-foreground">
-                                <div>{{ stats.biggestCatch.location }}</div>
-                                <div>{{ formatDate(stats.biggestCatch.date) }}</div>
+                        <div class="space-y-2">
+                            <div class="space-y-1">
+                                <div class="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{{ formatSize(stats.biggestCatch.size) }}"</div>
+                                <div class="text-lg font-medium">{{ stats.biggestCatch.species }}</div>
+                            </div>
+
+                            <div class="space-y-1 text-sm">
+                                <div class="flex items-start gap-2">
+                                    <Calendar class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ formatDate(stats.biggestCatch.date) }}</span>
+                                </div>
+                                <div v-if="stats.biggestCatch.rod" class="flex items-start gap-2">
+                                    <TrendingUp class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.biggestCatch.rod }}</span>
+                                </div>
+                                <div v-if="stats.biggestCatch.fly" class="flex items-start gap-2">
+                                    <Target class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.biggestCatch.fly }}</span>
+                                </div>
                             </div>
                         </div>
                     </CardContent>

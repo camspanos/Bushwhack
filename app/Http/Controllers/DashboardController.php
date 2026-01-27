@@ -90,7 +90,7 @@ class DashboardController extends Controller
         $biggestCatch = (clone $baseQuery)
             ->whereNotNull('max_size')
             ->orderByDesc('max_size')
-            ->with(['fish', 'location'])
+            ->with(['fish', 'location', 'fly', 'rod', 'friends'])
             ->first();
 
         // All species caught with statistics (filtered by year)
@@ -351,6 +351,11 @@ class DashboardController extends Controller
                     'species' => $biggestCatch->fish?->species,
                     'location' => $biggestCatch->location?->name,
                     'date' => $biggestCatch->date,
+                    'style' => $biggestCatch->style,
+                    'fly' => $biggestCatch->fly?->name,
+                    'rod' => $biggestCatch->rod?->rod_name,
+                    'friends' => $biggestCatch->friends->pluck('name')->toArray(),
+                    'notes' => $biggestCatch->notes,
                 ] : null,
             ],
             'allSpecies' => $allSpecies,

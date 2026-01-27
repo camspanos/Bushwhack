@@ -69,6 +69,7 @@ class FishingLogController extends Controller
         $fishingLog = FishingLog::create([
             'user_id' => auth()->id(),
             'date' => $validated['date'],
+            'time' => $validated['time'] ?? null,
             'location_id' => $validated['location_id'] ?? null,
             'fish_id' => $validated['fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
@@ -76,6 +77,8 @@ class FishingLogController extends Controller
             'fly_id' => $validated['fly_id'] ?? null,
             'equipment_id' => $validated['equipment_id'] ?? null,
             'style' => $validated['style'] ?? null,
+            'moon_phase' => $validated['moon_phase'] ?? null,
+            'barometric_pressure' => $validated['barometric_pressure'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -110,6 +113,7 @@ class FishingLogController extends Controller
         // Update the fishing log
         $fishingLog->update([
             'date' => $validated['date'],
+            'time' => $validated['time'] ?? null,
             'location_id' => $validated['location_id'] ?? null,
             'fish_id' => $validated['fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
@@ -117,6 +121,8 @@ class FishingLogController extends Controller
             'fly_id' => $validated['fly_id'] ?? null,
             'equipment_id' => $validated['equipment_id'] ?? null,
             'style' => $validated['style'] ?? null,
+            'moon_phase' => $validated['moon_phase'] ?? null,
+            'barometric_pressure' => $validated['barometric_pressure'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
 

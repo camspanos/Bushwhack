@@ -16,9 +16,12 @@ class FishingLog extends Model
         'fish_species_id',
         'fly_id',
         'date',
+        'time',
         'quantity',
         'max_size',
         'style',
+        'moon_phase',
+        'barometric_pressure',
         'notes',
     ];
 

@@ -16,7 +16,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, Pencil, Trash2, ChevronDown, X, FileText, AlertCircle, CheckCircle2, Trophy } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, Pencil, Trash2, ChevronDown, X, FileText, AlertCircle, CheckCircle2, Trophy } from 'lucide-vue-next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
@@ -70,6 +70,33 @@ const df = new DateFormatter('en-US', { dateStyle: 'long' });
 const isCalendarOpen = ref(false);
 let closeCalendar: (() => void) | null = null;
 
+// Calculate moon phase based on date
+const calculateMoonPhase = (year: number, month: number, day: number): string => {
+    // Known new moon: January 6, 2000
+    const knownNewMoon = new Date(2000, 0, 6, 18, 14);
+    const targetDate = new Date(year, month - 1, day);
+
+    // Lunar cycle is approximately 29.53 days
+    const lunarCycle = 29.53058867;
+
+    // Calculate days since known new moon
+    const daysSinceNewMoon = (targetDate.getTime() - knownNewMoon.getTime()) / (1000 * 60 * 60 * 24);
+
+    // Calculate position in current lunar cycle (0-29.53)
+    const phase = ((daysSinceNewMoon % lunarCycle) + lunarCycle) % lunarCycle;
+
+    // Determine moon phase name
+    if (phase < 1.84566) return 'New Moon';
+    if (phase < 7.38264) return 'Waxing Crescent';
+    if (phase < 9.22830) return 'First Quarter';
+    if (phase < 14.76528) return 'Waxing Gibbous';
+    if (phase < 16.61094) return 'Full Moon';
+    if (phase < 22.14792) return 'Waning Gibbous';
+    if (phase < 23.99358) return 'Last Quarter';
+    if (phase < 29.53059) return 'Waning Crescent';
+    return 'New Moon';
+};
+
 // Initialize date input with today's date
 const initializeDateInput = () => {
     const todayDate = today(getLocalTimeZone());
@@ -77,6 +104,8 @@ const initializeDateInput = () => {
     const month = String(todayDate.month).padStart(2, '0');
     const day = String(todayDate.day).padStart(2, '0');
     dateInput.value = `${year}-${month}-${day}`;
+    // Set moon phase for today
+    formData.value.moonPhase = calculateMoonPhase(todayDate.year, todayDate.month, todayDate.day);
 };
 
 // Computed property to format date for form submission
@@ -98,6 +127,9 @@ const handleDateSelect = (date: CalendarDate | undefined) => {
     const day = String(date.day).padStart(2, '0');
     dateInput.value = `${year}-${month}-${day}`;
 
+    // Automatically set moon phase
+    formData.value.moonPhase = calculateMoonPhase(date.year, date.month, date.day);
+
     // Close the calendar popover
     isCalendarOpen.value = false;
     if (closeCalendar) {
@@ -112,6 +144,8 @@ const handleInputChange = () => {
         const [year, month, day] = dateInput.value.split('-').map(Number);
         if (year && month && day) {
             selectedDate.value = new CalendarDate(year, month, day);
+            // Automatically set moon phase
+            formData.value.moonPhase = calculateMoonPhase(year, month, day);
         }
     } catch (error) {
         console.error('Invalid date format:', error);
@@ -120,6 +154,7 @@ const handleInputChange = () => {
 
 // Form state
 const formData = ref({
+    time: '',
     location_id: '',
     fish_id: '',
     quantity: '',
@@ -127,9 +162,30 @@ const formData = ref({
     fly_id: '',
     equipment_id: '',
     fishingStyle: '',
+    moonPhase: '',
+    barometricPressure: '',
     friend_ids: [],
     notes: '',
 });
+
+// Moon phase options
+const moonPhaseOptions = [
+    'New Moon',
+    'Waxing Crescent',
+    'First Quarter',
+    'Waxing Gibbous',
+    'Full Moon',
+    'Waning Gibbous',
+    'Last Quarter',
+    'Waning Crescent',
+];
+
+// Barometric pressure options
+const barometricPressureOptions = [
+    'Falling Pressure',
+    'Steady Pressure',
+    'Rising Pressure',
+];
 
 // Dynamic data from API
 const locations = ref([]);
@@ -451,6 +507,7 @@ const editLog = (log: any) => {
 
     // Populate form with log data
     formData.value = {
+        time: log.time || '',
         location_id: log.location_id?.toString() || '',
         fish_id: log.fish_id?.toString() || '',
         quantity: log.quantity?.toString() || '',
@@ -458,6 +515,8 @@ const editLog = (log: any) => {
         fly_id: log.fly_id?.toString() || '',
         equipment_id: log.equipment_id?.toString() || '',
         fishingStyle: log.style || '',
+        moonPhase: log.moon_phase || '',
+        barometricPressure: log.barometric_pressure || '',
         friend_ids: log.friends?.map((f: any) => f.id) || [],
         notes: log.notes || '',
     };
@@ -476,6 +535,7 @@ const resetForm = () => {
     isEditMode.value = false;
     editingLogId.value = null;
     formData.value = {
+        time: '',
         location_id: '',
         fish_id: '',
         quantity: '',
@@ -483,6 +543,8 @@ const resetForm = () => {
         fly_id: '',
         equipment_id: '',
         fishingStyle: '',
+        moonPhase: '',
+        barometricPressure: '',
         friend_ids: [],
         notes: '',
     };
@@ -523,6 +585,7 @@ const handleSubmit = async () => {
     try {
         const submitData = {
             date: formattedDate.value,
+            time: formData.value.time || null,
             location_id: formData.value.location_id || null,
             fish_id: formData.value.fish_id || null,
             quantity: formData.value.quantity || null,
@@ -530,6 +593,8 @@ const handleSubmit = async () => {
             fly_id: formData.value.fly_id || null,
             equipment_id: formData.value.equipment_id || null,
             style: formData.value.fishingStyle || null,
+            moon_phase: formData.value.moonPhase || null,
+            barometric_pressure: formData.value.barometricPressure || null,
             friend_ids: formData.value.friend_ids,
             notes: formData.value.notes || null,
         };
@@ -903,31 +968,32 @@ const viewNotes = (notes: string) => {
                     </DialogDescription>
                 </DialogHeader>
                 <form @submit.prevent="handleSubmit" class="space-y-6">
-                                    <!-- Date -->
-                                    <div class="grid gap-2">
-                                        <Label for="date" class="flex items-center gap-2">
-                                            <CalendarIcon class="h-4 w-4" />
-                                            Date
-                                        </Label>
-                                        <div class="flex gap-2">
+                                    <!-- Date and Time -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="grid gap-2">
+                                            <Label for="date" class="flex items-center gap-2">
+                                                <CalendarIcon class="h-4 w-4" />
+                                                Date
+                                            </Label>
                                             <Input
                                                 id="date"
                                                 type="date"
                                                 v-model="dateInput"
                                                 @change="handleInputChange"
-                                                class="flex-1"
                                                 required
                                             />
-                                            <Popover v-model:open="isCalendarOpen">
-                                                <PopoverTrigger as-child>
-                                                    <Button variant="outline" class="px-3">
-                                                        <CalendarIcon class="h-4 w-4" />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent class="w-auto p-0">
-                                                    <CalendarComponent v-model="selectedDate" @update:model-value="handleDateSelect" />
-                                                </PopoverContent>
-                                            </Popover>
+                                        </div>
+
+                                        <div class="grid gap-2">
+                                            <Label for="time" class="flex items-center gap-2">
+                                                <Clock class="h-4 w-4" />
+                                                Time
+                                            </Label>
+                                            <Input
+                                                id="time"
+                                                type="time"
+                                                v-model="formData.time"
+                                            />
                                         </div>
                                     </div>
 
@@ -1095,6 +1161,37 @@ const viewNotes = (notes: string) => {
                                             v-model="formData.fishingStyle"
                                             placeholder="e.g., Dry Fly, Nymphing, Streamer"
                                         />
+                                    </div>
+
+                                    <!-- Moon Phase and Barometric Pressure -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="grid gap-2">
+                                            <Label for="moonPhase">Moon Phase</Label>
+                                            <Select v-model="formData.moonPhase">
+                                                <SelectTrigger id="moonPhase">
+                                                    <SelectValue placeholder="Select moon phase" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem v-for="phase in moonPhaseOptions" :key="phase" :value="phase">
+                                                        {{ phase }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div class="grid gap-2">
+                                            <Label for="barometricPressure">Barometric Pressure</Label>
+                                            <Select v-model="formData.barometricPressure">
+                                                <SelectTrigger id="barometricPressure">
+                                                    <SelectValue placeholder="Select pressure" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem v-for="pressure in barometricPressureOptions" :key="pressure" :value="pressure">
+                                                        {{ pressure }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
 
                                     <!-- Friends -->

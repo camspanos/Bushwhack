@@ -23,6 +23,7 @@ class StoreFishingLogRequest extends FormRequest
     {
         return [
             'date' => 'required|date',
+            'time' => 'nullable|date_format:H:i',
             'location_id' => 'nullable|exists:locations,id',
             'fish_id' => 'nullable|exists:user_fish,id',
             'quantity' => 'nullable|integer|min:0',
@@ -30,6 +31,8 @@ class StoreFishingLogRequest extends FormRequest
             'fly_id' => 'nullable|exists:user_flies,id',
             'equipment_id' => 'nullable|exists:user_rods,id',
             'style' => 'nullable|string|max:255',
+            'moon_phase' => 'nullable|string|in:New Moon,Waxing Crescent,First Quarter,Waxing Gibbous,Full Moon,Waning Gibbous,Last Quarter,Waning Crescent',
+            'barometric_pressure' => 'nullable|string|in:Falling Pressure,Steady Pressure,Rising Pressure',
             'friend_ids' => 'nullable|array',
             'friend_ids.*' => 'exists:user_friends,id',
             'notes' => 'nullable|string',

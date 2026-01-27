@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame } from 'lucide-vue-next';
+import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown } from 'lucide-vue-next';
 import { computed, ref, watch, nextTick } from 'vue';
 
 interface Stats {
@@ -22,6 +23,11 @@ interface Stats {
         species: string;
         location: string;
         date: string;
+        style: string | null;
+        fly: string | null;
+        rod: string | null;
+        friends: string[];
+        notes: string | null;
     } | null;
 }
 
@@ -356,12 +362,29 @@ const topSpecies = computed(() => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent class="pt-0 pb-3">
-                        <div class="space-y-1">
-                            <div class="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{{ formatSize(stats.biggestCatch.size) }}"</div>
-                            <div class="text-lg font-medium">{{ stats.biggestCatch.species }}</div>
-                            <div class="text-sm text-muted-foreground">
-                                <div>{{ stats.biggestCatch.location }}</div>
-                                <div>{{ formatDate(stats.biggestCatch.date) }}</div>
+                        <div class="space-y-2">
+                            <div class="space-y-1">
+                                <div class="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{{ formatSize(stats.biggestCatch.size) }}"</div>
+                                <div class="text-lg font-medium">{{ stats.biggestCatch.species }}</div>
+                            </div>
+
+                            <div class="space-y-1 text-sm">
+                                <div class="flex items-start gap-2">
+                                    <MapPin class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.biggestCatch.location }}</span>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <Calendar class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ formatDate(stats.biggestCatch.date) }}</span>
+                                </div>
+                                <div v-if="stats.biggestCatch.rod" class="flex items-start gap-2">
+                                    <TrendingUp class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.biggestCatch.rod }}</span>
+                                </div>
+                                <div v-if="stats.biggestCatch.fly" class="flex items-start gap-2">
+                                    <Target class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.biggestCatch.fly }}</span>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
@@ -472,6 +495,65 @@ const topSpecies = computed(() => {
                                 Log your first catch →
                             </Link>
                         </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- AdSense & Premium Upgrade Row -->
+            <div v-if="!page.props.auth.isPremium" class="grid gap-4 md:grid-cols-2">
+                <!-- Google AdSense Card -->
+                <Card class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="flex items-center justify-center min-h-[200px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
+                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Premium Upgrade Card -->
+                <Card class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2 text-lg">
+                            <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+                                <Crown class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <span class="text-amber-900 dark:text-amber-100">Upgrade to Premium</span>
+                        </CardTitle>
+                        <CardDescription class="text-amber-700/80 dark:text-amber-300/80">
+                            Unlock the full Bushwhack experience
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4 space-y-4">
+                        <div class="space-y-2">
+                            <p class="text-sm text-amber-900/90 dark:text-amber-100/90 font-medium">
+                                Remove all advertisements and enjoy:
+                            </p>
+                            <ul class="text-sm text-amber-800/80 dark:text-amber-200/80 space-y-1 ml-4">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Ad-free experience across all pages</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Access to historical data and year filtering</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Advanced analytics and insights</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Priority support</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <Button class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md">
+                            <Crown class="mr-2 h-4 w-4" />
+                            Upgrade Now
+                        </Button>
                     </CardContent>
                 </Card>
             </div>

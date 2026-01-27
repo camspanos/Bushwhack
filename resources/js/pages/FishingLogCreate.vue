@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Plus, ArrowLeft, ChevronDown, X, AlertCircle, Trophy, CheckCircle2 } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, ArrowLeft, ChevronDown, X, AlertCircle, Trophy, CheckCircle2 } from 'lucide-vue-next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
@@ -38,6 +38,7 @@ const isCalendarOpen = ref(false);
 
 // Form data
 const formData = ref({
+    time: '',
     location_id: '',
     fish_id: '',
     quantity: '',
@@ -45,6 +46,8 @@ const formData = ref({
     fly_id: '',
     equipment_id: '',
     fishingStyle: '',
+    moonPhase: '',
+    barometricPressure: '',
     friend_ids: [] as number[],
     notes: '',
 });
@@ -56,6 +59,33 @@ const formattedDate = computed(() => {
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 });
 
+// Calculate moon phase based on date
+const calculateMoonPhase = (year: number, month: number, day: number): string => {
+    // Known new moon: January 6, 2000
+    const knownNewMoon = new Date(2000, 0, 6, 18, 14);
+    const targetDate = new Date(year, month - 1, day);
+
+    // Lunar cycle is approximately 29.53 days
+    const lunarCycle = 29.53058867;
+
+    // Calculate days since known new moon
+    const daysSinceNewMoon = (targetDate.getTime() - knownNewMoon.getTime()) / (1000 * 60 * 60 * 24);
+
+    // Calculate position in current lunar cycle (0-29.53)
+    const phase = ((daysSinceNewMoon % lunarCycle) + lunarCycle) % lunarCycle;
+
+    // Determine moon phase name
+    if (phase < 1.84566) return 'New Moon';
+    if (phase < 7.38264) return 'Waxing Crescent';
+    if (phase < 9.22830) return 'First Quarter';
+    if (phase < 14.76528) return 'Waxing Gibbous';
+    if (phase < 16.61094) return 'Full Moon';
+    if (phase < 22.14792) return 'Waning Gibbous';
+    if (phase < 23.99358) return 'Last Quarter';
+    if (phase < 29.53059) return 'Waning Crescent';
+    return 'New Moon';
+};
+
 // Initialize date input with today's date
 const initializeDateInput = () => {
     const now = new Date();
@@ -64,6 +94,8 @@ const initializeDateInput = () => {
     const day = String(now.getDate()).padStart(2, '0');
     dateInput.value = `${year}-${month}-${day}`;
     selectedDate.value = new CalendarDate(year, parseInt(month), parseInt(day));
+    // Set moon phase for today
+    formData.value.moonPhase = calculateMoonPhase(year, parseInt(month), parseInt(day));
 };
 
 // Handle date input change
@@ -71,6 +103,8 @@ const handleInputChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const [year, month, day] = target.value.split('-').map(Number);
     selectedDate.value = new CalendarDate(year, month, day);
+    // Automatically set moon phase
+    formData.value.moonPhase = calculateMoonPhase(year, month, day);
 };
 
 // Handle calendar date selection
@@ -79,9 +113,30 @@ const handleDateSelect = (date: CalendarDate) => {
         selectedDate.value = date;
         const { year, month, day } = date;
         dateInput.value = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        // Automatically set moon phase
+        formData.value.moonPhase = calculateMoonPhase(year, month, day);
         isCalendarOpen.value = false; // Close the calendar popover
     }
 };
+
+// Moon phase options
+const moonPhaseOptions = [
+    'New Moon',
+    'Waxing Crescent',
+    'First Quarter',
+    'Waxing Gibbous',
+    'Full Moon',
+    'Waning Gibbous',
+    'Last Quarter',
+    'Waning Crescent',
+];
+
+// Barometric pressure options
+const barometricPressureOptions = [
+    'Falling Pressure',
+    'Steady Pressure',
+    'Rising Pressure',
+];
 
 // Dynamic data from API
 const locations = ref([]);
@@ -358,6 +413,7 @@ const handleSubmit = async () => {
     try {
         const submitData = {
             date: formattedDate.value,
+            time: formData.value.time || null,
             location_id: formData.value.location_id ? parseInt(formData.value.location_id) : null,
             fish_id: formData.value.fish_id ? parseInt(formData.value.fish_id) : null,
             quantity: formData.value.quantity ? parseInt(formData.value.quantity) : null,
@@ -365,6 +421,8 @@ const handleSubmit = async () => {
             fly_id: formData.value.fly_id ? parseInt(formData.value.fly_id) : null,
             equipment_id: formData.value.equipment_id ? parseInt(formData.value.equipment_id) : null,
             style: formData.value.fishingStyle || null,
+            moon_phase: formData.value.moonPhase || null,
+            barometric_pressure: formData.value.barometricPressure || null,
             friend_ids: formData.value.friend_ids,
             notes: formData.value.notes || null,
         };
@@ -449,30 +507,31 @@ const handleCancel = () => {
                     </CardHeader>
                     <CardContent>
                         <form @submit.prevent="handleSubmit" class="space-y-6">
-                            <!-- Date -->
-                            <div class="grid gap-2">
-                                <Label for="date" class="flex items-center gap-2">
-                                    <CalendarIcon class="h-4 w-4" />
-                                    Date
-                                </Label>
-                                <div class="flex gap-2">
+                            <!-- Date and Time -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="grid gap-2">
+                                    <Label for="date" class="flex items-center gap-2">
+                                        <CalendarIcon class="h-4 w-4" />
+                                        Date
+                                    </Label>
                                     <Input
                                         id="date"
                                         type="date"
                                         v-model="dateInput"
                                         @change="handleInputChange"
-                                        class="flex-1"
                                     />
-                                    <Popover v-model:open="isCalendarOpen">
-                                        <PopoverTrigger as-child>
-                                            <Button variant="outline" class="px-3">
-                                                <CalendarIcon class="h-4 w-4" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent class="w-auto p-0">
-                                            <CalendarComponent v-model="selectedDate" @update:model-value="handleDateSelect" />
-                                        </PopoverContent>
-                                    </Popover>
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <Label for="time" class="flex items-center gap-2">
+                                        <Clock class="h-4 w-4" />
+                                        Time
+                                    </Label>
+                                    <Input
+                                        id="time"
+                                        type="time"
+                                        v-model="formData.time"
+                                    />
                                 </div>
                             </div>
 
@@ -608,6 +667,37 @@ const handleCancel = () => {
                                     v-model="formData.fishingStyle"
                                     placeholder="e.g., Dry Fly, Nymph, Streamer"
                                 />
+                            </div>
+
+                            <!-- Moon Phase and Barometric Pressure -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="grid gap-2">
+                                    <Label for="moonPhase">Moon Phase</Label>
+                                    <Select v-model="formData.moonPhase">
+                                        <SelectTrigger id="moonPhase">
+                                            <SelectValue placeholder="Select moon phase" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem v-for="phase in moonPhaseOptions" :key="phase" :value="phase">
+                                                {{ phase }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <Label for="barometricPressure">Barometric Pressure</Label>
+                                    <Select v-model="formData.barometricPressure">
+                                        <SelectTrigger id="barometricPressure">
+                                            <SelectValue placeholder="Select pressure" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem v-for="pressure in barometricPressureOptions" :key="pressure" :value="pressure">
+                                                {{ pressure }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
                             <!-- Friends -->

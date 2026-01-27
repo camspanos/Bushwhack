@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
-import { Trophy, Award, Fish, TrendingUp } from 'lucide-vue-next';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { Trophy, Award, Fish, TrendingUp, Crown } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface LeaderboardEntry {
@@ -39,6 +40,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { label: 'Leaderboard' },
 ];
 
+const page = usePage();
 const selectedMonth = ref(props.selectedMonth);
 const selectedWaterType = ref(props.selectedWaterType);
 
@@ -105,8 +107,43 @@ const formatSize = (size: number | string): string => {
             </Card>
 
             <!-- Leaderboard Grid with Scroll -->
-            <div v-if="leaderboard.length > 0" class="flex-1 overflow-auto">
+            <div v-if="leaderboard.length > 0 || !page.props.auth.isPremium" class="flex-1 overflow-auto">
                 <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-4">
+                <!-- Premium Upsell Card for Free Users -->
+                <Card v-if="!page.props.auth.isPremium" class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
+                    <div class="p-2 h-full flex flex-col">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30 flex-shrink-0">
+                                <Crown class="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <h3 class="text-sm font-semibold text-amber-900 dark:text-amber-100">Your Stats Compete Here!</h3>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <p class="text-xs text-amber-800/90 dark:text-amber-200/90">
+                                Upgrade to Premium to see your name on the leaderboard and compete with other anglers!
+                            </p>
+                            <ul class="text-xs text-amber-800/80 dark:text-amber-200/80 space-y-1">
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Appear on leaderboards</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Track all-time records</span>
+                                </li>
+                                <li class="flex items-start gap-1.5">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Ad-free experience</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <Button class="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs h-7">
+                            <Crown class="mr-1 h-3 w-3" />
+                            Upgrade Now
+                        </Button>
+                    </div>
+                </Card>
+
                 <Card v-for="entry in leaderboard" :key="entry.species" class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10">
                     <div class="p-2">
                         <div class="flex items-center gap-2 mb-1">

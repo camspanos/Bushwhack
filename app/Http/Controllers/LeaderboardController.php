@@ -99,19 +99,15 @@ class LeaderboardController extends Controller
             ];
         });
 
-        // Add current year and previous year options
+        // Add last 10 years options
         $currentYear = now()->year;
-        $previousYear = $currentYear - 1;
-
-        $monthOptions->push([
-            'value' => (string) $currentYear,
-            'label' => (string) $currentYear,
-        ]);
-
-        $monthOptions->push([
-            'value' => (string) $previousYear,
-            'label' => (string) $previousYear,
-        ]);
+        for ($i = 0; $i < 10; $i++) {
+            $year = $currentYear - $i;
+            $monthOptions->push([
+                'value' => (string) $year,
+                'label' => (string) $year,
+            ]);
+        }
 
         return Inertia::render('Leaderboard', [
             'leaderboard' => $leaderboard,

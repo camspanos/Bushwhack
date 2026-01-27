@@ -67,7 +67,7 @@ class PublicDashboardController extends Controller
         $biggestCatch = (clone $baseQuery)
             ->whereNotNull('max_size')
             ->orderByDesc('max_size')
-            ->with(['fish', 'location'])
+            ->with(['fish', 'location', 'fly', 'rod'])
             ->first();
 
         // All species caught with statistics (filtered by year)
@@ -305,6 +305,8 @@ class PublicDashboardController extends Controller
                     'size' => $biggestCatch->max_size,
                     'species' => $biggestCatch->fish?->species,
                     'date' => $biggestCatch->date,
+                    'fly' => $biggestCatch->fly?->name,
+                    'rod' => $biggestCatch->rod?->rod_name,
                 ] : null,
             ],
             'allSpecies' => $allSpecies,

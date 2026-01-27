@@ -3,6 +3,8 @@ import type { LucideIcon } from 'lucide-vue-next';
 
 export interface Auth {
     user: User;
+    isPremium: boolean;
+    canFilterByYear: boolean;
 }
 
 export interface BreadcrumbItem {
@@ -34,6 +36,7 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    is_premium?: boolean;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

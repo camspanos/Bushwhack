@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'allow_followers',
+        'is_premium',
     ];
 
     /**
@@ -49,6 +50,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'allow_followers' => 'boolean',
+            'is_premium' => 'boolean',
         ];
     }
 
@@ -83,6 +85,11 @@ class User extends Authenticatable
      */
     public function follow(User $user): void
     {
+        // Free users can only follow user_id 1
+        if (!$this->is_premium && $user->id !== 1) {
+            return;
+        }
+
         if (!$this->isFollowing($user) && $this->id !== $user->id && $user->allow_followers) {
             $this->following()->attach($user->id);
         }
@@ -94,5 +101,35 @@ class User extends Authenticatable
     public function unfollow(User $user): void
     {
         $this->following()->detach($user->id);
+    }
+
+    /**
+     * Check if user has premium subscription.
+     */
+    public function isPremium(): bool
+    {
+        return $this->is_premium;
+    }
+
+    /**
+     * Check if user can follow a specific user.
+     */
+    public function canFollow(User $user): bool
+    {
+        // Premium users can follow anyone
+        if ($this->is_premium) {
+            return true;
+        }
+
+        // Free users can only follow user_id 1
+        return $user->id === 1;
+    }
+
+    /**
+     * Check if user can access year filtering.
+     */
+    public function canFilterByYear(): bool
+    {
+        return $this->is_premium;
     }
 }

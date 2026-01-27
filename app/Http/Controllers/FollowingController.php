@@ -41,7 +41,16 @@ class FollowingController extends Controller
      */
     public function follow(User $user): JsonResponse
     {
-        auth()->user()->follow($user);
+        $authUser = auth()->user();
+
+        // Check if user can follow this specific user
+        if (!$authUser->canFollow($user)) {
+            return response()->json([
+                'message' => 'Free users can only follow the default user. Upgrade to premium to follow other users.',
+            ], 403);
+        }
+
+        $authUser->follow($user);
 
         return response()->json([
             'message' => 'Successfully followed ' . $user->name,
@@ -66,8 +75,9 @@ class FollowingController extends Controller
     public function search(Request $request): JsonResponse
     {
         $query = $request->input('query');
+        $authUser = auth()->user();
 
-        $users = User::where('id', '!=', auth()->id())
+        $users = User::where('id', '!=', $authUser->id)
             ->where('allow_followers', true)
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
@@ -76,13 +86,14 @@ class FollowingController extends Controller
             ->select('id', 'name', 'email', 'created_at')
             ->limit(10)
             ->get()
-            ->map(function ($user) {
+            ->map(function ($user) use ($authUser) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'member_since' => $user->created_at->format('M Y'),
-                    'is_following' => auth()->user()->isFollowing($user),
+                    'is_following' => $authUser->isFollowing($user),
+                    'can_follow' => $authUser->canFollow($user),
                 ];
             });
 

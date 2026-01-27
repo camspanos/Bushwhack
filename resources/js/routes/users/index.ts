@@ -81,7 +81,7 @@ follow.form = followForm
 
 /**
 * @see \App\Http\Controllers\FollowingController::unfollow
-* @see app/Http/Controllers/FollowingController.php:54
+* @see app/Http/Controllers/FollowingController.php:63
 * @route '/users/{user}/unfollow'
 */
 export const unfollow = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -96,7 +96,7 @@ unfollow.definition = {
 
 /**
 * @see \App\Http\Controllers\FollowingController::unfollow
-* @see app/Http/Controllers/FollowingController.php:54
+* @see app/Http/Controllers/FollowingController.php:63
 * @route '/users/{user}/unfollow'
 */
 unfollow.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -129,7 +129,7 @@ unfollow.url = (args: { user: number | { id: number } } | [user: number | { id: 
 
 /**
 * @see \App\Http\Controllers\FollowingController::unfollow
-* @see app/Http/Controllers/FollowingController.php:54
+* @see app/Http/Controllers/FollowingController.php:63
 * @route '/users/{user}/unfollow'
 */
 unfollow.delete = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -139,7 +139,7 @@ unfollow.delete = (args: { user: number | { id: number } } | [user: number | { i
 
 /**
 * @see \App\Http\Controllers\FollowingController::unfollow
-* @see app/Http/Controllers/FollowingController.php:54
+* @see app/Http/Controllers/FollowingController.php:63
 * @route '/users/{user}/unfollow'
 */
 const unfollowForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -154,7 +154,7 @@ const unfollowForm = (args: { user: number | { id: number } } | [user: number | 
 
 /**
 * @see \App\Http\Controllers\FollowingController::unfollow
-* @see app/Http/Controllers/FollowingController.php:54
+* @see app/Http/Controllers/FollowingController.php:63
 * @route '/users/{user}/unfollow'
 */
 unfollowForm.delete = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -171,7 +171,7 @@ unfollow.form = unfollowForm
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -186,7 +186,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 search.url = (options?: RouteQueryOptions) => {
@@ -195,7 +195,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -205,7 +205,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -215,7 +215,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 const searchForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -225,7 +225,7 @@ const searchForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 searchForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -235,7 +235,7 @@ searchForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\FollowingController::search
-* @see app/Http/Controllers/FollowingController.php:66
+* @see app/Http/Controllers/FollowingController.php:75
 * @route '/users/search'
 */
 searchForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -252,7 +252,7 @@ search.form = searchForm
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 export const dashboard = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -267,7 +267,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 dashboard.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -300,7 +300,7 @@ dashboard.url = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 dashboard.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -310,7 +310,7 @@ dashboard.get = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 dashboard.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -320,7 +320,7 @@ dashboard.head = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 const dashboardForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -330,7 +330,7 @@ const dashboardForm = (args: { user: number | { id: number } } | [user: number |
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 dashboardForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -340,7 +340,7 @@ dashboardForm.get = (args: { user: number | { id: number } } | [user: number | {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:18
+* @see app/Http/Controllers/PublicDashboardController.php:16
 * @route '/users/{user}/dashboard'
 */
 dashboardForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

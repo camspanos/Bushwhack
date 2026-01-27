@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Fish, Calendar, Award, Palette, Bug } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 
 interface UserInfo {
     id: number;
@@ -40,12 +41,26 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const selectedYearFilter = ref(props.selectedYear);
+const showPremiumDialog = ref(false);
+const page = usePage();
+const currentYear = new Date().getFullYear().toString();
 
 const yearLabel = computed(() => {
     return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
 });
 
-watch(selectedYearFilter, (newYear) => {
+watch(selectedYearFilter, async (newYear, oldYear) => {
+    // Check if user is trying to select a non-current year and is not premium
+    // Exception: user_id 1 can be viewed by anyone
+    if (!page.props.auth.isPremium && newYear !== currentYear && props.user.id !== 1) {
+        // Show premium dialog
+        showPremiumDialog.value = true;
+        // Revert the selection after showing dialog
+        await nextTick();
+        selectedYearFilter.value = oldYear;
+        return;
+    }
+
     router.visit(`/users/${props.user.id}/flies`, {
         data: { year: newYear },
         preserveState: true,
@@ -125,6 +140,13 @@ const formatSize = (size: number) => {
                     </NativeSelect>
                 </div>
             </div>
+
+            <!-- Premium Feature Dialog -->
+            <PremiumFeatureDialog
+                v-model:open="showPremiumDialog"
+                title="Year Filtering is a Premium Feature"
+                description="Access to historical data and year filtering is only available to premium users. Upgrade to premium to view your fishing statistics from previous years and lifetime totals."
+            />
 
             <!-- Flies Grid -->
             <div v-if="flies.length > 0" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

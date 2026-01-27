@@ -41,9 +41,11 @@ class LeaderboardController extends Controller
         // Build leaderboard data for each species
         $leaderboard = $species->map(function ($fishSpecies) use ($startDate, $endDate) {
             // Get biggest fish for this species in the time period
-            // Join through user_fish to get fish_species_id
+            // Join through user_fish to get fish_species_id and users table to filter by premium status
             $biggestLog = FishingLog::join('user_fish', 'fishing_logs.fish_id', '=', 'user_fish.id')
+                ->join('users', 'fishing_logs.user_id', '=', 'users.id')
                 ->where('user_fish.fish_species_id', $fishSpecies->id)
+                ->where('users.is_premium', true) // Only include premium users
                 ->whereBetween('fishing_logs.date', [$startDate, $endDate])
                 ->whereNotNull('fishing_logs.max_size')
                 ->orderByDesc('fishing_logs.max_size')
@@ -53,7 +55,9 @@ class LeaderboardController extends Controller
 
             // Get most caught for this species in the time period
             $mostCaughtData = FishingLog::join('user_fish', 'fishing_logs.fish_id', '=', 'user_fish.id')
+                ->join('users', 'fishing_logs.user_id', '=', 'users.id')
                 ->where('user_fish.fish_species_id', $fishSpecies->id)
+                ->where('users.is_premium', true) // Only include premium users
                 ->whereBetween('fishing_logs.date', [$startDate, $endDate])
                 ->selectRaw('fishing_logs.user_id, SUM(fishing_logs.quantity) as total_caught')
                 ->groupBy('fishing_logs.user_id')
@@ -69,20 +73,20 @@ class LeaderboardController extends Controller
             return [
                 'species' => $fishSpecies->species,
                 'water_type' => $fishSpecies->water_type,
-                'biggest_fish' => $biggestLog ? [
+                'biggest_fish' => $biggestLog && $biggestLog->user->is_premium ? [
                     'user_name' => $biggestLog->user->name,
                     'user_id' => $biggestLog->user->id,
                     'size' => $biggestLog->max_size,
                     'date' => $biggestLog->date->format('M d, Y'),
                 ] : null,
-                'most_caught' => $mostCaughtData && $mostCaughtUser ? [
+                'most_caught' => $mostCaughtData && $mostCaughtUser && $mostCaughtUser->is_premium ? [
                     'user_name' => $mostCaughtUser->name,
                     'user_id' => $mostCaughtUser->id,
                     'total' => $mostCaughtData->total_caught,
                 ] : null,
             ];
         })->filter(function ($item) {
-            // Only include species that have at least one leader
+            // Only include species that have at least one premium leader
             return $item['biggest_fish'] !== null || $item['most_caught'] !== null;
         })->values();
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,8 +11,8 @@ import { Pagination, PaginationContent, PaginationItem, PaginationNext, Paginati
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, computed, watch } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { Users, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon, AlertCircle } from 'lucide-vue-next';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from '@/lib/axios';
@@ -38,6 +39,8 @@ const total = ref(0);
 const currentYear = new Date().getFullYear().toString();
 const selectedYearFilter = ref('lifetime'); // Will be set after fetching available years
 const availableYears = ref<string[]>([]);
+const showPremiumDialog = ref(false);
+const page = usePage();
 
 const formData = ref({
     name: '',
@@ -148,13 +151,8 @@ const fetchAvailableYears = async () => {
         const response = await axios.get('/fishing-logs/available-years');
         availableYears.value = response.data;
 
-        // Set default year: current year if it has data, otherwise lifetime
-        const hasCurrentYearData = availableYears.value.includes(currentYear);
-        if (hasCurrentYearData) {
-            selectedYearFilter.value = currentYear;
-        } else {
-            selectedYearFilter.value = 'lifetime';
-        }
+        // Set default year to current year (always included in response now)
+        selectedYearFilter.value = currentYear;
     } catch (error) {
         console.error('Error fetching available years:', error);
     }
@@ -173,7 +171,17 @@ const fetchFriendStats = async () => {
 };
 
 // Watch for year filter changes
-watch(selectedYearFilter, () => {
+watch(selectedYearFilter, async (newYear, oldYear) => {
+    // Check if user is trying to select a non-current year and is not premium
+    if (!page.props.auth.isPremium && newYear !== currentYear) {
+        // Show premium dialog
+        showPremiumDialog.value = true;
+        // Revert the selection after showing dialog
+        await nextTick();
+        selectedYearFilter.value = oldYear;
+        return;
+    }
+
     fetchFriendStats();
 });
 
@@ -340,6 +348,13 @@ onMounted(async () => {
                                     </NativeSelect>
                                 </div>
                             </div>
+
+                            <!-- Premium Feature Dialog -->
+                            <PremiumFeatureDialog
+                                v-model:open="showPremiumDialog"
+                                title="Year Filtering is a Premium Feature"
+                                description="Access to historical data and year filtering is only available to premium users. Upgrade to premium to view your fishing statistics from previous years and lifetime totals."
+                            />
 
                             <!-- Friend Stats Grid -->
                             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

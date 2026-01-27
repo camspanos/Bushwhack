@@ -17,21 +17,31 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $userId = auth()->id();
+        $user = auth()->user();
 
-        // Get available years from fishing logs
+        // Get available years from fishing logs (show all years to everyone)
         $availableYears = FishingLog::where('user_id', $userId)
             ->selectRaw('DISTINCT YEAR(date) as year')
             ->orderBy('year', 'desc')
             ->pluck('year')
             ->filter()
+            ->map(fn($year) => (string) $year)
             ->values()
             ->toArray();
 
-        // Get the year filter from request, default to current year if it has data, otherwise lifetime
-        $currentYear = now()->year;
-        $hasCurrentYearData = in_array($currentYear, $availableYears);
-        $defaultYear = $hasCurrentYearData ? (string) $currentYear : 'lifetime';
-        $yearFilter = $request->input('year', $defaultYear);
+        // Always include current year even if no data exists for it
+        $currentYear = (string) now()->year;
+        if (!in_array($currentYear, $availableYears)) {
+            array_unshift($availableYears, $currentYear);
+        }
+
+        // Free users can only view current year data (but can see all years in dropdown)
+        if (!$user->canFilterByYear()) {
+            $yearFilter = $currentYear;
+        } else {
+            // Get the year filter from request, default to current year
+            $yearFilter = $request->input('year', $currentYear);
+        }
 
         // Build base query with year filter
         $baseQuery = FishingLog::where('user_id', $userId);

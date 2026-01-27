@@ -152,7 +152,7 @@ class FishingLogController extends Controller
      * Get available years from fishing logs.
      *
      * Returns a list of distinct years from the user's fishing logs,
-     * ordered from most recent to oldest.
+     * ordered from most recent to oldest. Always includes current year.
      */
     public function availableYears(): JsonResponse
     {
@@ -164,6 +164,12 @@ class FishingLogController extends Controller
             ->map(fn($year) => (string) $year)
             ->values()
             ->toArray();
+
+        // Always include current year even if no data exists for it
+        $currentYear = (string) now()->year;
+        if (!in_array($currentYear, $years)) {
+            array_unshift($years, $currentYear);
+        }
 
         return response()->json($years);
     }

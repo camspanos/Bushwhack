@@ -136,7 +136,13 @@ class RodController extends Controller
      */
     public function statistics(Request $request): JsonResponse
     {
-        $yearFilter = $request->input('year', 'lifetime');
+        // Free users can only view current year data
+        $user = auth()->user();
+        if (!$user->canFilterByYear()) {
+            $yearFilter = (string) now()->year;
+        } else {
+            $yearFilter = $request->input('year', 'lifetime');
+        }
 
         $rods = Rod::where('user_id', auth()->id())
             ->with(['fishingLogs' => function ($query) use ($yearFilter) {

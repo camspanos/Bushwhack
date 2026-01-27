@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 
 interface Stats {
     totalCatches: number;
@@ -125,9 +126,22 @@ const formatSize = (size: number) => {
 
 // Year filter
 const selectedYearFilter = ref(props.selectedYear);
+const showPremiumDialog = ref(false);
+const page = usePage();
+const currentYear = new Date().getFullYear().toString();
 
 // Watch for year filter changes and reload data
-watch(selectedYearFilter, (newYear) => {
+watch(selectedYearFilter, async (newYear, oldYear) => {
+    // Check if user is trying to select a non-current year and is not premium
+    if (!page.props.auth.isPremium && newYear !== currentYear) {
+        // Show premium dialog
+        showPremiumDialog.value = true;
+        // Revert the selection after showing dialog
+        await nextTick();
+        selectedYearFilter.value = oldYear;
+        return;
+    }
+
     router.get(dashboard().url, { year: newYear }, {
         preserveState: true,
         preserveScroll: true,
@@ -266,6 +280,13 @@ const topSpecies = computed(() => {
                     </NativeSelect>
                 </div>
             </div>
+
+            <!-- Premium Feature Dialog -->
+            <PremiumFeatureDialog
+                v-model:open="showPremiumDialog"
+                title="Year Filtering is a Premium Feature"
+                description="Access to historical data and year filtering is only available to premium users. Upgrade to premium to view your fishing statistics from previous years and lifetime totals."
+            />
 
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

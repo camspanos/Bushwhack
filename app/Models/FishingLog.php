@@ -17,6 +17,7 @@ class FishingLog extends Model
         'fly_id',
         'date',
         'time',
+        'time_of_day',
         'quantity',
         'max_size',
         'style',

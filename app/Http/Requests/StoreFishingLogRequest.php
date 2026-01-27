@@ -24,7 +24,7 @@ class StoreFishingLogRequest extends FormRequest
         return [
             'date' => 'required|date',
             'time' => 'nullable|date_format:H:i',
-            'location_id' => 'nullable|exists:locations,id',
+            'location_id' => 'nullable|exists:user_locations,id',
             'fish_id' => 'nullable|exists:user_fish,id',
             'quantity' => 'nullable|integer|min:0',
             'max_size' => 'nullable|numeric|min:0',

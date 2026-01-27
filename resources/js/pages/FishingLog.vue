@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed, nextTick } from 'vue';
@@ -60,7 +61,7 @@ const fishingLogs = ref([]);
 // Pagination state
 const currentPage = ref(1);
 const totalPages = ref(1);
-const perPage = ref(15);
+const perPage = ref(25);
 const total = ref(0);
 
 // Date picker state
@@ -287,6 +288,12 @@ const previousPage = () => {
     if (currentPage.value > 1) {
         fetchFishingLogs(currentPage.value - 1);
     }
+};
+
+// Handle per page change
+const handlePerPageChange = () => {
+    currentPage.value = 1; // Reset to first page when changing per page
+    fetchFishingLogs(1);
 };
 
 // Fetch data from API
@@ -918,16 +925,20 @@ const viewNotes = (notes: string) => {
                                 </CardContent>
                             </Card>
                         </div>
-                    </CardContent>
-                </Card>
 
-                <!-- Pagination -->
-                <div v-if="totalPages > 1" class="mt-4 space-y-3">
-                            <div class="text-sm text-muted-foreground text-center">
-                                Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
+                        <!-- Pagination -->
+                        <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-2 whitespace-nowrap">
+                                <span class="text-sm text-muted-foreground">Rows per page:</span>
+                                <NativeSelect v-model="perPage" @change="handlePerPageChange" class="w-[80px]">
+                                    <NativeSelectOption :value="15">15</NativeSelectOption>
+                                    <NativeSelectOption :value="25">25</NativeSelectOption>
+                                    <NativeSelectOption :value="50">50</NativeSelectOption>
+                                    <NativeSelectOption :value="100">100</NativeSelectOption>
+                                    <NativeSelectOption :value="150">150</NativeSelectOption>
+                                </NativeSelect>
                             </div>
-                            <div class="overflow-x-auto">
-                            <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
+                            <Pagination v-if="totalPages > 1" :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage" class="order-3 w-full sm:order-2 sm:w-auto sm:flex-1 justify-center">
                                 <PaginationContent>
                                     <PaginationItem>
                                         <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
@@ -950,8 +961,12 @@ const viewNotes = (notes: string) => {
                                     </PaginationItem>
                                 </PaginationContent>
                             </Pagination>
+                            <div class="text-sm text-muted-foreground whitespace-nowrap order-2 sm:order-3">
+                                Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
                             </div>
-                </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
 

@@ -32,7 +32,7 @@ const errorMessage = ref('');
 
 const currentPage = ref(1);
 const totalPages = ref(1);
-const perPage = ref(15);
+const perPage = ref(25);
 const total = ref(0);
 
 // Year filter
@@ -79,6 +79,12 @@ const previousPage = () => {
     if (currentPage.value > 1) {
         fetchFlies(currentPage.value - 1);
     }
+};
+
+// Handle per page change
+const handlePerPageChange = () => {
+    currentPage.value = 1; // Reset to first page when changing per page
+    fetchFlies(1);
 };
 
 const editItem = (item: any) => {
@@ -332,11 +338,18 @@ onMounted(async () => {
                                 </div>
 
                                 <!-- Pagination -->
-                                <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
-                                    <div class="text-sm text-muted-foreground">
-                                        Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
+                                <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+                                    <div class="flex items-center gap-2 whitespace-nowrap">
+                                        <span class="text-sm text-muted-foreground">Rows per page:</span>
+                                        <NativeSelect v-model="perPage" @change="handlePerPageChange" class="w-[80px]">
+                                            <NativeSelectOption :value="15">15</NativeSelectOption>
+                                            <NativeSelectOption :value="25">25</NativeSelectOption>
+                                            <NativeSelectOption :value="50">50</NativeSelectOption>
+                                            <NativeSelectOption :value="100">100</NativeSelectOption>
+                                            <NativeSelectOption :value="150">150</NativeSelectOption>
+                                        </NativeSelect>
                                     </div>
-                                    <Pagination :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage">
+                                    <Pagination v-if="totalPages > 1" :total="totalPages" :sibling-count="1" show-edges :default-page="1" v-model:page="currentPage" @update:page="goToPage" class="order-3 w-full sm:order-2 sm:w-auto sm:flex-1 justify-center">
                                         <PaginationContent>
                                             <PaginationItem>
                                                 <PaginationPrevious @click="previousPage" :disabled="currentPage === 1" />
@@ -352,6 +365,9 @@ onMounted(async () => {
                                             </PaginationItem>
                                         </PaginationContent>
                                     </Pagination>
+                                    <div class="text-sm text-muted-foreground whitespace-nowrap order-2 sm:order-3">
+                                        Showing {{ ((currentPage - 1) * perPage) + 1 }} to {{ Math.min(currentPage * perPage, total) }} of {{ total }} entries
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

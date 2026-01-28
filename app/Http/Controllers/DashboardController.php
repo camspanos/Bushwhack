@@ -183,7 +183,7 @@ class DashboardController extends Controller
             ->whereNotNull('user_location_id')
             ->groupBy('user_location_id')
             ->orderByDesc('total_caught')
-            ->with('location')
+            ->with('location.country')
             ->limit(7)
             ->get()
             ->map(function ($item) {
@@ -191,6 +191,7 @@ class DashboardController extends Controller
                     'name' => $item->location->name ?? 'Unknown',
                     'city' => $item->location->city ?? null,
                     'state' => $item->location->state ?? null,
+                    'country' => $item->location->country->name ?? null,
                     'total' => $item->total_caught ?? 0,
                 ];
             });
@@ -203,7 +204,7 @@ class DashboardController extends Controller
             ->where('max_size', '>', 0)
             ->groupBy('user_location_id')
             ->orderByDesc('biggest_size')
-            ->with('location')
+            ->with('location.country')
             ->limit(7)
             ->get()
             ->map(function ($item) {
@@ -211,6 +212,7 @@ class DashboardController extends Controller
                     'name' => $item->location->name ?? 'Unknown',
                     'city' => $item->location->city ?? null,
                     'state' => $item->location->state ?? null,
+                    'country' => $item->location->country->name ?? null,
                     'biggest_size' => $item->biggest_size ?? 0,
                 ];
             });

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserLocationRequest;
 use App\Models\UserLocation;
 use App\Models\Country;
 use App\Models\FishingLog;
+use App\Services\GeocodingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -20,6 +21,34 @@ class UserLocationsController extends Controller
     {
         $countries = Country::orderBy('name')->get(['id', 'name', 'code']);
         return response()->json($countries);
+    }
+
+    /**
+     * Geocode a location and return coordinates.
+     */
+    public function geocode(Request $request): JsonResponse
+    {
+        $request->validate([
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'country_id' => 'nullable|exists:countries,id',
+        ]);
+
+        // Get country name if country_id is provided
+        $countryName = null;
+        if ($request->country_id) {
+            $country = Country::find($request->country_id);
+            $countryName = $country?->name;
+        }
+
+        // Get coordinates from geocoding service
+        $coordinates = GeocodingService::getCoordinates(
+            $request->city,
+            $request->state,
+            $countryName
+        );
+
+        return response()->json($coordinates);
     }
 
     /**
@@ -56,7 +85,7 @@ class UserLocationsController extends Controller
                 ->where('name', $validated['name'])
                 ->where('city', $validated['city'] ?? null)
                 ->where('state', $validated['state'] ?? null)
-                ->where('country', $validated['country'] ?? null)
+                ->where('country_id', $validated['country_id'] ?? null)
                 ->first();
 
             if ($existing) {
@@ -106,7 +135,7 @@ class UserLocationsController extends Controller
             ->where('name', $validated['name'])
             ->where('city', $validated['city'] ?? null)
             ->where('state', $validated['state'] ?? null)
-            ->where('country', $validated['country'] ?? null)
+            ->where('country_id', $validated['country_id'] ?? null)
             ->first();
 
         if ($existing) {

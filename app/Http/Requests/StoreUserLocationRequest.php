@@ -25,7 +25,6 @@ class StoreUserLocationRequest extends FormRequest
             'name' => 'required|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
             'country_id' => 'nullable|exists:countries,id',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',

@@ -49,7 +49,6 @@ const formData = ref({
     name: '',
     city: '',
     state: '',
-    country: '',
     country_id: null,
     latitude: '',
     longitude: '',
@@ -57,15 +56,80 @@ const formData = ref({
 
 // Countries list
 const countries = ref([]);
+const defaultCountryId = ref(null);
+
+// Geocoding state
+const isGeocoding = ref(false);
+const geocodeTimeout = ref(null);
+const userEditedCoordinates = ref(false);
 
 // Fetch countries
 const fetchCountries = async () => {
     try {
         const response = await axios.get('/countries');
         countries.value = response.data;
+
+        // Find and set US as default country
+        const usCountry = countries.value.find(c => c.code === 'US');
+        if (usCountry) {
+            defaultCountryId.value = usCountry.id;
+            // Set default country if form is empty (new location)
+            if (!formData.value.country_id && !isEditMode.value) {
+                formData.value.country_id = usCountry.id;
+            }
+        }
     } catch (error) {
         console.error('Error fetching countries:', error);
     }
+};
+
+// Geocode location and auto-fill coordinates
+const geocodeLocation = async () => {
+    // Don't geocode if user has manually edited coordinates
+    if (userEditedCoordinates.value) {
+        return;
+    }
+
+    // Only geocode if ALL THREE fields are filled (city AND state AND country)
+    if (!formData.value.city || !formData.value.state || !formData.value.country_id) {
+        // Clear coordinates if any field is empty
+        if (!formData.value.city && !formData.value.state && !formData.value.country_id) {
+            formData.value.latitude = '';
+            formData.value.longitude = '';
+        }
+        return;
+    }
+
+    isGeocoding.value = true;
+    try {
+        const response = await axios.post('/locations/geocode', {
+            city: formData.value.city,
+            state: formData.value.state,
+            country_id: formData.value.country_id,
+        });
+
+        // Only update if user hasn't manually edited coordinates AND geocoding returned valid results
+        if (!userEditedCoordinates.value && response.data.latitude && response.data.longitude) {
+            formData.value.latitude = response.data.latitude;
+            formData.value.longitude = response.data.longitude;
+        }
+        // If geocoding failed or returned empty, don't clear existing coordinates
+    } catch (error) {
+        console.error('Error geocoding location:', error);
+        // Don't clear coordinates on error
+    } finally {
+        isGeocoding.value = false;
+    }
+};
+
+// Debounced geocode function
+const debouncedGeocode = () => {
+    if (geocodeTimeout.value) {
+        clearTimeout(geocodeTimeout.value);
+    }
+    geocodeTimeout.value = setTimeout(() => {
+        geocodeLocation();
+    }, 800); // Wait 800ms after user stops typing
 };
 
 // Fetch locations
@@ -116,7 +180,6 @@ const editItem = (location: any) => {
         name: location.name,
         city: location.city || '',
         state: location.state || '',
-        country: location.country || '',
         country_id: location.country_id || null,
         latitude: location.latitude || '',
         longitude: location.longitude || '',
@@ -130,8 +193,7 @@ const resetForm = () => {
         name: '',
         city: '',
         state: '',
-        country: '',
-        country_id: null,
+        country_id: defaultCountryId.value, // Default to US
         latitude: '',
         longitude: '',
     };
@@ -139,17 +201,20 @@ const resetForm = () => {
     isEditMode.value = false;
     showAddForm.value = false;
     errorMessage.value = '';
+    userEditedCoordinates.value = false;
+    if (geocodeTimeout.value) {
+        clearTimeout(geocodeTimeout.value);
+    }
 };
 
 // Submit form
 const handleSubmit = async () => {
     errorMessage.value = '';
     try {
-        let response;
         if (isEditMode.value && editingId.value) {
-            response = await axios.put(`/locations/${editingId.value}`, formData.value);
+            await axios.put(`/locations/${editingId.value}`, formData.value);
         } else {
-            response = await axios.post('/locations', formData.value);
+            await axios.post('/locations', formData.value);
         }
         await fetchLocations(currentPage.value);
         resetForm();
@@ -225,6 +290,40 @@ watch(selectedYearFilter, async (newYear, oldYear) => {
     fetchLocationStats();
 });
 
+// Watch for location field changes to trigger geocoding
+watch(() => formData.value.city, () => {
+    if (!userEditedCoordinates.value) {
+        debouncedGeocode();
+    }
+});
+
+watch(() => formData.value.state, () => {
+    if (!userEditedCoordinates.value) {
+        debouncedGeocode();
+    }
+});
+
+watch(() => formData.value.country_id, () => {
+    if (!userEditedCoordinates.value) {
+        debouncedGeocode();
+    }
+});
+
+// Watch for manual coordinate edits
+watch(() => formData.value.latitude, (newVal, oldVal) => {
+    // Only mark as edited if user actually typed (not from geocoding)
+    if (oldVal !== '' && newVal !== oldVal && !isGeocoding.value) {
+        userEditedCoordinates.value = true;
+    }
+});
+
+watch(() => formData.value.longitude, (newVal, oldVal) => {
+    // Only mark as edited if user actually typed (not from geocoding)
+    if (oldVal !== '' && newVal !== oldVal && !isGeocoding.value) {
+        userEditedCoordinates.value = true;
+    }
+});
+
 // Display year label
 const yearLabel = computed(() => {
     return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
@@ -294,12 +393,14 @@ onMounted(async () => {
                                                 <TableHead>City</TableHead>
                                                 <TableHead>State</TableHead>
                                                 <TableHead>Country</TableHead>
+                                                <TableHead>Latitude</TableHead>
+                                                <TableHead>Longitude</TableHead>
                                                 <TableHead class="text-right">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             <TableRow v-if="locations.length === 0">
-                                                <TableCell colspan="5" class="text-center text-muted-foreground py-8">
+                                                <TableCell colspan="7" class="text-center text-muted-foreground py-8">
                                                     No locations yet. Click "Add New" to create your first location!
                                                 </TableCell>
                                             </TableRow>
@@ -307,7 +408,9 @@ onMounted(async () => {
                                                 <TableCell class="font-medium">{{ location.name }}</TableCell>
                                                 <TableCell>{{ location.city || '-' }}</TableCell>
                                                 <TableCell>{{ location.state || '-' }}</TableCell>
-                                                <TableCell>{{ location.country || '-' }}</TableCell>
+                                                <TableCell>{{ location.country?.name || '-' }}</TableCell>
+                                                <TableCell>{{ location.latitude || '-' }}</TableCell>
+                                                <TableCell>{{ location.longitude || '-' }}</TableCell>
                                                 <TableCell class="text-right">
                                                     <div class="flex items-center justify-end gap-0">
                                                         <Button variant="ghost" size="icon" @click="editItem(location)" class="h-8 w-8">
@@ -345,7 +448,15 @@ onMounted(async () => {
                                                         </div>
                                                         <div class="col-span-2">
                                                             <span class="text-muted-foreground">Country:</span>
-                                                            <span class="ml-1">{{ location.country || '-' }}</span>
+                                                            <span class="ml-1">{{ location.country?.name || '-' }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-muted-foreground">Lat:</span>
+                                                            <span class="ml-1">{{ location.latitude || '-' }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-muted-foreground">Lon:</span>
+                                                            <span class="ml-1">{{ location.longitude || '-' }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -518,38 +629,34 @@ onMounted(async () => {
                         </div>
                         <div class="grid gap-2">
                             <Label for="country_id">Country</Label>
-                            <NativeSelect id="country_id" v-model="formData.country_id">
+                            <NativeSelect id="country_id" v-model="formData.country_id" class="w-full">
                                 <NativeSelectOption :value="null">Select a country</NativeSelectOption>
                                 <NativeSelectOption v-for="country in countries" :key="country.id" :value="country.id">
                                     {{ country.name }}
                                 </NativeSelectOption>
                             </NativeSelect>
                         </div>
-                        <div class="grid gap-2">
-                            <Label for="latitude">Latitude</Label>
-                            <Input
-                                id="latitude"
-                                v-model="formData.latitude"
-                                type="number"
-                                step="any"
-                                placeholder="e.g., 43.4799"
-                            />
-                            <p class="text-xs text-muted-foreground">
-                                Leave blank to auto-generate from location, or enter manually for more accuracy
-                            </p>
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="longitude">Longitude</Label>
-                            <Input
-                                id="longitude"
-                                v-model="formData.longitude"
-                                type="number"
-                                step="any"
-                                placeholder="e.g., -110.7624"
-                            />
-                            <p class="text-xs text-muted-foreground">
-                                Leave blank to auto-generate from location, or enter manually for more accuracy
-                            </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="grid gap-2">
+                                <Label for="latitude">Latitude</Label>
+                                <Input
+                                    id="latitude"
+                                    v-model="formData.latitude"
+                                    type="number"
+                                    step="any"
+                                    placeholder="e.g., 43.4799"
+                                />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="longitude">Longitude</Label>
+                                <Input
+                                    id="longitude"
+                                    v-model="formData.longitude"
+                                    type="number"
+                                    step="any"
+                                    placeholder="e.g., -110.7624"
+                                />
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

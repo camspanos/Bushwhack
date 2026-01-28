@@ -59,6 +59,7 @@ interface LocationData {
     name: string;
     city: string | null;
     state: string | null;
+    country: string | null;
     total: number;
 }
 
@@ -66,6 +67,7 @@ interface LocationSizeData {
     name: string;
     city: string | null;
     state: string | null;
+    country: string | null;
     biggest_size: number;
 }
 
@@ -1439,9 +1441,9 @@ const hoveredSunSlice = ref<number | null>(null);
                                     </div>
                                     <div class="text-sm text-muted-foreground">{{ location.total }} catches</div>
                                 </div>
-                                <div v-if="location.city || location.state" class="text-right">
+                                <div v-if="location.city || location.state || location.country" class="text-right">
                                     <div v-if="location.city" class="text-sm font-medium text-lime-700 dark:text-lime-300">{{ location.city }}</div>
-                                    <div v-if="location.state" class="text-xs text-muted-foreground">{{ location.state }}</div>
+                                    <div v-if="location.state || location.country" class="text-xs text-muted-foreground">{{ location.state || location.country }}</div>
                                 </div>
                             </div>
                         </div>
@@ -1478,9 +1480,9 @@ const hoveredSunSlice = ref<number | null>(null);
                                         <span class="font-medium text-emerald-700 dark:text-emerald-300">{{ formatSize(location.biggest_size) }}"</span>
                                     </div>
                                 </div>
-                                <div v-if="location.city || location.state" class="text-right">
+                                <div v-if="location.city || location.state || location.country" class="text-right">
                                     <div v-if="location.city" class="text-sm font-medium text-emerald-700 dark:text-emerald-300">{{ location.city }}</div>
-                                    <div v-if="location.state" class="text-xs text-muted-foreground">{{ location.state }}</div>
+                                    <div v-if="location.state || location.country" class="text-xs text-muted-foreground">{{ location.state || location.country }}</div>
                                 </div>
                             </div>
                         </div>

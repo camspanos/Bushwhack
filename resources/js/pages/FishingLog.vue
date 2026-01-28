@@ -209,6 +209,10 @@ const flyError = ref('');
 const equipmentError = ref('');
 const friendError = ref('');
 
+// Form validation errors
+const formErrors = ref<Record<string, string[]>>({});
+const formErrorMessage = ref('');
+
 // New item forms
 const newLocation = ref({ name: '', city: '', state: '', country: '' });
 const newFish = ref({ species: '', water_type: '' });
@@ -383,7 +387,7 @@ const createLocation = async () => {
     try {
         const response = await axios.post('/locations', newLocation.value);
         locations.value.push(response.data);
-        formData.value.location_id = response.data.id;
+        formData.value.user_location_id = response.data.id.toString();
         showLocationModal.value = false;
         newLocation.value = { name: '', city: '', state: '', country: '' };
     } catch (error: any) {
@@ -405,7 +409,7 @@ const createFish = async () => {
     try {
         const response = await axios.post('/fish', newFish.value);
         fishSpecies.value.push(response.data);
-        formData.value.fish_id = response.data.id;
+        formData.value.user_fish_id = response.data.id.toString();
         showFishModal.value = false;
         newFish.value = { species: '', water_type: '' };
     } catch (error: any) {
@@ -427,7 +431,7 @@ const createFly = async () => {
     try {
         const response = await axios.post('/flies', newFly.value);
         flies.value.push(response.data);
-        formData.value.fly_id = response.data.id;
+        formData.value.user_fly_id = response.data.id.toString();
         showFlyModal.value = false;
         newFly.value = { name: '', color: '', size: '', type: '' };
     } catch (error: any) {
@@ -449,7 +453,7 @@ const createEquipment = async () => {
     try {
         const response = await axios.post('/rods', newEquipment.value);
         equipment.value.push(response.data);
-        formData.value.equipment_id = response.data.id;
+        formData.value.user_rod_id = response.data.id.toString();
         showEquipmentModal.value = false;
         newEquipment.value = { rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' };
     } catch (error: any) {
@@ -499,10 +503,17 @@ onMounted(() => {
     checkForNewSpecies();
 });
 
+// Clear form errors
+const clearFormErrors = () => {
+    formErrors.value = {};
+    formErrorMessage.value = '';
+};
+
 // Open edit dialog with log data
 const editLog = (log: any) => {
     isEditMode.value = true;
     editingLogId.value = log.id;
+    clearFormErrors();
 
     // Parse the date as local date to avoid timezone issues
     const dateParts = log.date.split('T')[0].split('-'); // Handle both "2026-01-02" and "2026-01-02T00:00:00"
@@ -514,7 +525,7 @@ const editLog = (log: any) => {
 
     // Populate form with log data
     formData.value = {
-        time: log.time || '',
+        time: log.time ? log.time.substring(0, 5) : '',
         user_location_id: log.user_location_id?.toString() || '',
         user_fish_id: log.user_fish_id?.toString() || '',
         quantity: log.quantity?.toString() || '',
@@ -534,6 +545,7 @@ const editLog = (log: any) => {
 // Open add form
 const openAddForm = () => {
     resetForm();
+    clearFormErrors();
     showAddForm.value = true;
 };
 
@@ -592,18 +604,18 @@ const handleSubmit = async () => {
     try {
         const submitData = {
             date: formattedDate.value,
-            time: formData.value.time || null,
-            user_location_id: formData.value.user_location_id || null,
-            user_fish_id: formData.value.user_fish_id || null,
-            quantity: formData.value.quantity || null,
-            max_size: formData.value.maxSize || null,
-            user_fly_id: formData.value.user_fly_id || null,
-            user_rod_id: formData.value.user_rod_id || null,
-            style: formData.value.fishingStyle || null,
-            moon_phase: formData.value.moonPhase || null,
-            barometric_pressure: formData.value.barometricPressure || null,
+            time: formData.value.time ? formData.value.time : null,
+            user_location_id: formData.value.user_location_id ? parseInt(formData.value.user_location_id) : null,
+            user_fish_id: formData.value.user_fish_id ? parseInt(formData.value.user_fish_id) : null,
+            quantity: formData.value.quantity ? parseInt(formData.value.quantity) : null,
+            max_size: formData.value.maxSize ? parseFloat(formData.value.maxSize) : null,
+            user_fly_id: formData.value.user_fly_id ? parseInt(formData.value.user_fly_id) : null,
+            user_rod_id: formData.value.user_rod_id ? parseInt(formData.value.user_rod_id) : null,
+            style: formData.value.fishingStyle ? formData.value.fishingStyle : null,
+            moon_phase: formData.value.moonPhase ? formData.value.moonPhase : null,
+            barometric_pressure: formData.value.barometricPressure ? formData.value.barometricPressure : null,
             friend_ids: formData.value.friend_ids,
-            notes: formData.value.notes || null,
+            notes: formData.value.notes ? formData.value.notes : null,
         };
 
         let response;
@@ -648,8 +660,18 @@ const handleSubmit = async () => {
         // Refresh fishing logs and close dialog
         await fetchFishingLogs();
         showAddForm.value = false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error saving fishing log:', error);
+        console.error('Validation errors:', error.response?.data?.errors);
+        console.error('Error message:', error.response?.data?.message);
+
+        // Set error state for display to user
+        if (error.response?.status === 422) {
+            formErrors.value = error.response.data.errors || {};
+            formErrorMessage.value = error.response.data.message || 'Validation failed. Please check the form.';
+        } else {
+            formErrorMessage.value = 'An error occurred while saving the fishing log. Please try again.';
+        }
     }
 };
 
@@ -982,6 +1004,21 @@ const viewNotes = (notes: string) => {
                         {{ isEditMode ? 'Update details about your fishing adventure' : 'Record details about your fishing adventure' }}
                     </DialogDescription>
                 </DialogHeader>
+
+                <!-- Error Alert -->
+                <Alert v-if="formErrorMessage" variant="destructive" class="mb-4">
+                    <AlertCircle class="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        <p>{{ formErrorMessage }}</p>
+                        <ul v-if="Object.keys(formErrors).length > 0" class="mt-2 list-disc list-inside">
+                            <li v-for="(errors, field) in formErrors" :key="field">
+                                <strong>{{ field }}:</strong> {{ errors.join(', ') }}
+                            </li>
+                        </ul>
+                    </AlertDescription>
+                </Alert>
+
                 <form @submit.prevent="handleSubmit" class="space-y-6">
                                     <!-- Date and Time -->
                                     <div class="grid grid-cols-2 gap-4">
@@ -1019,7 +1056,7 @@ const viewNotes = (notes: string) => {
                                             Location
                                         </Label>
                                         <div class="flex gap-2">
-                                            <Select v-model="formData.location_id">
+                                            <Select v-model="formData.user_location_id">
                                                 <SelectTrigger id="location" class="flex-1">
                                                     <SelectValue placeholder="Select a location" />
                                                 </SelectTrigger>
@@ -1051,7 +1088,7 @@ const viewNotes = (notes: string) => {
                                     <div class="grid gap-2">
                                         <Label for="fish">Fish Species</Label>
                                         <div class="flex gap-2">
-                                            <Select v-model="formData.fish_id">
+                                            <Select v-model="formData.user_fish_id">
                                                 <SelectTrigger id="fish" class="flex-1">
                                                     <SelectValue placeholder="Select fish species" />
                                                 </SelectTrigger>
@@ -1108,7 +1145,7 @@ const viewNotes = (notes: string) => {
                                     <div class="grid gap-2">
                                         <Label for="fly">Fly Used</Label>
                                         <div class="flex gap-2">
-                                            <Select v-model="formData.fly_id">
+                                            <Select v-model="formData.user_fly_id">
                                                 <SelectTrigger id="fly" class="flex-1">
                                                     <SelectValue placeholder="Select a fly" />
                                                 </SelectTrigger>
@@ -1140,7 +1177,7 @@ const viewNotes = (notes: string) => {
                                     <div class="grid gap-2">
                                         <Label for="equipment">Rod</Label>
                                         <div class="flex gap-2">
-                                            <Select v-model="formData.equipment_id">
+                                            <Select v-model="formData.user_rod_id">
                                                 <SelectTrigger id="equipment" class="flex-1">
                                                     <SelectValue placeholder="Select rod" />
                                                 </SelectTrigger>

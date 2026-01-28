@@ -252,7 +252,7 @@ search.form = searchForm
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 export const dashboard = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -267,7 +267,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 dashboard.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -300,7 +300,7 @@ dashboard.url = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 dashboard.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -310,7 +310,7 @@ dashboard.get = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 dashboard.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -320,7 +320,7 @@ dashboard.head = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 const dashboardForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -330,7 +330,7 @@ const dashboardForm = (args: { user: number | { id: number } } | [user: number |
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 dashboardForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -340,7 +340,7 @@ dashboardForm.get = (args: { user: number | { id: number } } | [user: number | {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:16
+* @see app/Http/Controllers/PublicDashboardController.php:17
 * @route '/users/{user}/dashboard'
 */
 dashboardForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -357,7 +357,7 @@ dashboard.form = dashboardForm
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 export const rods = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -372,7 +372,7 @@ rods.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 rods.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -405,7 +405,7 @@ rods.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 rods.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -415,7 +415,7 @@ rods.get = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 rods.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -425,7 +425,7 @@ rods.head = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 const rodsForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -435,7 +435,7 @@ const rodsForm = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 rodsForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -445,7 +445,7 @@ rodsForm.get = (args: { user: number | { id: number } } | [user: number | { id: 
 
 /**
 * @see \App\Http\Controllers\PublicRodsController::rods
-* @see app/Http/Controllers/PublicRodsController.php:15
+* @see app/Http/Controllers/PublicRodsController.php:16
 * @route '/users/{user}/rods'
 */
 rodsForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -462,7 +462,7 @@ rods.form = rodsForm
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 export const fish = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -477,7 +477,7 @@ fish.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 fish.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -510,7 +510,7 @@ fish.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 fish.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -520,7 +520,7 @@ fish.get = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 fish.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -530,7 +530,7 @@ fish.head = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 const fishForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -540,7 +540,7 @@ const fishForm = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 fishForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -550,7 +550,7 @@ fishForm.get = (args: { user: number | { id: number } } | [user: number | { id: 
 
 /**
 * @see \App\Http\Controllers\PublicFishController::fish
-* @see app/Http/Controllers/PublicFishController.php:15
+* @see app/Http/Controllers/PublicFishController.php:16
 * @route '/users/{user}/fish'
 */
 fishForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -567,7 +567,7 @@ fish.form = fishForm
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 export const flies = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -582,7 +582,7 @@ flies.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 flies.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -615,7 +615,7 @@ flies.url = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 flies.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -625,7 +625,7 @@ flies.get = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 flies.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -635,7 +635,7 @@ flies.head = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 const fliesForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -645,7 +645,7 @@ const fliesForm = (args: { user: number | { id: number } } | [user: number | { i
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 fliesForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -655,7 +655,7 @@ fliesForm.get = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::flies
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 fliesForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

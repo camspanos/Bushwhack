@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 export const index = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 index.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ index.url = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 index.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,7 +59,7 @@ index.get = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 index.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -69,7 +69,7 @@ index.head = (args: { user: number | { id: number } } | [user: number | { id: nu
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 const indexForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ const indexForm = (args: { user: number | { id: number } } | [user: number | { i
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 indexForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -89,7 +89,7 @@ indexForm.get = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicFliesController::index
-* @see app/Http/Controllers/PublicFliesController.php:15
+* @see app/Http/Controllers/PublicFliesController.php:16
 * @route '/users/{user}/flies'
 */
 indexForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

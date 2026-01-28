@@ -267,7 +267,7 @@ const createLocation = async () => {
     try {
         const response = await axios.post('/locations', newLocation.value);
         locations.value.push(response.data);
-        formData.value.location_id = response.data.id.toString();
+        formData.value.user_location_id = response.data.id.toString();
         newLocation.value = { name: '', city: '', state: '', country: '' };
         showLocationModal.value = false;
     } catch (error: any) {
@@ -290,7 +290,7 @@ const createFish = async () => {
     try {
         const response = await axios.post('/fish', newFish.value);
         fishSpecies.value.push(response.data);
-        formData.value.fish_id = response.data.id.toString();
+        formData.value.user_fish_id = response.data.id.toString();
         newFish.value = { species: '', water_type: '' };
         showFishModal.value = false;
     } catch (error: any) {
@@ -313,7 +313,7 @@ const createFly = async () => {
     try {
         const response = await axios.post('/flies', newFly.value);
         flies.value.push(response.data);
-        formData.value.fly_id = response.data.id.toString();
+        formData.value.user_fly_id = response.data.id.toString();
         newFly.value = { name: '', color: '', size: '', type: '' };
         showFlyModal.value = false;
     } catch (error: any) {
@@ -336,7 +336,7 @@ const createEquipment = async () => {
     try {
         const response = await axios.post('/rods', newEquipment.value);
         equipment.value.push(response.data);
-        formData.value.equipment_id = response.data.id.toString();
+        formData.value.user_rod_id = response.data.id.toString();
         newEquipment.value = { rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' };
         showEquipmentModal.value = false;
     } catch (error: any) {
@@ -542,7 +542,7 @@ const handleCancel = () => {
                                     Location
                                 </Label>
                                 <div class="flex gap-2">
-                                    <Select v-model="formData.location_id">
+                                    <Select v-model="formData.user_location_id">
                                         <SelectTrigger id="location" class="flex-1">
                                             <SelectValue placeholder="Select a location" />
                                         </SelectTrigger>
@@ -568,7 +568,7 @@ const handleCancel = () => {
                                     Fish Species
                                 </Label>
                                 <div class="flex gap-2">
-                                    <Select v-model="formData.fish_id">
+                                    <Select v-model="formData.user_fish_id">
                                         <SelectTrigger id="fish" class="flex-1">
                                             <SelectValue placeholder="Select fish species" />
                                         </SelectTrigger>
@@ -616,7 +616,7 @@ const handleCancel = () => {
                             <div class="grid gap-2">
                                 <Label for="fly">Fly Used</Label>
                                 <div class="flex gap-2">
-                                    <Select v-model="formData.fly_id">
+                                    <Select v-model="formData.user_fly_id">
                                         <SelectTrigger id="fly" class="flex-1">
                                             <SelectValue placeholder="Select a fly" />
                                         </SelectTrigger>
@@ -639,7 +639,7 @@ const handleCancel = () => {
                             <div class="grid gap-2">
                                 <Label for="equipment">Rod</Label>
                                 <div class="flex gap-2">
-                                    <Select v-model="formData.equipment_id">
+                                    <Select v-model="formData.user_rod_id">
                                         <SelectTrigger id="equipment" class="flex-1">
                                             <SelectValue placeholder="Select rod" />
                                         </SelectTrigger>

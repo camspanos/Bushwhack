@@ -9,7 +9,7 @@ import UserLocationsController from './UserLocationsController'
 import UserRodsController from './UserRodsController'
 import UserFishController from './UserFishController'
 import UserFliesController from './UserFliesController'
-import FriendController from './FriendController'
+import UserFriendsController from './UserFriendsController'
 import FishingLogsController from './FishingLogsController'
 import Settings from './Settings'
 
@@ -25,7 +25,7 @@ const Controllers = {
     UserRodsController: Object.assign(UserRodsController, UserRodsController),
     UserFishController: Object.assign(UserFishController, UserFishController),
     UserFliesController: Object.assign(UserFliesController, UserFliesController),
-    FriendController: Object.assign(FriendController, FriendController),
+    UserFriendsController: Object.assign(UserFriendsController, UserFriendsController),
     FishingLogsController: Object.assign(FishingLogsController, FishingLogsController),
     Settings: Object.assign(Settings, Settings),
 }

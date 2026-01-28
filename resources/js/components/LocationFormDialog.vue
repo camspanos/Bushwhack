@@ -183,6 +183,23 @@ const fetchCountries = async () => {
     }
 };
 
+// Reset form function
+const resetForm = () => {
+    // Find US country to set as default
+    const usCountry = countries.value.find(c => c.code === 'US');
+
+    formData.value = {
+        name: '',
+        city: '',
+        state: '',
+        country_id: usCountry ? usCountry.id : null,
+        latitude: '',
+        longitude: '',
+    };
+    errorMessage.value = '';
+    userEditedCoordinates.value = false;
+};
+
 fetchCountries();
 
 // Watch for editing location changes
@@ -201,14 +218,6 @@ watch(() => props.editingLocation, (newLocation) => {
         resetForm();
     }
 }, { immediate: true });
-
-// Watch for dialog open state to reset form when opening for new location
-watch(() => props.open, (isOpen) => {
-    if (isOpen && !props.editingLocation) {
-        // Opening for new location - reset form
-        resetForm();
-    }
-});
 
 // Geocoding with debounce
 let geocodeTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -244,6 +253,14 @@ const geocodeLocation = async () => {
     }, 800);
 };
 
+// Watch for dialog open state to reset form when opening for new location
+watch(() => props.open, (isOpen) => {
+    if (isOpen && !props.editingLocation) {
+        // Opening for new location - reset form
+        resetForm();
+    }
+});
+
 // Watch for changes to trigger geocoding
 watch([() => formData.value.city, () => formData.value.state, () => formData.value.country_id], () => {
     geocodeLocation();
@@ -269,21 +286,5 @@ const handleSubmit = async () => {
 const handleCancel = () => {
     isOpen.value = false;
     resetForm();
-};
-
-const resetForm = () => {
-    // Find US country to set as default
-    const usCountry = countries.value.find(c => c.code === 'US');
-
-    formData.value = {
-        name: '',
-        city: '',
-        state: '',
-        country_id: usCountry ? usCountry.id : null,
-        latitude: '',
-        longitude: '',
-    };
-    errorMessage.value = '';
-    userEditedCoordinates.value = false;
 };
 </script>

@@ -19,7 +19,8 @@ class UserLocationsController extends Controller
      */
     public function countries(): JsonResponse
     {
-        $countries = Country::orderBy('name')->get(['id', 'name', 'code']);
+        $countries = Country::orderByRaw("CASE WHEN code = 'US' THEN 0 ELSE 1 END, name")
+            ->get(['id', 'name', 'code']);
         return response()->json($countries);
     }
 

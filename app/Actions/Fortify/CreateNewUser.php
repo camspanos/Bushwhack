@@ -28,12 +28,20 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
+            'city' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'country_id' => ['nullable', 'exists:countries,id'],
+            'metric' => ['nullable', 'in:0,1,true,false'],
         ])->validate();
 
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'city' => $input['city'] ?? null,
+            'state' => $input['state'] ?? null,
+            'country_id' => $input['country_id'] ?? null,
+            'metric' => filter_var($input['metric'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ]);
 
         // Automatically follow user_id 1 (if it exists and is not the new user)

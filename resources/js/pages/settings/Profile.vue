@@ -8,15 +8,25 @@ import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import NativeSelect from '@/components/ui/native-select/NativeSelect.vue';
+import NativeSelectOption from '@/components/ui/native-select/NativeSelectOption.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
 
+interface Country {
+    id: number;
+    name: string;
+    code: string;
+}
+
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
+    countries: Country[];
 }
 
 defineProps<Props>();
@@ -42,7 +52,7 @@ const user = page.props.auth.user;
             <div class="flex flex-col space-y-6">
                 <HeadingSmall
                     title="Profile information"
-                    description="Update your name and email address"
+                    description="Update your name, email address, location, and preferences"
                 />
 
                 <Form
@@ -77,6 +87,66 @@ const user = page.props.auth.user;
                             placeholder="Email address"
                         />
                         <InputError class="mt-2" :message="errors.email" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="city">City/Town</Label>
+                        <Input
+                            id="city"
+                            class="mt-1 block w-full"
+                            name="city"
+                            :default-value="user.city"
+                            autocomplete="address-level2"
+                            placeholder="e.g., San Francisco"
+                        />
+                        <InputError class="mt-2" :message="errors.city" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="state">State/Province/Region</Label>
+                        <Input
+                            id="state"
+                            class="mt-1 block w-full"
+                            name="state"
+                            :default-value="user.state"
+                            autocomplete="address-level1"
+                            placeholder="e.g., California"
+                        />
+                        <InputError class="mt-2" :message="errors.state" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="country_id">Country</Label>
+                        <NativeSelect
+                            id="country_id"
+                            name="country_id"
+                            :default-value="user.country_id?.toString()"
+                            class="w-full"
+                        >
+                            <NativeSelectOption value="" disabled>
+                                Select a country
+                            </NativeSelectOption>
+                            <NativeSelectOption
+                                v-for="country in countries"
+                                :key="country.id"
+                                :value="country.id.toString()"
+                            >
+                                {{ country.name }}
+                            </NativeSelectOption>
+                        </NativeSelect>
+                        <InputError class="mt-2" :message="errors.country_id" />
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <Checkbox
+                            id="metric"
+                            name="metric"
+                            :default-checked="user.metric"
+                        />
+                        <Label for="metric" class="cursor-pointer">
+                            Use metric system (cm, kg, m) instead of imperial (in, lb, ft)
+                        </Label>
+                        <InputError class="mt-2" :message="errors.metric" />
                     </div>
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at">

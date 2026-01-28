@@ -21,4 +21,12 @@ class Country extends Model
     {
         return $this->hasMany(UserLocation::class);
     }
+
+    /**
+     * Get the users for this country.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
 }

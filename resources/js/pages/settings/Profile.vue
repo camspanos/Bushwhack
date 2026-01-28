@@ -3,6 +3,7 @@ import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileCo
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -16,6 +17,7 @@ import NativeSelectOption from '@/components/ui/native-select/NativeSelectOption
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
+import { CheckCircle2 } from 'lucide-vue-next';
 
 interface Country {
     id: number;
@@ -40,6 +42,19 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const page = usePage();
 const user = page.props.auth.user;
+
+// Create refs for form fields that need v-model
+const selectedCountryId = ref(user.country_id?.toString() || '');
+const isMetric = ref(Boolean(user.metric)); // Explicitly convert to boolean
+
+// Watch for user changes (in case they update from another tab)
+watch(() => user.country_id, (newValue) => {
+    selectedCountryId.value = newValue?.toString() || '';
+});
+
+watch(() => user.metric, (newValue) => {
+    isMetric.value = Boolean(newValue); // Explicitly convert to boolean
+});
 </script>
 
 <template>
@@ -120,7 +135,7 @@ const user = page.props.auth.user;
                         <NativeSelect
                             id="country_id"
                             name="country_id"
-                            :default-value="user.country_id?.toString()"
+                            v-model="selectedCountryId"
                             class="w-full"
                         >
                             <NativeSelectOption value="" disabled>
@@ -140,9 +155,10 @@ const user = page.props.auth.user;
                     <div class="flex items-center space-x-2">
                         <Checkbox
                             id="metric"
-                            name="metric"
-                            :default-checked="user.metric"
+                            :model-value="isMetric"
+                            @update:model-value="(value) => isMetric = value"
                         />
+                        <input type="hidden" name="metric" :value="isMetric ? '1' : '0'" />
                         <Label for="metric" class="cursor-pointer">
                             Use metric system (cm, kg, m) instead of imperial (in, lb, ft)
                         </Label>
@@ -178,17 +194,18 @@ const user = page.props.auth.user;
                         >
 
                         <Transition
-                            enter-active-class="transition ease-in-out"
-                            enter-from-class="opacity-0"
-                            leave-active-class="transition ease-in-out"
-                            leave-to-class="opacity-0"
+                            enter-active-class="transition ease-in-out duration-300"
+                            enter-from-class="opacity-0 scale-95"
+                            leave-active-class="transition ease-in-out duration-300"
+                            leave-to-class="opacity-0 scale-95"
                         >
-                            <p
+                            <div
                                 v-show="recentlySuccessful"
-                                class="text-sm text-neutral-600"
+                                class="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-500"
                             >
-                                Saved.
-                            </p>
+                                <CheckCircle2 class="h-4 w-4" />
+                                <span>Profile updated successfully!</span>
+                            </div>
                         </Transition>
                     </div>
                 </Form>

@@ -37,6 +37,10 @@ export interface User {
     created_at: string;
     updated_at: string;
     is_premium?: boolean;
+    city?: string | null;
+    state?: string | null;
+    country_id?: number | null;
+    metric?: boolean;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

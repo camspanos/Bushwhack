@@ -119,6 +119,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-vue-next';
 import axios from '@/lib/axios';
+import { usePage } from '@inertiajs/vue3';
 
 interface Country {
     id: number;
@@ -155,6 +156,7 @@ const countries = ref<Country[]>([]);
 const errorMessage = ref('');
 const isGeocoding = ref(false);
 const userEditedCoordinates = ref(false);
+const page = usePage();
 
 const formData = ref<LocationFormData>({
     name: '',
@@ -171,11 +173,20 @@ const fetchCountries = async () => {
         const response = await axios.get('/countries');
         countries.value = response.data;
 
-        // Set US as default country for new locations (not editing)
+        // Set user's country as default for new locations (not editing)
         if (!props.editingLocation && formData.value.country_id === null) {
-            const usCountry = countries.value.find(c => c.code === 'US');
-            if (usCountry) {
-                formData.value.country_id = usCountry.id;
+            const user = page.props.auth?.user;
+            const userCountryId = user?.country_id;
+
+            if (userCountryId) {
+                // Use user's country if they have one set
+                formData.value.country_id = userCountryId;
+            } else {
+                // Fallback to US if user doesn't have a country set
+                const usCountry = countries.value.find(c => c.code === 'US');
+                if (usCountry) {
+                    formData.value.country_id = usCountry.id;
+                }
             }
         }
     } catch (error) {
@@ -185,14 +196,23 @@ const fetchCountries = async () => {
 
 // Reset form function
 const resetForm = () => {
-    // Find US country to set as default
-    const usCountry = countries.value.find(c => c.code === 'US');
+    // Get user's country or fallback to US
+    const user = page.props.auth?.user;
+    const userCountryId = user?.country_id;
+
+    let defaultCountryId = null;
+    if (userCountryId) {
+        defaultCountryId = userCountryId;
+    } else {
+        const usCountry = countries.value.find(c => c.code === 'US');
+        defaultCountryId = usCountry ? usCountry.id : null;
+    }
 
     formData.value = {
         name: '',
         city: '',
         state: '',
-        country_id: usCountry ? usCountry.id : null,
+        country_id: defaultCountryId,
         latitude: '',
         longitude: '',
     };

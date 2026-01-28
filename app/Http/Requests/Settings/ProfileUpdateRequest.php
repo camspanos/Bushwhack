@@ -31,4 +31,22 @@ class ProfileUpdateRequest extends FormRequest
             'metric' => ['boolean'],
         ];
     }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convert metric checkbox value to boolean
+        if ($this->has('metric')) {
+            $this->merge([
+                'metric' => filter_var($this->metric, FILTER_VALIDATE_BOOLEAN),
+            ]);
+        } else {
+            // If checkbox is not checked, it won't be in the request
+            $this->merge([
+                'metric' => false,
+            ]);
+        }
+    }
 }

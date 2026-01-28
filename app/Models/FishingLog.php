@@ -13,7 +13,6 @@ class FishingLog extends Model
         'user_location_id',
         'user_rod_id',
         'user_fish_id',
-        'fish_species_id',
         'user_fly_id',
         'date',
         'time',
@@ -103,15 +102,5 @@ class FishingLog extends Model
     public function friends(): BelongsToMany
     {
         return $this->belongsToMany(UserFriend::class, 'fishing_log_user_friend', 'fishing_log_id', 'user_friend_id');
-    }
-
-    /**
-     * Get the global fish species for this fishing log.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function fishSpecies(): BelongsTo
-    {
-        return $this->belongsTo(FishSpecies::class);
     }
 }

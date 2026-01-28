@@ -15,7 +15,7 @@ class UserLocation extends Model
         'name',
         'city',
         'state',
-        'country',
+        'country_id',
         'latitude',
         'longitude',
     ];
@@ -28,6 +28,16 @@ class UserLocation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the country that this location belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
     }
 
     /**

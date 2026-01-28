@@ -50,7 +50,23 @@ const formData = ref({
     city: '',
     state: '',
     country: '',
+    country_id: null,
+    latitude: '',
+    longitude: '',
 });
+
+// Countries list
+const countries = ref([]);
+
+// Fetch countries
+const fetchCountries = async () => {
+    try {
+        const response = await axios.get('/countries');
+        countries.value = response.data;
+    } catch (error) {
+        console.error('Error fetching countries:', error);
+    }
+};
 
 // Fetch locations
 const fetchLocations = async (page = 1) => {
@@ -101,6 +117,9 @@ const editItem = (location: any) => {
         city: location.city || '',
         state: location.state || '',
         country: location.country || '',
+        country_id: location.country_id || null,
+        latitude: location.latitude || '',
+        longitude: location.longitude || '',
     };
     showAddForm.value = true;
 };
@@ -112,6 +131,9 @@ const resetForm = () => {
         city: '',
         state: '',
         country: '',
+        country_id: null,
+        latitude: '',
+        longitude: '',
     };
     editingId.value = null;
     isEditMode.value = false;
@@ -209,6 +231,7 @@ const yearLabel = computed(() => {
 });
 
 onMounted(async () => {
+    fetchCountries();
     fetchLocations();
     await fetchAvailableYears(); // Wait for years to be fetched and default year to be set
     fetchLocationStats(); // Now fetch stats with the correct default year
@@ -486,16 +509,47 @@ onMounted(async () => {
                             <Input id="name" v-model="formData.name" required placeholder="e.g., Snake River" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="city">City</Label>
+                            <Label for="city">City/Town</Label>
                             <Input id="city" v-model="formData.city" placeholder="e.g., Jackson" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="state">State</Label>
+                            <Label for="state">State/Province/Region</Label>
                             <Input id="state" v-model="formData.state" placeholder="e.g., Wyoming" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="country">Country</Label>
-                            <Input id="country" v-model="formData.country" placeholder="e.g., USA" />
+                            <Label for="country_id">Country</Label>
+                            <NativeSelect id="country_id" v-model="formData.country_id">
+                                <NativeSelectOption :value="null">Select a country</NativeSelectOption>
+                                <NativeSelectOption v-for="country in countries" :key="country.id" :value="country.id">
+                                    {{ country.name }}
+                                </NativeSelectOption>
+                            </NativeSelect>
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="latitude">Latitude</Label>
+                            <Input
+                                id="latitude"
+                                v-model="formData.latitude"
+                                type="number"
+                                step="any"
+                                placeholder="e.g., 43.4799"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Leave blank to auto-generate from location, or enter manually for more accuracy
+                            </p>
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="longitude">Longitude</Label>
+                            <Input
+                                id="longitude"
+                                v-model="formData.longitude"
+                                type="number"
+                                step="any"
+                                placeholder="e.g., -110.7624"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Leave blank to auto-generate from location, or enter manually for more accuracy
+                            </p>
                         </div>
                     </div>
                     <DialogFooter>

@@ -13,8 +13,13 @@ class UserLocationsObserver
      */
     public function saving(UserLocation $location): void
     {
-        // Only geocode if city, state, or country changed (or it's a new record)
-        if (!$location->exists || $location->isDirty(['city', 'state', 'country'])) {
+        // Only auto-geocode if:
+        // 1. Latitude/longitude are not manually set (both are null or empty)
+        // 2. AND (it's a new record OR city/state/country changed)
+        $hasManualCoordinates = !empty($location->latitude) && !empty($location->longitude);
+        $locationFieldsChanged = !$location->exists || $location->isDirty(['city', 'state', 'country', 'country_id']);
+
+        if (!$hasManualCoordinates && $locationFieldsChanged) {
             $this->geocodeLocation($location);
         }
     }
@@ -24,10 +29,16 @@ class UserLocationsObserver
      */
     private function geocodeLocation(UserLocation $location): void
     {
+        // Get country name from relationship if country_id is set
+        $countryName = $location->country;
+        if ($location->country_id && $location->country) {
+            $countryName = $location->country->name;
+        }
+
         $coordinates = GeocodingService::getCoordinates(
             $location->city,
             $location->state,
-            $location->country
+            $countryName
         );
 
         $location->latitude = $coordinates['latitude'];

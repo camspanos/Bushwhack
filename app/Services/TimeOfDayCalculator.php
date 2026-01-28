@@ -44,40 +44,56 @@ class TimeOfDayCalculator
             $sunInfo = date_sun_info($timestamp, $latitude, $longitude);
 
             if ($sunInfo && isset($sunInfo['sunrise']) && isset($sunInfo['sunset'])) {
-                $sunrise = Carbon::createFromTimestamp($sunInfo['sunrise']);
-                $sunset = Carbon::createFromTimestamp($sunInfo['sunset']);
-                
+                // Get timezone from coordinates (approximate)
+                // For US locations, we'll use a simple longitude-based approach
+                // This is approximate but works for most cases
+                $timezone = 'America/Denver'; // Default to Mountain Time
+                if ($longitude > -90) {
+                    $timezone = 'America/New_York'; // Eastern
+                } elseif ($longitude > -105) {
+                    $timezone = 'America/Chicago'; // Central
+                } elseif ($longitude > -120) {
+                    $timezone = 'America/Denver'; // Mountain
+                } else {
+                    $timezone = 'America/Los_Angeles'; // Pacific
+                }
+
+                // Create Carbon instances in the appropriate timezone
+                $sunrise = Carbon::createFromTimestamp($sunInfo['sunrise'], 'UTC')->setTimezone($timezone);
+                $sunset = Carbon::createFromTimestamp($sunInfo['sunset'], 'UTC')->setTimezone($timezone);
+
                 $sunriseMinutes = $sunrise->hour * 60 + $sunrise->minute;
                 $sunsetMinutes = $sunset->hour * 60 + $sunset->minute;
-                
+
                 $preDawnStart = $sunriseMinutes - 60; // 1 hour before sunrise
+                $eveningStart = $sunsetMinutes - 60; // 1 hour before sunset (golden hour)
                 $eveningEnd = $sunsetMinutes + 60; // 1 hour after sunset
-                
+
                 // Pre-dawn: 1 hour before sunrise to sunrise
                 if ($timeInMinutes >= $preDawnStart && $timeInMinutes < $sunriseMinutes) {
                     return 'Pre-dawn';
                 }
-                
+
                 // Morning: Sunrise to 12:00 PM
                 if ($timeInMinutes >= $sunriseMinutes && $timeInMinutes < 12 * 60) {
                     return 'Morning';
                 }
-                
+
                 // Midday: 12:00 PM to 3:00 PM
                 if ($timeInMinutes >= 12 * 60 && $timeInMinutes < 15 * 60) {
                     return 'Midday';
                 }
-                
-                // Afternoon: 3:00 PM to sunset
-                if ($timeInMinutes >= 15 * 60 && $timeInMinutes < $sunsetMinutes) {
+
+                // Afternoon: 3:00 PM to 1 hour before sunset
+                if ($timeInMinutes >= 15 * 60 && $timeInMinutes < $eveningStart) {
                     return 'Afternoon';
                 }
-                
-                // Evening: Sunset to 1 hour after sunset
-                if ($timeInMinutes >= $sunsetMinutes && $timeInMinutes < $eveningEnd) {
+
+                // Evening: 1 hour before sunset to 1 hour after sunset
+                if ($timeInMinutes >= $eveningStart && $timeInMinutes < $eveningEnd) {
                     return 'Evening';
                 }
-                
+
                 // Night: Everything else
                 return 'Night';
             }

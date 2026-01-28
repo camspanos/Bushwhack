@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserLocationRequest;
 use App\Models\UserLocation;
+use App\Models\Country;
 use App\Models\FishingLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,15 @@ use Illuminate\Support\Facades\DB;
 
 class UserLocationsController extends Controller
 {
+    /**
+     * Get all countries for the dropdown.
+     */
+    public function countries(): JsonResponse
+    {
+        $countries = Country::orderBy('name')->get(['id', 'name', 'code']);
+        return response()->json($countries);
+    }
+
     /**
      * Display a listing of the authenticated user's locations.
      *
@@ -23,6 +33,7 @@ class UserLocationsController extends Controller
         $perPage = $request->input('per_page', 15);
 
         $locations = UserLocation::where('user_id', auth()->id())
+            ->with('country')
             ->orderBy('name')
             ->paginate($perPage);
 

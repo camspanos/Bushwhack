@@ -551,7 +551,7 @@ onMounted(async () => {
                                             {{ location.name }}
                                         </CardTitle>
                                         <CardDescription>
-                                            {{ location.city }}{{ location.state ? ', ' + location.state : '' }}
+                                            {{ location.city }}{{ location.state ? ', ' + location.state : (location.country?.name ? ', ' + location.country.name : '') }}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent class="space-y-3">

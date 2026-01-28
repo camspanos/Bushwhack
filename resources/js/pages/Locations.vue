@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import LocationFormDialog from '@/components/LocationFormDialog.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
-import { MapPin, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon, AlertCircle } from 'lucide-vue-next';
+import { ref, onMounted, computed, watch } from 'vue';
+import { MapPin, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon } from 'lucide-vue-next';
 import axios from '@/lib/axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -22,14 +20,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 // State
-const showAddForm = ref(false);
-const editingId = ref(null);
-const isEditMode = ref(false);
+const showLocationForm = ref(false);
+const editingLocation = ref(null);
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const locations = ref([]);
 const locationStats = ref([]);
-const errorMessage = ref('');
 
 // Pagination
 const currentPage = ref(1);
@@ -44,93 +40,7 @@ const availableYears = ref<string[]>([]);
 const showPremiumDialog = ref(false);
 const page = usePage();
 
-// Form data
-const formData = ref({
-    name: '',
-    city: '',
-    state: '',
-    country_id: null,
-    latitude: '',
-    longitude: '',
-});
 
-// Countries list
-const countries = ref([]);
-const defaultCountryId = ref(null);
-
-// Geocoding state
-const isGeocoding = ref(false);
-const geocodeTimeout = ref(null);
-const userEditedCoordinates = ref(false);
-
-// Fetch countries
-const fetchCountries = async () => {
-    try {
-        const response = await axios.get('/countries');
-        countries.value = response.data;
-
-        // Find and set US as default country
-        const usCountry = countries.value.find(c => c.code === 'US');
-        if (usCountry) {
-            defaultCountryId.value = usCountry.id;
-            // Set default country if form is empty (new location)
-            if (!formData.value.country_id && !isEditMode.value) {
-                formData.value.country_id = usCountry.id;
-            }
-        }
-    } catch (error) {
-        console.error('Error fetching countries:', error);
-    }
-};
-
-// Geocode location and auto-fill coordinates
-const geocodeLocation = async () => {
-    // Don't geocode if user has manually edited coordinates
-    if (userEditedCoordinates.value) {
-        return;
-    }
-
-    // Only geocode if ALL THREE fields are filled (city AND state AND country)
-    if (!formData.value.city || !formData.value.state || !formData.value.country_id) {
-        // Clear coordinates if any field is empty
-        if (!formData.value.city && !formData.value.state && !formData.value.country_id) {
-            formData.value.latitude = '';
-            formData.value.longitude = '';
-        }
-        return;
-    }
-
-    isGeocoding.value = true;
-    try {
-        const response = await axios.post('/locations/geocode', {
-            city: formData.value.city,
-            state: formData.value.state,
-            country_id: formData.value.country_id,
-        });
-
-        // Only update if user hasn't manually edited coordinates AND geocoding returned valid results
-        if (!userEditedCoordinates.value && response.data.latitude && response.data.longitude) {
-            formData.value.latitude = response.data.latitude;
-            formData.value.longitude = response.data.longitude;
-        }
-        // If geocoding failed or returned empty, don't clear existing coordinates
-    } catch (error) {
-        console.error('Error geocoding location:', error);
-        // Don't clear coordinates on error
-    } finally {
-        isGeocoding.value = false;
-    }
-};
-
-// Debounced geocode function
-const debouncedGeocode = () => {
-    if (geocodeTimeout.value) {
-        clearTimeout(geocodeTimeout.value);
-    }
-    geocodeTimeout.value = setTimeout(() => {
-        geocodeLocation();
-    }, 800); // Wait 800ms after user stops typing
-};
 
 // Fetch locations
 const fetchLocations = async (page = 1) => {
@@ -170,61 +80,6 @@ const previousPage = () => {
 const handlePerPageChange = () => {
     currentPage.value = 1; // Reset to first page when changing per page
     fetchLocations(1);
-};
-
-// Edit location
-const editItem = (location: any) => {
-    editingId.value = location.id;
-    isEditMode.value = true;
-    formData.value = {
-        name: location.name,
-        city: location.city || '',
-        state: location.state || '',
-        country_id: location.country_id || null,
-        latitude: location.latitude || '',
-        longitude: location.longitude || '',
-    };
-    showAddForm.value = true;
-};
-
-// Reset form
-const resetForm = () => {
-    formData.value = {
-        name: '',
-        city: '',
-        state: '',
-        country_id: defaultCountryId.value, // Default to US
-        latitude: '',
-        longitude: '',
-    };
-    editingId.value = null;
-    isEditMode.value = false;
-    showAddForm.value = false;
-    errorMessage.value = '';
-    userEditedCoordinates.value = false;
-    if (geocodeTimeout.value) {
-        clearTimeout(geocodeTimeout.value);
-    }
-};
-
-// Submit form
-const handleSubmit = async () => {
-    errorMessage.value = '';
-    try {
-        if (isEditMode.value && editingId.value) {
-            await axios.put(`/locations/${editingId.value}`, formData.value);
-        } else {
-            await axios.post('/locations', formData.value);
-        }
-        await fetchLocations(currentPage.value);
-        resetForm();
-    } catch (error: any) {
-        console.error('Error saving location:', error);
-        if (error.response?.status === 409) {
-            errorMessage.value = error.response.data.message || 'This location already exists.';
-            showAddForm.value = false;
-        }
-    }
 };
 
 // Delete confirmation
@@ -281,8 +136,7 @@ watch(selectedYearFilter, async (newYear, oldYear) => {
     if (!page.props.auth.isPremium && newYear !== currentYear) {
         // Show premium dialog
         showPremiumDialog.value = true;
-        // Revert the selection after showing dialog
-        await nextTick();
+        // Revert the selection
         selectedYearFilter.value = oldYear;
         return;
     }
@@ -290,47 +144,30 @@ watch(selectedYearFilter, async (newYear, oldYear) => {
     fetchLocationStats();
 });
 
-// Watch for location field changes to trigger geocoding
-watch(() => formData.value.city, () => {
-    if (!userEditedCoordinates.value) {
-        debouncedGeocode();
-    }
-});
-
-watch(() => formData.value.state, () => {
-    if (!userEditedCoordinates.value) {
-        debouncedGeocode();
-    }
-});
-
-watch(() => formData.value.country_id, () => {
-    if (!userEditedCoordinates.value) {
-        debouncedGeocode();
-    }
-});
-
-// Watch for manual coordinate edits
-watch(() => formData.value.latitude, (newVal, oldVal) => {
-    // Only mark as edited if user actually typed (not from geocoding)
-    if (oldVal !== '' && newVal !== oldVal && !isGeocoding.value) {
-        userEditedCoordinates.value = true;
-    }
-});
-
-watch(() => formData.value.longitude, (newVal, oldVal) => {
-    // Only mark as edited if user actually typed (not from geocoding)
-    if (oldVal !== '' && newVal !== oldVal && !isGeocoding.value) {
-        userEditedCoordinates.value = true;
-    }
-});
-
 // Display year label
 const yearLabel = computed(() => {
     return selectedYearFilter.value === 'lifetime' ? 'Lifetime' : selectedYearFilter.value;
 });
 
+// Handle location form success
+const handleLocationSuccess = (location: any) => {
+    fetchLocations(currentPage.value);
+    fetchLocationStats();
+};
+
+// Open form for adding new location
+const openAddForm = () => {
+    editingLocation.value = null;
+    showLocationForm.value = true;
+};
+
+// Open form for editing location
+const editItem = (location: any) => {
+    editingLocation.value = location;
+    showLocationForm.value = true;
+};
+
 onMounted(async () => {
-    fetchCountries();
     fetchLocations();
     await fetchAvailableYears(); // Wait for years to be fetched and default year to be set
     fetchLocationStats(); // Now fetch stats with the correct default year
@@ -342,12 +179,6 @@ onMounted(async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="mx-auto w-full max-w-6xl">
-                <!-- Error Alert -->
-                <Alert v-if="errorMessage" variant="destructive" class="mb-4">
-                    <AlertCircle class="h-4 w-4" />
-                    <AlertDescription>{{ errorMessage }}</AlertDescription>
-                </Alert>
-
                 <!-- Tab Navigation -->
                 <Tabs default-value="table" class="w-full">
                     <TabsList class="grid w-full grid-cols-2 mb-4">
@@ -377,7 +208,7 @@ onMounted(async () => {
                                             View and manage your fishing locations
                                         </CardDescription>
                                     </div>
-                                    <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                    <Button @click="openAddForm()" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
                                         Add New Location
                                     </Button>
@@ -601,71 +432,12 @@ onMounted(async () => {
             </div>
         </div>
 
-        <!-- Add/Edit Dialog -->
-        <Dialog v-model:open="showAddForm">
-            <DialogContent class="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle class="flex items-center gap-2">
-                        <MapPin class="h-6 w-6" />
-                        {{ isEditMode ? 'Edit Location' : 'Add New Location' }}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {{ isEditMode ? 'Update the location details below.' : 'Enter the location details below.' }}
-                    </DialogDescription>
-                </DialogHeader>
-                <form @submit.prevent="handleSubmit">
-                    <div class="grid gap-4 py-4">
-                        <div class="grid gap-2">
-                            <Label for="name">Name *</Label>
-                            <Input id="name" v-model="formData.name" required placeholder="e.g., Snake River" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="city">City/Town</Label>
-                            <Input id="city" v-model="formData.city" placeholder="e.g., Jackson" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="state">State/Province/Region</Label>
-                            <Input id="state" v-model="formData.state" placeholder="e.g., Wyoming" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="country_id">Country</Label>
-                            <NativeSelect id="country_id" v-model="formData.country_id" class="w-full">
-                                <NativeSelectOption :value="null">Select a country</NativeSelectOption>
-                                <NativeSelectOption v-for="country in countries" :key="country.id" :value="country.id">
-                                    {{ country.name }}
-                                </NativeSelectOption>
-                            </NativeSelect>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="grid gap-2">
-                                <Label for="latitude">Latitude</Label>
-                                <Input
-                                    id="latitude"
-                                    v-model="formData.latitude"
-                                    type="number"
-                                    step="any"
-                                    placeholder="e.g., 43.4799"
-                                />
-                            </div>
-                            <div class="grid gap-2">
-                                <Label for="longitude">Longitude</Label>
-                                <Input
-                                    id="longitude"
-                                    v-model="formData.longitude"
-                                    type="number"
-                                    step="any"
-                                    placeholder="e.g., -110.7624"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="resetForm">Cancel</Button>
-                        <Button type="submit">{{ isEditMode ? 'Update Location' : 'Add Location' }}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <!-- Location Form Dialog -->
+        <LocationFormDialog
+            v-model:open="showLocationForm"
+            :editing-location="editingLocation"
+            @success="handleLocationSuccess"
+        />
 
         <!-- Delete Confirmation Dialog -->
         <Dialog v-model:open="showDeleteConfirm">

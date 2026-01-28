@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import LocationFormDialog from '@/components/LocationFormDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, ArrowLeft, ChevronDown, X, AlertCircle, Trophy, CheckCircle2 } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, ArrowLeft, ChevronDown, X, Trophy, CheckCircle2 } from 'lucide-vue-next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import { CalendarDate, DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
@@ -157,14 +158,12 @@ const showSuccessNotification = ref(false);
 const newSpeciesName = ref('');
 
 // Error messages for each modal
-const locationError = ref('');
 const fishError = ref('');
 const flyError = ref('');
 const equipmentError = ref('');
 const friendError = ref('');
 
 // New item forms
-const newLocation = ref({ name: '', city: '', state: '', country: '' });
 const newFish = ref({ species: '', water_type: '' });
 const newFly = ref({ name: '', color: '', size: '', type: '' });
 const newEquipment = ref({ rod_name: '', rod_weight: '', rod_length: '', reel: '', line: '' });
@@ -261,27 +260,10 @@ onMounted(() => {
     fetchFriends();
 });
 
-// Create new location
-const createLocation = async () => {
-    locationError.value = '';
-    try {
-        const response = await axios.post('/locations', newLocation.value);
-        locations.value.push(response.data);
-        formData.value.user_location_id = response.data.id.toString();
-        newLocation.value = { name: '', city: '', state: '', country: '' };
-        showLocationModal.value = false;
-    } catch (error: any) {
-        console.error('Error creating location:', error);
-        if (error.response?.status === 409) {
-            locationError.value = error.response.data.message || 'This location already exists.';
-        } else if (error.response?.status === 500) {
-            locationError.value = error.response.data.message || 'Server error. Please try again.';
-        } else if (error.response?.data?.message) {
-            locationError.value = error.response.data.message;
-        } else {
-            locationError.value = 'An error occurred while creating the location.';
-        }
-    }
+// Handle location form success
+const handleLocationSuccess = (location: any) => {
+    locations.value.push(location);
+    formData.value.user_location_id = location.id.toString();
 };
 
 // Create new fish
@@ -790,64 +772,11 @@ const handleCancel = () => {
             </div>
         </div>
 
-        <!-- Location Modal -->
-        <Dialog v-model:open="showLocationModal">
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Add New Location</DialogTitle>
-                    <DialogDescription>
-                        Create a new fishing location to add to your log.
-                    </DialogDescription>
-                </DialogHeader>
-                <Alert v-if="locationError" variant="destructive" class="mb-4">
-                    <AlertCircle class="h-4 w-4" />
-                    <AlertDescription>{{ locationError }}</AlertDescription>
-                </Alert>
-                <form @submit.prevent="createLocation" class="space-y-4">
-                    <div class="grid gap-2">
-                        <Label for="new-location-name">Location Name *</Label>
-                        <Input
-                            id="new-location-name"
-                            v-model="newLocation.name"
-                            placeholder="e.g., Yellowstone River"
-                            required
-                        />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="new-location-city">City</Label>
-                        <Input
-                            id="new-location-city"
-                            v-model="newLocation.city"
-                            placeholder="e.g., Livingston"
-                        />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="new-location-state">State</Label>
-                        <Input
-                            id="new-location-state"
-                            v-model="newLocation.state"
-                            placeholder="e.g., Montana"
-                        />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="new-location-country">Country</Label>
-                        <Input
-                            id="new-location-country"
-                            v-model="newLocation.country"
-                            placeholder="e.g., USA"
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="showLocationModal = false">
-                            Cancel
-                        </Button>
-                        <Button type="submit">
-                            Add Location
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <!-- Location Form Dialog -->
+        <LocationFormDialog
+            v-model:open="showLocationModal"
+            @success="handleLocationSuccess"
+        />
 
         <!-- Fish Modal -->
         <Dialog v-model:open="showFishModal">

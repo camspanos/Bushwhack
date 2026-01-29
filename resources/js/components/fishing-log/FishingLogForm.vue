@@ -135,11 +135,11 @@ const moonPhaseOptions = [
 
 // Time of day options
 const timeOfDayOptions = [
-    'Pre-dawn',
+    'Dawn',
     'Morning',
     'Midday',
     'Afternoon',
-    'Evening',
+    'Dusk',
     'Night',
 ];
 
@@ -178,39 +178,28 @@ const calculateMoonPhase = (year: number, month: number, day: number): string =>
     return 'New Moon';
 };
 
-// Calculate time of day based on time (assumes local time input)
-// Uses fixed time ranges since JavaScript doesn't have PHP's date_sun_info()
-// The backend observer will recalculate with proper sunrise/sunset on save
-const calculateTimeOfDay = (time: string): string => {
-    if (!time) return '';
-
-    // Parse the time (HH:MM format) - this is local time from the form
-    const [hours, minutes] = time.split(':').map(Number);
-    const timeInMinutes = hours * 60 + minutes;
-
-    // Use fixed times (matching PHP fallback logic)
-    // Pre-dawn: 5:00 AM - 6:00 AM
-    if (timeInMinutes >= 5 * 60 && timeInMinutes < 6 * 60) return 'Pre-dawn';
-    // Morning: 6:00 AM - 12:00 PM
-    if (timeInMinutes >= 6 * 60 && timeInMinutes < 12 * 60) return 'Morning';
-    // Midday: 12:00 PM - 3:00 PM
-    if (timeInMinutes >= 12 * 60 && timeInMinutes < 15 * 60) return 'Midday';
-    // Afternoon: 3:00 PM - 6:00 PM
-    if (timeInMinutes >= 15 * 60 && timeInMinutes < 18 * 60) return 'Afternoon';
-    // Evening: 6:00 PM - 8:00 PM
-    if (timeInMinutes >= 18 * 60 && timeInMinutes < 20 * 60) return 'Evening';
-    // Night: 8:00 PM - 5:00 AM
-    return 'Night';
-};
-
-// Recalculate time of day when time changes
-const recalculateTimeOfDay = () => {
-    if (!formData.value.time) {
+// Recalculate time of day by calling the backend API
+// Uses the TimeOfDayCalculator service for accurate sunrise/sunset calculations
+const recalculateTimeOfDay = async () => {
+    if (!formData.value.time || !dateInput.value) {
         formData.value.timeOfDay = '';
         return;
     }
 
-    formData.value.timeOfDay = calculateTimeOfDay(formData.value.time);
+    try {
+        const response = await axios.post('/fishing-logs/calculate-time-of-day', {
+            time: formData.value.time,
+            date: dateInput.value,
+            location_id: formData.value.user_location_id ? parseInt(formData.value.user_location_id) : null,
+        });
+
+        if (response.data.time_of_day) {
+            formData.value.timeOfDay = response.data.time_of_day;
+        }
+    } catch (error) {
+        console.error('Failed to calculate time of day:', error);
+        // Don't clear the value on error - keep whatever was there
+    }
 };
 
 // Initialize date input
@@ -454,6 +443,11 @@ watch(() => props.initialData, (newData) => {
 
 // Watch for time changes to recalculate time of day
 watch(() => formData.value.time, () => {
+    recalculateTimeOfDay();
+});
+
+// Watch for location changes to recalculate time of day (sunrise/sunset depends on location)
+watch(() => formData.value.user_location_id, () => {
     recalculateTimeOfDay();
 });
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFishingLogRequest;
 use App\Models\FishingLog;
+use App\Models\UserLocation;
+use App\Services\TimeOfDayCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -176,5 +178,46 @@ class FishingLogsController extends Controller
         }
 
         return response()->json($years);
+    }
+
+    /**
+     * Calculate time of day based on time, date, and location.
+     *
+     * Uses the TimeOfDayCalculator service to determine the time of day
+     * based on sunrise/sunset calculations for the given location.
+     */
+    public function calculateTimeOfDay(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'time' => 'required|string',
+            'date' => 'required|date',
+            'location_id' => 'nullable|integer|exists:user_locations,id',
+        ]);
+
+        $latitude = null;
+        $longitude = null;
+
+        // Get coordinates from location if provided
+        if (!empty($validated['location_id'])) {
+            $location = UserLocation::where('id', $validated['location_id'])
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if ($location) {
+                $latitude = $location->latitude;
+                $longitude = $location->longitude;
+            }
+        }
+
+        $timeOfDay = TimeOfDayCalculator::calculate(
+            $validated['time'],
+            $validated['date'],
+            $latitude,
+            $longitude
+        );
+
+        return response()->json([
+            'time_of_day' => $timeOfDay,
+        ]);
     }
 }

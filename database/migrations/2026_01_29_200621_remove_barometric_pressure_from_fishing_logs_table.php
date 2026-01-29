@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('user_locations', 'water_type')) {
-            Schema::table('user_locations', function (Blueprint $table) {
-                $table->string('water_type')->nullable()->after('name');
-            });
-        }
+        Schema::table('fishing_logs', function (Blueprint $table) {
+            $table->dropColumn('barometric_pressure');
+        });
     }
 
     /**
@@ -23,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_locations', function (Blueprint $table) {
-            $table->dropColumn('water_type');
+        Schema::table('fishing_logs', function (Blueprint $table) {
+            $table->string('barometric_pressure')->nullable()->after('moon_phase');
         });
     }
 };

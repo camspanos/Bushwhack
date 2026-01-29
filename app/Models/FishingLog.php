@@ -14,6 +14,8 @@ class FishingLog extends Model
         'user_rod_id',
         'user_fish_id',
         'user_fly_id',
+        'user_weather_id',
+        'user_water_condition_id',
         'date',
         'time',
         'time_of_day',
@@ -21,7 +23,6 @@ class FishingLog extends Model
         'max_size',
         'style',
         'moon_phase',
-        'barometric_pressure',
         'notes',
     ];
 
@@ -88,6 +89,26 @@ class FishingLog extends Model
     public function fly(): BelongsTo
     {
         return $this->belongsTo(UserFly::class, 'user_fly_id');
+    }
+
+    /**
+     * Get the weather conditions for this fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function weather(): BelongsTo
+    {
+        return $this->belongsTo(UserWeather::class, 'user_weather_id');
+    }
+
+    /**
+     * Get the water conditions for this fishing log.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function waterCondition(): BelongsTo
+    {
+        return $this->belongsTo(UserWaterCondition::class, 'user_water_condition_id');
     }
 
     /**

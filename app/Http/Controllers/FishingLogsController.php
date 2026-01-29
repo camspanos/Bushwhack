@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFishingLogRequest;
 use App\Models\FishingLog;
+use App\Models\UserLocation;
+use App\Models\UserWaterCondition;
+use App\Models\UserWeather;
+use App\Services\TimeOfDayCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,7 +25,7 @@ class FishingLogsController extends Controller
         $perPage = $request->input('per_page', 15);
 
         $fishingLogs = FishingLog::where('user_id', auth()->id())
-            ->with(['location', 'fish', 'fly', 'equipment', 'friends'])
+            ->with(['location', 'fish', 'fly', 'equipment', 'friends', 'weather', 'waterCondition'])
             ->orderBy('date', 'desc')
             ->paginate($perPage);
 
@@ -65,20 +69,51 @@ class FishingLogsController extends Controller
             }
         }
 
+        // Create weather record if provided
+        $userWeatherId = null;
+        if (!empty($validated['weather']) && $this->hasAnyValue($validated['weather'])) {
+            $weather = UserWeather::create([
+                'user_id' => auth()->id(),
+                'temperature' => $validated['weather']['temperature'] ?? null,
+                'cloud' => $validated['weather']['cloud'] ?? null,
+                'wind' => $validated['weather']['wind'] ?? null,
+                'precipitation' => $validated['weather']['precipitation'] ?? null,
+                'barometric_pressure' => $validated['weather']['barometric_pressure'] ?? null,
+            ]);
+            $userWeatherId = $weather->id;
+        }
+
+        // Create water condition record if provided
+        $userWaterConditionId = null;
+        if (!empty($validated['water_condition']) && $this->hasAnyValue($validated['water_condition'])) {
+            $waterCondition = UserWaterCondition::create([
+                'user_id' => auth()->id(),
+                'temperature' => $validated['water_condition']['temperature'] ?? null,
+                'clarity' => $validated['water_condition']['clarity'] ?? null,
+                'level' => $validated['water_condition']['level'] ?? null,
+                'speed' => $validated['water_condition']['speed'] ?? null,
+                'surface_condition' => $validated['water_condition']['surface_condition'] ?? null,
+                'tide' => $validated['water_condition']['tide'] ?? null,
+            ]);
+            $userWaterConditionId = $waterCondition->id;
+        }
+
         // Create the fishing log
         $fishingLog = FishingLog::create([
             'user_id' => auth()->id(),
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
+            'time_of_day' => $validated['time_of_day'] ?? null,
             'user_location_id' => $validated['user_location_id'] ?? null,
             'user_fish_id' => $validated['user_fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
             'max_size' => $validated['max_size'] ?? null,
             'user_fly_id' => $validated['user_fly_id'] ?? null,
             'user_rod_id' => $validated['user_rod_id'] ?? null,
+            'user_weather_id' => $userWeatherId,
+            'user_water_condition_id' => $userWaterConditionId,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
-            'barometric_pressure' => $validated['barometric_pressure'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -88,7 +123,7 @@ class FishingLogsController extends Controller
         }
 
         return response()->json([
-            'fishing_log' => $fishingLog->load(['friends', 'fish']),
+            'fishing_log' => $fishingLog->load(['friends', 'fish', 'weather', 'waterCondition']),
             'is_new_species' => $isNewSpecies,
             'is_personal_best' => $isPersonalBest,
             'previous_best_size' => $previousBestSize,
@@ -110,19 +145,87 @@ class FishingLogsController extends Controller
 
         $validated = $request->validated();
 
+        // Handle weather record
+        $userWeatherId = $fishingLog->user_weather_id;
+        if (!empty($validated['weather']) && $this->hasAnyValue($validated['weather'])) {
+            if ($fishingLog->weather) {
+                // Update existing weather record
+                $fishingLog->weather->update([
+                    'temperature' => $validated['weather']['temperature'] ?? null,
+                    'cloud' => $validated['weather']['cloud'] ?? null,
+                    'wind' => $validated['weather']['wind'] ?? null,
+                    'precipitation' => $validated['weather']['precipitation'] ?? null,
+                    'barometric_pressure' => $validated['weather']['barometric_pressure'] ?? null,
+                ]);
+            } else {
+                // Create new weather record
+                $weather = UserWeather::create([
+                    'user_id' => auth()->id(),
+                    'temperature' => $validated['weather']['temperature'] ?? null,
+                    'cloud' => $validated['weather']['cloud'] ?? null,
+                    'wind' => $validated['weather']['wind'] ?? null,
+                    'precipitation' => $validated['weather']['precipitation'] ?? null,
+                    'barometric_pressure' => $validated['weather']['barometric_pressure'] ?? null,
+                ]);
+                $userWeatherId = $weather->id;
+            }
+        } elseif (isset($validated['weather']) && !$this->hasAnyValue($validated['weather'])) {
+            // Weather was cleared - delete the record if it exists
+            if ($fishingLog->weather) {
+                $fishingLog->weather->delete();
+                $userWeatherId = null;
+            }
+        }
+
+        // Handle water condition record
+        $userWaterConditionId = $fishingLog->user_water_condition_id;
+        if (!empty($validated['water_condition']) && $this->hasAnyValue($validated['water_condition'])) {
+            if ($fishingLog->waterCondition) {
+                // Update existing water condition record
+                $fishingLog->waterCondition->update([
+                    'temperature' => $validated['water_condition']['temperature'] ?? null,
+                    'clarity' => $validated['water_condition']['clarity'] ?? null,
+                    'level' => $validated['water_condition']['level'] ?? null,
+                    'speed' => $validated['water_condition']['speed'] ?? null,
+                    'surface_condition' => $validated['water_condition']['surface_condition'] ?? null,
+                    'tide' => $validated['water_condition']['tide'] ?? null,
+                ]);
+            } else {
+                // Create new water condition record
+                $waterCondition = UserWaterCondition::create([
+                    'user_id' => auth()->id(),
+                    'temperature' => $validated['water_condition']['temperature'] ?? null,
+                    'clarity' => $validated['water_condition']['clarity'] ?? null,
+                    'level' => $validated['water_condition']['level'] ?? null,
+                    'speed' => $validated['water_condition']['speed'] ?? null,
+                    'surface_condition' => $validated['water_condition']['surface_condition'] ?? null,
+                    'tide' => $validated['water_condition']['tide'] ?? null,
+                ]);
+                $userWaterConditionId = $waterCondition->id;
+            }
+        } elseif (isset($validated['water_condition']) && !$this->hasAnyValue($validated['water_condition'])) {
+            // Water condition was cleared - delete the record if it exists
+            if ($fishingLog->waterCondition) {
+                $fishingLog->waterCondition->delete();
+                $userWaterConditionId = null;
+            }
+        }
+
         // Update the fishing log
         $fishingLog->update([
             'date' => $validated['date'],
             'time' => $validated['time'] ?? null,
+            'time_of_day' => $validated['time_of_day'] ?? null,
             'user_location_id' => $validated['user_location_id'] ?? null,
             'user_fish_id' => $validated['user_fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
             'max_size' => $validated['max_size'] ?? null,
             'user_fly_id' => $validated['user_fly_id'] ?? null,
             'user_rod_id' => $validated['user_rod_id'] ?? null,
+            'user_weather_id' => $userWeatherId,
+            'user_water_condition_id' => $userWaterConditionId,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
-            'barometric_pressure' => $validated['barometric_pressure'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -133,7 +236,7 @@ class FishingLogsController extends Controller
             $fishingLog->friends()->sync([]);
         }
 
-        return response()->json($fishingLog->load(['location', 'fish', 'fly', 'equipment', 'friends']));
+        return response()->json($fishingLog->load(['location', 'fish', 'fly', 'equipment', 'friends', 'weather', 'waterCondition']));
     }
 
     /**
@@ -178,5 +281,64 @@ class FishingLogsController extends Controller
         }
 
         return response()->json($years);
+    }
+
+    /**
+     * Calculate time of day based on time, date, and location.
+     *
+     * Uses the TimeOfDayCalculator service to determine the time of day
+     * based on sunrise/sunset calculations for the given location.
+     */
+    public function calculateTimeOfDay(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'time' => 'required|string',
+            'date' => 'required|date',
+            'location_id' => 'nullable|integer|exists:user_locations,id',
+        ]);
+
+        $latitude = null;
+        $longitude = null;
+
+        // Get coordinates from location if provided
+        if (!empty($validated['location_id'])) {
+            $location = UserLocation::where('id', $validated['location_id'])
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if ($location) {
+                $latitude = $location->latitude;
+                $longitude = $location->longitude;
+            }
+        }
+
+        $timeOfDay = TimeOfDayCalculator::calculate(
+            $validated['time'],
+            $validated['date'],
+            $latitude,
+            $longitude
+        );
+
+        return response()->json([
+            'time_of_day' => $timeOfDay,
+        ]);
+    }
+
+    /**
+     * Check if an array has any non-null, non-empty values.
+     */
+    private function hasAnyValue(?array $data): bool
+    {
+        if (empty($data)) {
+            return false;
+        }
+
+        foreach ($data as $value) {
+            if ($value !== null && $value !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

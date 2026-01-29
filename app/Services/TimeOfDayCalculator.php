@@ -8,13 +8,13 @@ class TimeOfDayCalculator
 {
     /**
      * Calculate the time of day based on time, date, and location coordinates.
-     * 
-     * Time periods:
-     * - Pre-dawn: 1 hour before sunrise to sunrise
-     * - Morning: Sunrise to 12:00 PM
-     * - Midday: 12:00 PM to 3:00 PM
-     * - Afternoon: 3:00 PM to sunset
-     * - Evening: Sunset to 1 hour after sunset
+     *
+     * Time periods (with coordinates):
+     * - Dawn: 1 hour before sunrise to 1 hour after sunrise
+     * - Morning: 1 hour after sunrise to 11:00 AM
+     * - Midday: 11:00 AM to 2:00 PM
+     * - Afternoon: 2:00 PM to 1 hour before sunset
+     * - Dusk: 1 hour before sunset to 1 hour after sunset
      * - Night: 1 hour after sunset to 1 hour before sunrise
      *
      * @param string $time Time in HH:MM format
@@ -65,33 +65,34 @@ class TimeOfDayCalculator
                 $sunriseMinutes = $sunrise->hour * 60 + $sunrise->minute;
                 $sunsetMinutes = $sunset->hour * 60 + $sunset->minute;
 
-                $preDawnStart = $sunriseMinutes - 60; // 1 hour before sunrise
-                $eveningStart = $sunsetMinutes - 60; // 1 hour before sunset (golden hour)
-                $eveningEnd = $sunsetMinutes + 60; // 1 hour after sunset
+                $dawnStart = $sunriseMinutes - 60; // 1 hour before sunrise
+                $dawnEnd = $sunriseMinutes + 60; // 1 hour after sunrise
+                $duskStart = $sunsetMinutes - 60; // 1 hour before sunset
+                $duskEnd = $sunsetMinutes + 60; // 1 hour after sunset
 
-                // Pre-dawn: 1 hour before sunrise to sunrise
-                if ($timeInMinutes >= $preDawnStart && $timeInMinutes < $sunriseMinutes) {
-                    return 'Pre-dawn';
+                // Dawn: 1 hour before sunrise to 1 hour after sunrise
+                if ($timeInMinutes >= $dawnStart && $timeInMinutes < $dawnEnd) {
+                    return 'Dawn';
                 }
 
-                // Morning: Sunrise to 12:00 PM
-                if ($timeInMinutes >= $sunriseMinutes && $timeInMinutes < 12 * 60) {
+                // Morning: 1 hour after sunrise to 11:00 AM
+                if ($timeInMinutes >= $dawnEnd && $timeInMinutes < 11 * 60) {
                     return 'Morning';
                 }
 
-                // Midday: 12:00 PM to 3:00 PM
-                if ($timeInMinutes >= 12 * 60 && $timeInMinutes < 15 * 60) {
+                // Midday: 11:00 AM to 2:00 PM
+                if ($timeInMinutes >= 11 * 60 && $timeInMinutes < 14 * 60) {
                     return 'Midday';
                 }
 
-                // Afternoon: 3:00 PM to 1 hour before sunset
-                if ($timeInMinutes >= 15 * 60 && $timeInMinutes < $eveningStart) {
+                // Afternoon: 2:00 PM to 1 hour before sunset
+                if ($timeInMinutes >= 14 * 60 && $timeInMinutes < $duskStart) {
                     return 'Afternoon';
                 }
 
-                // Evening: 1 hour before sunset to 1 hour after sunset
-                if ($timeInMinutes >= $eveningStart && $timeInMinutes < $eveningEnd) {
-                    return 'Evening';
+                // Dusk: 1 hour before sunset to 1 hour after sunset
+                if ($timeInMinutes >= $duskStart && $timeInMinutes < $duskEnd) {
+                    return 'Dusk';
                 }
 
                 // Night: Everything else
@@ -100,31 +101,31 @@ class TimeOfDayCalculator
         }
 
         // Fallback if no coordinates: use fixed times
-        // Pre-dawn: 5:00 AM - 6:00 AM
-        if ($timeInMinutes >= 5 * 60 && $timeInMinutes < 6 * 60) {
-            return 'Pre-dawn';
+        // Dawn: 5:00 AM - 7:00 AM
+        if ($timeInMinutes >= 5 * 60 && $timeInMinutes < 7 * 60) {
+            return 'Dawn';
         }
-        
-        // Morning: 6:00 AM - 12:00 PM
-        if ($timeInMinutes >= 6 * 60 && $timeInMinutes < 12 * 60) {
+
+        // Morning: 7:00 AM - 11:00 AM
+        if ($timeInMinutes >= 7 * 60 && $timeInMinutes < 11 * 60) {
             return 'Morning';
         }
-        
-        // Midday: 12:00 PM - 3:00 PM
-        if ($timeInMinutes >= 12 * 60 && $timeInMinutes < 15 * 60) {
+
+        // Midday: 11:00 AM - 2:00 PM
+        if ($timeInMinutes >= 11 * 60 && $timeInMinutes < 14 * 60) {
             return 'Midday';
         }
-        
-        // Afternoon: 3:00 PM - 6:00 PM
-        if ($timeInMinutes >= 15 * 60 && $timeInMinutes < 18 * 60) {
+
+        // Afternoon: 2:00 PM - 6:00 PM
+        if ($timeInMinutes >= 14 * 60 && $timeInMinutes < 18 * 60) {
             return 'Afternoon';
         }
-        
-        // Evening: 6:00 PM - 8:00 PM
+
+        // Dusk: 6:00 PM - 8:00 PM
         if ($timeInMinutes >= 18 * 60 && $timeInMinutes < 20 * 60) {
-            return 'Evening';
+            return 'Dusk';
         }
-        
+
         // Night: 8:00 PM - 5:00 AM
         return 'Night';
     }

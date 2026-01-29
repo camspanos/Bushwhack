@@ -167,6 +167,7 @@ const editLog = (log: any) => {
         user_rod_id: log.user_rod_id,
         style: log.style,
         moon_phase: log.moon_phase,
+        time_of_day: log.time_of_day,
         friends: log.friends,
         notes: log.notes,
     };

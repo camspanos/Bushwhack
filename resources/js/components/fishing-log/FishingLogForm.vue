@@ -26,6 +26,7 @@ export interface FishingLogFormData {
     user_rod_id: string;
     fishingStyle: string;
     moonPhase: string;
+    timeOfDay: string;
     friend_ids: number[];
     notes: string;
 }
@@ -42,6 +43,7 @@ export interface FishingLogInitialData {
     user_rod_id?: number;
     style?: string;
     moon_phase?: string;
+    time_of_day?: string;
     friends?: { id: number; name: string }[];
     notes?: string;
 }
@@ -84,6 +86,7 @@ const formData = ref<FishingLogFormData>({
     user_rod_id: '',
     fishingStyle: '',
     moonPhase: '',
+    timeOfDay: '',
     friend_ids: [],
     notes: '',
 });
@@ -130,6 +133,16 @@ const moonPhaseOptions = [
     'Waning Crescent',
 ];
 
+// Time of day options
+const timeOfDayOptions = [
+    'Pre-dawn',
+    'Morning',
+    'Midday',
+    'Afternoon',
+    'Evening',
+    'Night',
+];
+
 // Computed formatted date
 const formattedDate = computed(() => {
     if (dateInput.value) return dateInput.value;
@@ -165,6 +178,41 @@ const calculateMoonPhase = (year: number, month: number, day: number): string =>
     return 'New Moon';
 };
 
+// Calculate time of day based on time (assumes local time input)
+// Uses fixed time ranges since JavaScript doesn't have PHP's date_sun_info()
+// The backend observer will recalculate with proper sunrise/sunset on save
+const calculateTimeOfDay = (time: string): string => {
+    if (!time) return '';
+
+    // Parse the time (HH:MM format) - this is local time from the form
+    const [hours, minutes] = time.split(':').map(Number);
+    const timeInMinutes = hours * 60 + minutes;
+
+    // Use fixed times (matching PHP fallback logic)
+    // Pre-dawn: 5:00 AM - 6:00 AM
+    if (timeInMinutes >= 5 * 60 && timeInMinutes < 6 * 60) return 'Pre-dawn';
+    // Morning: 6:00 AM - 12:00 PM
+    if (timeInMinutes >= 6 * 60 && timeInMinutes < 12 * 60) return 'Morning';
+    // Midday: 12:00 PM - 3:00 PM
+    if (timeInMinutes >= 12 * 60 && timeInMinutes < 15 * 60) return 'Midday';
+    // Afternoon: 3:00 PM - 6:00 PM
+    if (timeInMinutes >= 15 * 60 && timeInMinutes < 18 * 60) return 'Afternoon';
+    // Evening: 6:00 PM - 8:00 PM
+    if (timeInMinutes >= 18 * 60 && timeInMinutes < 20 * 60) return 'Evening';
+    // Night: 8:00 PM - 5:00 AM
+    return 'Night';
+};
+
+// Recalculate time of day when time changes
+const recalculateTimeOfDay = () => {
+    if (!formData.value.time) {
+        formData.value.timeOfDay = '';
+        return;
+    }
+
+    formData.value.timeOfDay = calculateTimeOfDay(formData.value.time);
+};
+
 // Initialize date input
 const initializeDateInput = () => {
     const todayDate = today(getLocalTimeZone());
@@ -184,6 +232,7 @@ const handleInputChange = () => {
         if (year && month && day) {
             selectedDate.value = new CalendarDate(year, month, day);
             formData.value.moonPhase = calculateMoonPhase(year, month, day);
+            recalculateTimeOfDay();
         }
     } catch (error) {
         console.error('Invalid date format:', error);
@@ -212,6 +261,7 @@ const populateForm = (data: FishingLogInitialData) => {
         user_rod_id: data.user_rod_id?.toString() || '',
         fishingStyle: data.style || '',
         moonPhase: data.moon_phase || '',
+        timeOfDay: data.time_of_day || '',
         friend_ids: data.friends?.map((f) => f.id) || [],
         notes: data.notes || '',
     };
@@ -236,6 +286,7 @@ const resetForm = () => {
         user_rod_id: '',
         fishingStyle: '',
         moonPhase: '',
+        timeOfDay: '',
         friend_ids: [],
         notes: '',
     };
@@ -381,6 +432,7 @@ const handleSubmit = () => {
         user_rod_id: formData.value.user_rod_id ? parseInt(formData.value.user_rod_id) : null,
         style: formData.value.fishingStyle || null,
         moon_phase: formData.value.moonPhase || null,
+        time_of_day: formData.value.timeOfDay || null,
         friend_ids: formData.value.friend_ids,
         notes: formData.value.notes || null,
     };
@@ -399,6 +451,11 @@ watch(() => props.initialData, (newData) => {
         populateForm(newData);
     }
 }, { immediate: true });
+
+// Watch for time changes to recalculate time of day
+watch(() => formData.value.time, () => {
+    recalculateTimeOfDay();
+});
 
 // Load data on mount
 onMounted(() => {
@@ -620,19 +677,34 @@ defineExpose({
                 />
             </div>
 
-            <!-- Moon Phase -->
-            <div class="grid gap-2">
-                <Label for="moonPhase">Moon Phase</Label>
-                <Select v-model="formData.moonPhase">
-                    <SelectTrigger id="moonPhase">
-                        <SelectValue placeholder="Select moon phase" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="phase in moonPhaseOptions" :key="phase" :value="phase">
-                            {{ phase }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
+            <!-- Moon Phase and Time of Day -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="moonPhase">Moon Phase</Label>
+                    <Select v-model="formData.moonPhase">
+                        <SelectTrigger id="moonPhase">
+                            <SelectValue placeholder="Select moon phase" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="phase in moonPhaseOptions" :key="phase" :value="phase">
+                                {{ phase }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
+                    <Label for="timeOfDay">Time of Day</Label>
+                    <Select v-model="formData.timeOfDay">
+                        <SelectTrigger id="timeOfDay">
+                            <SelectValue placeholder="Select time of day" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="tod in timeOfDayOptions" :key="tod" :value="tod">
+                                {{ tod }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <!-- Friends -->

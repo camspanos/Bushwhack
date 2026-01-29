@@ -148,7 +148,6 @@ class FishingLogSeeder extends Seeder
                     'max_size' => $faker->randomFloat(2, 8, 28),
                     'style' => $faker->randomElement($styles),
                     'moon_phase' => $faker->randomElement($moonPhases),
-                    'barometric_pressure' => $faker->randomFloat(2, 29.5, 30.5),
                     'notes' => $faker->optional(0.7)->sentence(10),
                 ]);
 
@@ -185,7 +184,6 @@ class FishingLogSeeder extends Seeder
                     'max_size' => $faker->randomFloat(2, 8, 28),
                     'style' => $faker->randomElement($styles),
                     'moon_phase' => $faker->randomElement($moonPhases),
-                    'barometric_pressure' => $faker->randomFloat(2, 29.5, 30.5),
                     'notes' => $faker->optional(0.7)->sentence(10),
                 ]);
 
@@ -221,7 +219,6 @@ class FishingLogSeeder extends Seeder
                 'max_size' => null, // No size since no fish caught
                 'style' => $faker->randomElement($styles),
                 'moon_phase' => $faker->randomElement($moonPhases),
-                'barometric_pressure' => $faker->randomFloat(2, 29.5, 30.5),
                 'notes' => $faker->randomElement([
                     'Tough day on the water. No bites.',
                     'Water was too high and muddy.',
@@ -262,7 +259,6 @@ class FishingLogSeeder extends Seeder
                 'max_size' => $faker->randomFloat(2, 8, 28),
                 'style' => $faker->randomElement($styles),
                 'moon_phase' => $faker->randomElement($moonPhases),
-                'barometric_pressure' => $faker->randomFloat(2, 29.5, 30.5),
                 'notes' => $faker->optional(0.7)->sentence(10),
             ]);
 

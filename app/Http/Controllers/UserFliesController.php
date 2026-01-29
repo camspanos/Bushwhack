@@ -78,7 +78,7 @@ class UserFliesController extends Controller
      *
      * Updates a fly record for the authenticated user.
      */
-    public function update(StoreUserFlyRequest $request, Fly $fly): JsonResponse
+    public function update(StoreUserFlyRequest $request, UserFly $fly): JsonResponse
     {
         // Ensure the user owns this fly
         if ($fly->user_id !== auth()->id()) {
@@ -112,7 +112,7 @@ class UserFliesController extends Controller
      *
      * Deletes a fly entry for the authenticated user.
      */
-    public function destroy(Fly $fly): JsonResponse
+    public function destroy(UserFly $fly): JsonResponse
     {
         // Ensure the user owns this fly
         if ($fly->user_id !== auth()->id()) {

@@ -22,7 +22,7 @@ class StoreFishingLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => 'required|date',
+            'date' => 'required|date|before_or_equal:today',
             'time' => 'nullable|date_format:H:i',
             'user_location_id' => 'nullable|exists:user_locations,id',
             'user_fish_id' => 'nullable|exists:user_fish,id',

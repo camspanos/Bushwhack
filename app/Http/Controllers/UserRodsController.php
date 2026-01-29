@@ -79,7 +79,7 @@ class UserRodsController extends Controller
      *
      * Updates a rod record for the authenticated user.
      */
-    public function update(StoreUserRodRequest $request, Rod $rod): JsonResponse
+    public function update(StoreUserRodRequest $request, UserRod $rod): JsonResponse
     {
         // Ensure the user owns this rod
         if ($rod->user_id !== auth()->id()) {
@@ -114,7 +114,7 @@ class UserRodsController extends Controller
      *
      * Deletes a rod entry for the authenticated user.
      */
-    public function destroy(Rod $rod): JsonResponse
+    public function destroy(UserRod $rod): JsonResponse
     {
         // Ensure the user owns this rod
         if ($rod->user_id !== auth()->id()) {

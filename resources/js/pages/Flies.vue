@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import FlyFormDialog from '@/components/FlyFormDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,9 +22,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Flies', href: '/flies' },
 ];
 
-const showAddForm = ref(false);
-const editingId = ref(null);
-const isEditMode = ref(false);
+const showFlyDialog = ref(false);
+const editingFly = ref<any>(null);
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const flies = ref([]);
@@ -41,13 +41,6 @@ const selectedYearFilter = ref(currentYear);
 const availableYears = ref<string[]>([]);
 const showPremiumDialog = ref(false);
 const page = usePage();
-
-const formData = ref({
-    name: '',
-    color: '',
-    size: '',
-    type: '',
-});
 
 const fetchFlies = async (page = 1) => {
     try {
@@ -88,47 +81,26 @@ const handlePerPageChange = () => {
 };
 
 const editItem = (item: any) => {
-    editingId.value = item.id;
-    isEditMode.value = true;
-    formData.value = {
+    editingFly.value = {
+        id: item.id,
         name: item.name,
         color: item.color || '',
         size: item.size || '',
         type: item.type || '',
     };
-    showAddForm.value = true;
+    showFlyDialog.value = true;
 };
 
-const resetForm = () => {
-    formData.value = {
-        name: '',
-        color: '',
-        size: '',
-        type: '',
-    };
-    editingId.value = null;
-    isEditMode.value = false;
-    showAddForm.value = false;
-    errorMessage.value = '';
+const openCreateDialog = () => {
+    editingFly.value = null;
+    showFlyDialog.value = true;
 };
 
-const handleSubmit = async () => {
-    errorMessage.value = '';
-    try {
-        if (isEditMode.value && editingId.value) {
-            await axios.put(`/flies/${editingId.value}`, formData.value);
-        } else {
-            await axios.post('/flies', formData.value);
-        }
-        await fetchFlies(currentPage.value);
-        resetForm();
-    } catch (error: any) {
-        console.error('Error saving fly:', error);
-        if (error.response?.status === 409) {
-            errorMessage.value = error.response.data.message || 'This fly already exists.';
-            showAddForm.value = false;
-        }
-    }
+const handleFlySuccess = (updatedFly: any) => {
+    // Refresh the flies list
+    fetchFlies(currentPage.value);
+    // Reset editing state
+    editingFly.value = null;
 };
 
 const confirmDelete = (item: any) => {
@@ -252,7 +224,7 @@ onMounted(async () => {
                                             View and manage your fly collection
                                         </CardDescription>
                                     </div>
-                                    <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                    <Button @click="openCreateDialog" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
                                         Add New Fly
                                     </Button>
@@ -465,43 +437,11 @@ onMounted(async () => {
         </div>
 
         <!-- Add/Edit Dialog -->
-        <Dialog v-model:open="showAddForm">
-            <DialogContent class="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle class="flex items-center gap-2">
-                        <Bug class="h-6 w-6" />
-                        {{ isEditMode ? 'Edit Fly' : 'Add New Fly' }}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {{ isEditMode ? 'Update the fly details below.' : 'Enter the fly details below.' }}
-                    </DialogDescription>
-                </DialogHeader>
-                <form @submit.prevent="handleSubmit">
-                    <div class="grid gap-4 py-4">
-                        <div class="grid gap-2">
-                            <Label for="name">Name *</Label>
-                            <Input id="name" v-model="formData.name" required placeholder="e.g., Woolly Bugger" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="color">Color</Label>
-                            <Input id="color" v-model="formData.color" placeholder="e.g., Black" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="size">Size</Label>
-                            <Input id="size" v-model="formData.size" placeholder="e.g., #8" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="type">Type</Label>
-                            <Input id="type" v-model="formData.type" placeholder="e.g., Streamer" />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="resetForm">Cancel</Button>
-                        <Button type="submit">{{ isEditMode ? 'Update Fly' : 'Add Fly' }}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <FlyFormDialog
+            v-model:open="showFlyDialog"
+            :editing-fly="editingFly"
+            @success="handleFlySuccess"
+        />
 
         <!-- Delete Confirmation Dialog -->
         <Dialog v-model:open="showDeleteConfirm">

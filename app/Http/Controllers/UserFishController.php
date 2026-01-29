@@ -81,7 +81,7 @@ class UserFishController extends Controller
      *
      * Updates a fish species record for the authenticated user.
      */
-    public function update(StoreUserFishRequest $request, Fish $fish): JsonResponse
+    public function update(StoreUserFishRequest $request, UserFish $fish): JsonResponse
     {
         // Ensure the user owns this fish species
         if ($fish->user_id !== auth()->id()) {
@@ -119,7 +119,7 @@ class UserFishController extends Controller
      *
      * Deletes a fish species entry for the authenticated user.
      */
-    public function destroy(Fish $fish): JsonResponse
+    public function destroy(UserFish $fish): JsonResponse
     {
         // Ensure the user owns this fish species
         if ($fish->user_id !== auth()->id()) {

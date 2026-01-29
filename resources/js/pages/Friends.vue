@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import FriendFormDialog from '@/components/FriendFormDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,9 +22,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Friends', href: '/friends' },
 ];
 
-const showAddForm = ref(false);
-const editingId = ref(null);
-const isEditMode = ref(false);
+const showFriendDialog = ref(false);
+const editingFriend = ref<any>(null);
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const friends = ref([]);
@@ -41,10 +41,6 @@ const selectedYearFilter = ref('lifetime'); // Will be set after fetching availa
 const availableYears = ref<string[]>([]);
 const showPremiumDialog = ref(false);
 const page = usePage();
-
-const formData = ref({
-    name: '',
-});
 
 const fetchFriends = async (page = 1) => {
     try {
@@ -85,41 +81,23 @@ const handlePerPageChange = () => {
 };
 
 const editItem = (item: any) => {
-    editingId.value = item.id;
-    isEditMode.value = true;
-    formData.value = {
+    editingFriend.value = {
+        id: item.id,
         name: item.name,
     };
-    showAddForm.value = true;
+    showFriendDialog.value = true;
 };
 
-const resetForm = () => {
-    formData.value = {
-        name: '',
-    };
-    editingId.value = null;
-    isEditMode.value = false;
-    showAddForm.value = false;
-    errorMessage.value = '';
+const openCreateDialog = () => {
+    editingFriend.value = null;
+    showFriendDialog.value = true;
 };
 
-const handleSubmit = async () => {
-    errorMessage.value = '';
-    try {
-        if (isEditMode.value && editingId.value) {
-            await axios.put(`/friends/${editingId.value}`, formData.value);
-        } else {
-            await axios.post('/friends', formData.value);
-        }
-        await fetchFriends(currentPage.value);
-        resetForm();
-    } catch (error: any) {
-        console.error('Error saving friend:', error);
-        if (error.response?.status === 409) {
-            errorMessage.value = error.response.data.message || 'This friend already exists.';
-            showAddForm.value = false;
-        }
-    }
+const handleFriendSuccess = (updatedFriend: any) => {
+    // Refresh the friends list
+    fetchFriends(currentPage.value);
+    // Reset editing state
+    editingFriend.value = null;
 };
 
 const confirmDelete = (item: any) => {
@@ -243,7 +221,7 @@ onMounted(async () => {
                                             View and manage your fishing friends
                                         </CardDescription>
                                     </div>
-                                    <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                    <Button @click="openCreateDialog" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
                                         Add New Friend
                                     </Button>
@@ -434,31 +412,11 @@ onMounted(async () => {
         </div>
 
         <!-- Add/Edit Dialog -->
-        <Dialog v-model:open="showAddForm">
-            <DialogContent class="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle class="flex items-center gap-2">
-                        <Users class="h-6 w-6" />
-                        {{ isEditMode ? 'Edit Friend' : 'Add New Friend' }}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {{ isEditMode ? 'Update the friend details below.' : 'Enter the friend details below.' }}
-                    </DialogDescription>
-                </DialogHeader>
-                <form @submit.prevent="handleSubmit">
-                    <div class="grid gap-4 py-4">
-                        <div class="grid gap-2">
-                            <Label for="name">Name *</Label>
-                            <Input id="name" v-model="formData.name" required placeholder="e.g., John Doe" />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="resetForm">Cancel</Button>
-                        <Button type="submit">{{ isEditMode ? 'Update Friend' : 'Add Friend' }}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <FriendFormDialog
+            v-model:open="showFriendDialog"
+            :editing-friend="editingFriend"
+            @success="handleFriendSuccess"
+        />
 
         <!-- Delete Confirmation Dialog -->
         <Dialog v-model:open="showDeleteConfirm">

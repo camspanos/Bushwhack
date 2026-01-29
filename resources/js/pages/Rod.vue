@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import RodFormDialog from '@/components/RodFormDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,9 +22,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Rods', href: '/rods-page' },
 ];
 
-const showAddForm = ref(false);
-const editingId = ref(null);
-const isEditMode = ref(false);
+const showRodDialog = ref(false);
+const editingRod = ref<any>(null);
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref(null);
 const equipment = ref([]);
@@ -41,14 +41,6 @@ const selectedYearFilter = ref('lifetime'); // Will be set after fetching availa
 const availableYears = ref<string[]>([]);
 const showPremiumDialog = ref(false);
 const page = usePage();
-
-const formData = ref({
-    rod_name: '',
-    rod_weight: '',
-    rod_length: '',
-    reel: '',
-    line: '',
-});
 
 const fetchEquipment = async (page = 1) => {
     try {
@@ -89,49 +81,27 @@ const handlePerPageChange = () => {
 };
 
 const editItem = (item: any) => {
-    editingId.value = item.id;
-    isEditMode.value = true;
-    formData.value = {
+    editingRod.value = {
+        id: item.id,
         rod_name: item.rod_name,
         rod_weight: item.rod_weight || '',
         rod_length: item.rod_length || '',
         reel: item.reel || '',
         line: item.line || '',
     };
-    showAddForm.value = true;
+    showRodDialog.value = true;
 };
 
-const resetForm = () => {
-    formData.value = {
-        rod_name: '',
-        rod_weight: '',
-        rod_length: '',
-        reel: '',
-        line: '',
-    };
-    editingId.value = null;
-    isEditMode.value = false;
-    showAddForm.value = false;
-    errorMessage.value = '';
+const openCreateDialog = () => {
+    editingRod.value = null;
+    showRodDialog.value = true;
 };
 
-const handleSubmit = async () => {
-    errorMessage.value = '';
-    try {
-        if (isEditMode.value && editingId.value) {
-            await axios.put(`/rods/${editingId.value}`, formData.value);
-        } else {
-            await axios.post('/rods', formData.value);
-        }
-        await fetchEquipment(currentPage.value);
-        resetForm();
-    } catch (error: any) {
-        console.error('Error saving equipment:', error);
-        if (error.response?.status === 409) {
-            errorMessage.value = error.response.data.message || 'This rod already exists.';
-            showAddForm.value = false;
-        }
-    }
+const handleRodSuccess = (updatedRod: any) => {
+    // Refresh the equipment list
+    fetchEquipment(currentPage.value);
+    // Reset editing state
+    editingRod.value = null;
 };
 
 const confirmDelete = (item: any) => {
@@ -253,7 +223,7 @@ onMounted(async () => {
                                             View and manage your fishing rods
                                         </CardDescription>
                                     </div>
-                                    <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
+                                    <Button @click="openCreateDialog" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
                                         Add New Rod
                                     </Button>
@@ -472,47 +442,11 @@ onMounted(async () => {
         </div>
 
         <!-- Add/Edit Dialog -->
-        <Dialog v-model:open="showAddForm">
-            <DialogContent class="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle class="flex items-center gap-2">
-                        <Wrench class="h-6 w-6" />
-                        {{ isEditMode ? 'Edit Rod' : 'Add New Rod' }}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {{ isEditMode ? 'Update the rod details below.' : 'Enter the rod details below.' }}
-                    </DialogDescription>
-                </DialogHeader>
-                <form @submit.prevent="handleSubmit">
-                    <div class="grid gap-4 py-4">
-                        <div class="grid gap-2">
-                            <Label for="rod_name">Rod Name *</Label>
-                            <Input id="rod_name" v-model="formData.rod_name" required placeholder="e.g., Orvis Clearwater" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="rod_weight">Rod Weight</Label>
-                            <Input id="rod_weight" v-model="formData.rod_weight" placeholder="e.g., 5wt" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="rod_length">Rod Length</Label>
-                            <Input id="rod_length" v-model="formData.rod_length" placeholder="e.g., 9ft" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="reel">Reel</Label>
-                            <Input id="reel" v-model="formData.reel" placeholder="e.g., Orvis Battenkill" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="line">Line</Label>
-                            <Input id="line" v-model="formData.line" placeholder="e.g., WF5F" />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="resetForm">Cancel</Button>
-                        <Button type="submit">{{ isEditMode ? 'Update Rod' : 'Add Rod' }}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <RodFormDialog
+            v-model:open="showRodDialog"
+            :editing-rod="editingRod"
+            @success="handleRodSuccess"
+        />
 
         <!-- Delete Confirmation Dialog -->
         <Dialog v-model:open="showDeleteConfirm">

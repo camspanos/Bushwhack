@@ -501,7 +501,7 @@ edit.form = editForm
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-export const update = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -516,9 +516,13 @@ update.definition = {
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-update.url = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions) => {
+update.url = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rod: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { rod: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -530,7 +534,9 @@ update.url = (args: { rod: string | number } | [rod: string | number ] | string 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        rod: args.rod,
+        rod: typeof args.rod === 'object'
+        ? args.rod.id
+        : args.rod,
     }
 
     return update.definition.url
@@ -543,7 +549,7 @@ update.url = (args: { rod: string | number } | [rod: string | number ] | string 
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-update.put = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -553,7 +559,7 @@ update.put = (args: { rod: string | number } | [rod: string | number ] | string 
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-update.patch = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -563,7 +569,7 @@ update.patch = (args: { rod: string | number } | [rod: string | number ] | strin
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-const updateForm = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const updateForm = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -578,7 +584,7 @@ const updateForm = (args: { rod: string | number } | [rod: string | number ] | s
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-updateForm.put = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.put = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PUT',
@@ -593,7 +599,7 @@ updateForm.put = (args: { rod: string | number } | [rod: string | number ] | str
 * @see app/Http/Controllers/UserRodsController.php:82
 * @route '/rods/{rod}'
 */
-updateForm.patch = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+updateForm.patch = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: update.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'PATCH',
@@ -610,7 +616,7 @@ update.form = updateForm
 * @see app/Http/Controllers/UserRodsController.php:117
 * @route '/rods/{rod}'
 */
-export const destroy = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -625,9 +631,13 @@ destroy.definition = {
 * @see app/Http/Controllers/UserRodsController.php:117
 * @route '/rods/{rod}'
 */
-destroy.url = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions) => {
+destroy.url = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { rod: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { rod: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -639,7 +649,9 @@ destroy.url = (args: { rod: string | number } | [rod: string | number ] | string
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        rod: args.rod,
+        rod: typeof args.rod === 'object'
+        ? args.rod.id
+        : args.rod,
     }
 
     return destroy.definition.url
@@ -652,7 +664,7 @@ destroy.url = (args: { rod: string | number } | [rod: string | number ] | string
 * @see app/Http/Controllers/UserRodsController.php:117
 * @route '/rods/{rod}'
 */
-destroy.delete = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -662,7 +674,7 @@ destroy.delete = (args: { rod: string | number } | [rod: string | number ] | str
 * @see app/Http/Controllers/UserRodsController.php:117
 * @route '/rods/{rod}'
 */
-const destroyForm = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const destroyForm = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',
@@ -677,7 +689,7 @@ const destroyForm = (args: { rod: string | number } | [rod: string | number ] | 
 * @see app/Http/Controllers/UserRodsController.php:117
 * @route '/rods/{rod}'
 */
-destroyForm.delete = (args: { rod: string | number } | [rod: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+destroyForm.delete = (args: { rod: number | { id: number } } | [rod: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: destroy.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'DELETE',

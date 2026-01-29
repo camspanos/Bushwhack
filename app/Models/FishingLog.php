@@ -21,7 +21,6 @@ class FishingLog extends Model
         'max_size',
         'style',
         'moon_phase',
-        'barometric_pressure',
         'notes',
     ];
 

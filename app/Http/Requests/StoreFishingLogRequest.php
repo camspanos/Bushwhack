@@ -32,7 +32,6 @@ class StoreFishingLogRequest extends FormRequest
             'user_rod_id' => 'nullable|exists:user_rods,id',
             'style' => 'nullable|string|max:255',
             'moon_phase' => 'nullable|string|in:New Moon,Waxing Crescent,First Quarter,Waxing Gibbous,Full Moon,Waning Gibbous,Last Quarter,Waning Crescent',
-            'barometric_pressure' => 'nullable|string|in:Falling Pressure,Steady Pressure,Rising Pressure',
             'friend_ids' => 'nullable|array',
             'friend_ids.*' => 'exists:user_friends,id',
             'notes' => 'nullable|string',

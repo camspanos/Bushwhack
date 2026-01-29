@@ -78,7 +78,6 @@ class FishingLogsController extends Controller
             'user_rod_id' => $validated['user_rod_id'] ?? null,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
-            'barometric_pressure' => $validated['barometric_pressure'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -122,7 +121,6 @@ class FishingLogsController extends Controller
             'user_rod_id' => $validated['user_rod_id'] ?? null,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
-            'barometric_pressure' => $validated['barometric_pressure'] ?? null,
             'notes' => $validated['notes'] ?? null,
         ]);
 

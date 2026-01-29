@@ -26,7 +26,6 @@ export interface FishingLogFormData {
     user_rod_id: string;
     fishingStyle: string;
     moonPhase: string;
-    barometricPressure: string;
     friend_ids: number[];
     notes: string;
 }
@@ -43,7 +42,6 @@ export interface FishingLogInitialData {
     user_rod_id?: number;
     style?: string;
     moon_phase?: string;
-    barometric_pressure?: string;
     friends?: { id: number; name: string }[];
     notes?: string;
 }
@@ -86,7 +84,6 @@ const formData = ref<FishingLogFormData>({
     user_rod_id: '',
     fishingStyle: '',
     moonPhase: '',
-    barometricPressure: '',
     friend_ids: [],
     notes: '',
 });
@@ -131,13 +128,6 @@ const moonPhaseOptions = [
     'Waning Gibbous',
     'Last Quarter',
     'Waning Crescent',
-];
-
-// Barometric pressure options
-const barometricPressureOptions = [
-    'Falling Pressure',
-    'Steady Pressure',
-    'Rising Pressure',
 ];
 
 // Computed formatted date
@@ -222,7 +212,6 @@ const populateForm = (data: FishingLogInitialData) => {
         user_rod_id: data.user_rod_id?.toString() || '',
         fishingStyle: data.style || '',
         moonPhase: data.moon_phase || '',
-        barometricPressure: data.barometric_pressure || '',
         friend_ids: data.friends?.map((f) => f.id) || [],
         notes: data.notes || '',
     };
@@ -247,7 +236,6 @@ const resetForm = () => {
         user_rod_id: '',
         fishingStyle: '',
         moonPhase: '',
-        barometricPressure: '',
         friend_ids: [],
         notes: '',
     };
@@ -393,7 +381,6 @@ const handleSubmit = () => {
         user_rod_id: formData.value.user_rod_id ? parseInt(formData.value.user_rod_id) : null,
         style: formData.value.fishingStyle || null,
         moon_phase: formData.value.moonPhase || null,
-        barometric_pressure: formData.value.barometricPressure || null,
         friend_ids: formData.value.friend_ids,
         notes: formData.value.notes || null,
     };
@@ -633,59 +620,33 @@ defineExpose({
                 />
             </div>
 
-            <!-- Moon Phase and Barometric Pressure -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="grid gap-2">
-                    <Label for="moonPhase">Moon Phase</Label>
-                    <Select v-model="formData.moonPhase">
-                        <SelectTrigger id="moonPhase">
-                            <SelectValue placeholder="Select moon phase" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="phase in moonPhaseOptions" :key="phase" :value="phase">
-                                {{ phase }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="barometricPressure">Barometric Pressure</Label>
-                    <Select v-model="formData.barometricPressure">
-                        <SelectTrigger id="barometricPressure">
-                            <SelectValue placeholder="Select pressure" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem v-for="pressure in barometricPressureOptions" :key="pressure" :value="pressure">
-                                {{ pressure }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            <!-- Moon Phase -->
+            <div class="grid gap-2">
+                <Label for="moonPhase">Moon Phase</Label>
+                <Select v-model="formData.moonPhase">
+                    <SelectTrigger id="moonPhase">
+                        <SelectValue placeholder="Select moon phase" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem v-for="phase in moonPhaseOptions" :key="phase" :value="phase">
+                            {{ phase }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <!-- Friends -->
             <div class="grid gap-2">
-                <Label>Fishing Buddies</Label>
+                <Label>Fishing Partners</Label>
                 <div class="flex gap-2">
                     <Popover>
                         <PopoverTrigger as-child>
                             <Button variant="outline" class="flex-1 justify-between">
                                 <span v-if="formData.friend_ids.length === 0" class="text-muted-foreground">
-                                    Select friends...
+                                    Select partners...
                                 </span>
-                                <span v-else class="flex flex-wrap gap-1">
-                                    <span
-                                        v-for="friendId in formData.friend_ids"
-                                        :key="friendId"
-                                        class="inline-flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded text-xs"
-                                    >
-                                        {{ friends.find(f => f.id === friendId)?.name }}
-                                        <X
-                                            class="h-3 w-3 cursor-pointer hover:opacity-70"
-                                            @click.stop="formData.friend_ids.splice(formData.friend_ids.indexOf(friendId), 1)"
-                                        />
-                                    </span>
+                                <span v-else>
+                                    {{ formData.friend_ids.length }} partner{{ formData.friend_ids.length === 1 ? '' : 's' }} selected
                                 </span>
                                 <ChevronDown class="h-4 w-4 opacity-50 shrink-0" />
                             </Button>
@@ -704,7 +665,7 @@ defineExpose({
                                     <span class="text-sm">{{ friend.name }}</span>
                                 </div>
                                 <div v-if="friends.length === 0" class="p-2 text-sm text-muted-foreground text-center">
-                                    No friends available
+                                    No partners available
                                 </div>
                             </div>
                         </PopoverContent>
@@ -712,6 +673,23 @@ defineExpose({
                     <Button type="button" variant="outline" size="icon" @click="showFriendModal = true">
                         <Plus class="h-4 w-4" />
                     </Button>
+                </div>
+                <!-- Selected partners displayed as removable badges -->
+                <div v-if="formData.friend_ids.length > 0" class="flex flex-wrap gap-1.5">
+                    <span
+                        v-for="friendId in formData.friend_ids"
+                        :key="friendId"
+                        class="inline-flex items-center gap-1 bg-primary text-primary-foreground px-2 py-1 rounded-md text-xs"
+                    >
+                        {{ friends.find(f => f.id === friendId)?.name }}
+                        <button
+                            type="button"
+                            class="hover:bg-primary-foreground/20 rounded-full p-0.5"
+                            @click="formData.friend_ids.splice(formData.friend_ids.indexOf(friendId), 1)"
+                        >
+                            <X class="h-3 w-3" />
+                        </button>
+                    </span>
                 </div>
             </div>
 

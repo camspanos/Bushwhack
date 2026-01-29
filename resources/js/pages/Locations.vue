@@ -221,6 +221,7 @@ onMounted(async () => {
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>Name</TableHead>
+                                                <TableHead>Water Type</TableHead>
                                                 <TableHead>City</TableHead>
                                                 <TableHead>State</TableHead>
                                                 <TableHead>Country</TableHead>
@@ -231,12 +232,13 @@ onMounted(async () => {
                                         </TableHeader>
                                         <TableBody>
                                             <TableRow v-if="locations.length === 0">
-                                                <TableCell colspan="7" class="text-center text-muted-foreground py-8">
+                                                <TableCell colspan="8" class="text-center text-muted-foreground py-8">
                                                     No locations yet. Click "Add New" to create your first location!
                                                 </TableCell>
                                             </TableRow>
                                             <TableRow v-for="location in locations" :key="location.id">
                                                 <TableCell class="font-medium">{{ location.name }}</TableCell>
+                                                <TableCell>{{ location.water_type || '-' }}</TableCell>
                                                 <TableCell>{{ location.city || '-' }}</TableCell>
                                                 <TableCell>{{ location.state || '-' }}</TableCell>
                                                 <TableCell>{{ location.country?.name || '-' }}</TableCell>

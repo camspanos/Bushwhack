@@ -13,6 +13,7 @@ class UserLocation extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'water_type',
         'city',
         'state',
         'country_id',

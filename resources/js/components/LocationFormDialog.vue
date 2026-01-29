@@ -25,6 +25,15 @@
                 </div>
 
                 <div class="grid gap-2">
+                    <Label for="location-water-type">Water Type</Label>
+                    <Input
+                        id="location-water-type"
+                        v-model="formData.water_type"
+                        placeholder="e.g., River, Lake, Stream"
+                    />
+                </div>
+
+                <div class="grid gap-2">
                     <Label for="location-city">City/Town</Label>
                     <Input
                         id="location-city"
@@ -129,6 +138,7 @@ interface Country {
 
 interface LocationFormData {
     name: string;
+    water_type: string;
     city: string;
     state: string;
     country_id: number | null;
@@ -160,6 +170,7 @@ const page = usePage();
 
 const formData = ref<LocationFormData>({
     name: '',
+    water_type: '',
     city: '',
     state: '',
     country_id: null,
@@ -210,6 +221,7 @@ const resetForm = () => {
 
     formData.value = {
         name: '',
+        water_type: '',
         city: '',
         state: '',
         country_id: defaultCountryId,
@@ -227,6 +239,7 @@ watch(() => props.editingLocation, (newLocation) => {
     if (newLocation) {
         formData.value = {
             name: newLocation.name || '',
+            water_type: newLocation.water_type || '',
             city: newLocation.city || '',
             state: newLocation.state || '',
             country_id: newLocation.country_id || null,

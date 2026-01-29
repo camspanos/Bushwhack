@@ -23,6 +23,7 @@ class StoreUserLocationRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'water_type' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
             'country_id' => 'nullable|exists:countries,id',

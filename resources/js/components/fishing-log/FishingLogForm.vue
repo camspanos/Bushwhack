@@ -845,7 +845,8 @@ defineExpose({
                         <span v-if="hasWeatherData" class="text-foreground">
                             {{ weatherSummary }}
                         </span>
-                        <span v-else class="text-muted-foreground">
+                        <span v-else class="flex items-center gap-1 text-muted-foreground">
+                            <Plus class="h-4 w-4" />
                             Add weather conditions...
                         </span>
                     </Button>
@@ -864,7 +865,8 @@ defineExpose({
                         <span v-if="hasWaterConditionData" class="text-foreground">
                             {{ waterConditionSummary }}
                         </span>
-                        <span v-else class="text-muted-foreground">
+                        <span v-else class="flex items-center gap-1 text-muted-foreground">
+                            <Plus class="h-4 w-4" />
                             Add water conditions...
                         </span>
                     </Button>

@@ -170,6 +170,8 @@ const editLog = (log: any) => {
         time_of_day: log.time_of_day,
         friends: log.friends,
         notes: log.notes,
+        weather: log.weather,
+        water_condition: log.water_condition,
     };
 
     showAddForm.value = true;

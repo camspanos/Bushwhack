@@ -32,9 +32,27 @@ class StoreFishingLogRequest extends FormRequest
             'user_rod_id' => 'nullable|exists:user_rods,id',
             'style' => 'nullable|string|max:255',
             'moon_phase' => 'nullable|string|in:New Moon,Waxing Crescent,First Quarter,Waxing Gibbous,Full Moon,Waning Gibbous,Last Quarter,Waning Crescent',
+            'time_of_day' => 'nullable|string|in:Dawn,Morning,Midday,Afternoon,Dusk,Night',
             'friend_ids' => 'nullable|array',
             'friend_ids.*' => 'exists:user_friends,id',
             'notes' => 'nullable|string',
+
+            // Weather conditions
+            'weather' => 'nullable|array',
+            'weather.temperature' => 'nullable|string|max:50',
+            'weather.cloud' => 'nullable|string|in:Clear,Partly Cloudy,Mostly Cloudy,Overcast',
+            'weather.wind' => 'nullable|string|in:Calm,Light,Moderate,Strong,Very Strong',
+            'weather.precipitation' => 'nullable|string|in:None,Light Rain,Moderate Rain,Heavy Rain,Light Snow,Heavy Snow,Sleet,Hail',
+            'weather.barometric_pressure' => 'nullable|string|max:50',
+
+            // Water conditions
+            'water_condition' => 'nullable|array',
+            'water_condition.temperature' => 'nullable|string|max:50',
+            'water_condition.clarity' => 'nullable|string|in:Crystal Clear,Clear,Slightly Stained,Stained,Murky,Muddy',
+            'water_condition.level' => 'nullable|string|in:Very Low,Low,Normal,High,Very High,Flood',
+            'water_condition.speed' => 'nullable|string|in:Still,Slow,Moderate,Fast,Very Fast',
+            'water_condition.surface_condition' => 'nullable|string|in:Calm,Rippled,Choppy,Rough,Very Rough',
+            'water_condition.tide' => 'nullable|string|in:Low,Rising,High,Falling,Slack',
         ];
     }
 }

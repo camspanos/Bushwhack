@@ -10,11 +10,28 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LocationFormDialog from '@/components/LocationFormDialog.vue';
-import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, ChevronDown, X, AlertCircle } from 'lucide-vue-next';
+import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, ChevronDown, X, AlertCircle, Cloud, Droplets } from 'lucide-vue-next';
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import axios from '@/lib/axios';
 
 // Types
+export interface WeatherData {
+    temperature: string;
+    cloud: string;
+    wind: string;
+    precipitation: string;
+    barometric_pressure: string;
+}
+
+export interface WaterConditionData {
+    temperature: string;
+    clarity: string;
+    level: string;
+    speed: string;
+    surface_condition: string;
+    tide: string;
+}
+
 export interface FishingLogFormData {
     date: string;
     time: string;
@@ -29,6 +46,8 @@ export interface FishingLogFormData {
     timeOfDay: string;
     friend_ids: number[];
     notes: string;
+    weather: WeatherData;
+    water_condition: WaterConditionData;
 }
 
 export interface FishingLogInitialData {
@@ -46,6 +65,23 @@ export interface FishingLogInitialData {
     time_of_day?: string;
     friends?: { id: number; name: string }[];
     notes?: string;
+    weather?: {
+        id?: number;
+        temperature?: string;
+        cloud?: string;
+        wind?: string;
+        precipitation?: string;
+        barometric_pressure?: string;
+    };
+    water_condition?: {
+        id?: number;
+        temperature?: string;
+        clarity?: string;
+        level?: string;
+        speed?: string;
+        surface_condition?: string;
+        tide?: string;
+    };
 }
 
 // Props
@@ -89,6 +125,21 @@ const formData = ref<FishingLogFormData>({
     timeOfDay: '',
     friend_ids: [],
     notes: '',
+    weather: {
+        temperature: '',
+        cloud: '',
+        wind: '',
+        precipitation: '',
+        barometric_pressure: '',
+    },
+    water_condition: {
+        temperature: '',
+        clarity: '',
+        level: '',
+        speed: '',
+        surface_condition: '',
+        tide: '',
+    },
 });
 
 // Form validation errors
@@ -108,6 +159,8 @@ const showFishModal = ref(false);
 const showFlyModal = ref(false);
 const showEquipmentModal = ref(false);
 const showFriendModal = ref(false);
+const showWeatherModal = ref(false);
+const showWaterConditionModal = ref(false);
 
 // Error messages for each modal
 const fishError = ref('');
@@ -143,6 +196,18 @@ const timeOfDayOptions = [
     'Night',
 ];
 
+// Weather options
+const cloudOptions = ['Clear', 'Partly Cloudy', 'Mostly Cloudy', 'Overcast'];
+const windOptions = ['Calm', 'Light', 'Moderate', 'Strong', 'Very Strong'];
+const precipitationOptions = ['None', 'Light Rain', 'Moderate Rain', 'Heavy Rain', 'Light Snow', 'Heavy Snow', 'Sleet', 'Hail'];
+
+// Water condition options
+const clarityOptions = ['Crystal Clear', 'Clear', 'Slightly Stained', 'Stained', 'Murky', 'Muddy'];
+const levelOptions = ['Very Low', 'Low', 'Normal', 'High', 'Very High', 'Flood'];
+const speedOptions = ['Still', 'Slow', 'Moderate', 'Fast', 'Very Fast'];
+const surfaceConditionOptions = ['Calm', 'Rippled', 'Choppy', 'Rough', 'Very Rough'];
+const tideOptions = ['Low', 'Rising', 'High', 'Falling', 'Slack'];
+
 // Computed formatted date
 const formattedDate = computed(() => {
     if (dateInput.value) return dateInput.value;
@@ -157,6 +222,37 @@ const formattedDate = computed(() => {
 const computedSubmitLabel = computed(() => {
     if (props.submitLabel !== 'Save Fishing Log') return props.submitLabel;
     return props.mode === 'edit' ? 'Update Fishing Log' : 'Save Fishing Log';
+});
+
+// Computed properties for weather and water condition summaries
+const hasWeatherData = computed(() => {
+    const w = formData.value.weather;
+    return w.temperature || w.cloud || w.wind || w.precipitation || w.barometric_pressure;
+});
+
+const weatherSummary = computed(() => {
+    const w = formData.value.weather;
+    const parts: string[] = [];
+    if (w.temperature) parts.push(`${w.temperature}°`);
+    if (w.cloud) parts.push(w.cloud);
+    if (w.wind) parts.push(`Wind: ${w.wind}`);
+    if (w.precipitation && w.precipitation !== 'None') parts.push(w.precipitation);
+    return parts.length > 0 ? parts.join(', ') : 'Weather conditions set';
+});
+
+const hasWaterConditionData = computed(() => {
+    const wc = formData.value.water_condition;
+    return wc.temperature || wc.clarity || wc.level || wc.speed || wc.surface_condition || wc.tide;
+});
+
+const waterConditionSummary = computed(() => {
+    const wc = formData.value.water_condition;
+    const parts: string[] = [];
+    if (wc.temperature) parts.push(`${wc.temperature}°`);
+    if (wc.clarity) parts.push(wc.clarity);
+    if (wc.level) parts.push(`Level: ${wc.level}`);
+    if (wc.speed) parts.push(`Speed: ${wc.speed}`);
+    return parts.length > 0 ? parts.join(', ') : 'Water conditions set';
 });
 
 // Calculate moon phase based on date
@@ -253,6 +349,21 @@ const populateForm = (data: FishingLogInitialData) => {
         timeOfDay: data.time_of_day || '',
         friend_ids: data.friends?.map((f) => f.id) || [],
         notes: data.notes || '',
+        weather: {
+            temperature: data.weather?.temperature || '',
+            cloud: data.weather?.cloud || '',
+            wind: data.weather?.wind || '',
+            precipitation: data.weather?.precipitation || '',
+            barometric_pressure: data.weather?.barometric_pressure || '',
+        },
+        water_condition: {
+            temperature: data.water_condition?.temperature || '',
+            clarity: data.water_condition?.clarity || '',
+            level: data.water_condition?.level || '',
+            speed: data.water_condition?.speed || '',
+            surface_condition: data.water_condition?.surface_condition || '',
+            tide: data.water_condition?.tide || '',
+        },
     };
 };
 
@@ -278,6 +389,21 @@ const resetForm = () => {
         timeOfDay: '',
         friend_ids: [],
         notes: '',
+        weather: {
+            temperature: '',
+            cloud: '',
+            wind: '',
+            precipitation: '',
+            barometric_pressure: '',
+        },
+        water_condition: {
+            temperature: '',
+            clarity: '',
+            level: '',
+            speed: '',
+            surface_condition: '',
+            tide: '',
+        },
     };
     initializeDateInput();
     clearFormErrors();
@@ -424,6 +550,8 @@ const handleSubmit = () => {
         time_of_day: formData.value.timeOfDay || null,
         friend_ids: formData.value.friend_ids,
         notes: formData.value.notes || null,
+        weather: formData.value.weather,
+        water_condition: formData.value.water_condition,
     };
 
     emit('submit', submitData);
@@ -701,6 +829,48 @@ defineExpose({
                 </div>
             </div>
 
+            <!-- Weather and Water Conditions -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label class="flex items-center gap-2">
+                        <Cloud class="h-4 w-4" />
+                        Weather Conditions
+                    </Label>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        class="justify-start"
+                        @click="showWeatherModal = true"
+                    >
+                        <span v-if="hasWeatherData" class="text-foreground">
+                            {{ weatherSummary }}
+                        </span>
+                        <span v-else class="text-muted-foreground">
+                            Add weather conditions...
+                        </span>
+                    </Button>
+                </div>
+                <div class="grid gap-2">
+                    <Label class="flex items-center gap-2">
+                        <Droplets class="h-4 w-4" />
+                        Water Conditions
+                    </Label>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        class="justify-start"
+                        @click="showWaterConditionModal = true"
+                    >
+                        <span v-if="hasWaterConditionData" class="text-foreground">
+                            {{ waterConditionSummary }}
+                        </span>
+                        <span v-else class="text-muted-foreground">
+                            Add water conditions...
+                        </span>
+                    </Button>
+                </div>
+            </div>
+
             <!-- Friends -->
             <div class="grid gap-2">
                 <Label>Fishing Partners</Label>
@@ -914,6 +1084,164 @@ defineExpose({
                         <Button type="submit">Add Friend</Button>
                     </DialogFooter>
                 </form>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Weather Conditions Modal -->
+        <Dialog v-model:open="showWeatherModal">
+            <DialogContent class="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Weather Conditions</DialogTitle>
+                    <DialogDescription>Record the weather conditions during your fishing trip.</DialogDescription>
+                </DialogHeader>
+                <div class="space-y-4">
+                    <div class="grid gap-2">
+                        <Label for="weather-temperature">Air Temperature</Label>
+                        <Input
+                            id="weather-temperature"
+                            v-model="formData.weather.temperature"
+                            placeholder="e.g., 72°F or 22°C"
+                        />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="weather-cloud">Cloud Cover</Label>
+                        <Select v-model="formData.weather.cloud">
+                            <SelectTrigger id="weather-cloud">
+                                <SelectValue placeholder="Select cloud cover" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in cloudOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="weather-wind">Wind</Label>
+                        <Select v-model="formData.weather.wind">
+                            <SelectTrigger id="weather-wind">
+                                <SelectValue placeholder="Select wind conditions" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in windOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="weather-precipitation">Precipitation</Label>
+                        <Select v-model="formData.weather.precipitation">
+                            <SelectTrigger id="weather-precipitation">
+                                <SelectValue placeholder="Select precipitation" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in precipitationOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="weather-pressure">Barometric Pressure</Label>
+                        <Input
+                            id="weather-pressure"
+                            v-model="formData.weather.barometric_pressure"
+                            placeholder="e.g., 30.12 inHg or 1020 hPa"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" @click="showWeatherModal = false">Done</Button>
+                    </DialogFooter>
+                </div>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Water Conditions Modal -->
+        <Dialog v-model:open="showWaterConditionModal">
+            <DialogContent class="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Water Conditions</DialogTitle>
+                    <DialogDescription>Record the water conditions during your fishing trip.</DialogDescription>
+                </DialogHeader>
+                <div class="space-y-4">
+                    <div class="grid gap-2">
+                        <Label for="water-temperature">Water Temperature</Label>
+                        <Input
+                            id="water-temperature"
+                            v-model="formData.water_condition.temperature"
+                            placeholder="e.g., 55°F or 13°C"
+                        />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="water-clarity">Clarity</Label>
+                        <Select v-model="formData.water_condition.clarity">
+                            <SelectTrigger id="water-clarity">
+                                <SelectValue placeholder="Select water clarity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in clarityOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="water-level">Water Level</Label>
+                        <Select v-model="formData.water_condition.level">
+                            <SelectTrigger id="water-level">
+                                <SelectValue placeholder="Select water level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in levelOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="water-speed">Current Speed</Label>
+                        <Select v-model="formData.water_condition.speed">
+                            <SelectTrigger id="water-speed">
+                                <SelectValue placeholder="Select current speed" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in speedOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="water-surface">Surface Condition</Label>
+                        <Select v-model="formData.water_condition.surface_condition">
+                            <SelectTrigger id="water-surface">
+                                <SelectValue placeholder="Select surface condition" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in surfaceConditionOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="water-tide">Tide (if applicable)</Label>
+                        <Select v-model="formData.water_condition.tide">
+                            <SelectTrigger id="water-tide">
+                                <SelectValue placeholder="Select tide" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in tideOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" @click="showWaterConditionModal = false">Done</Button>
+                    </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     </div>

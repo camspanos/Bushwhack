@@ -106,12 +106,14 @@ const handleCancel = () => {
                     </Alert>
                 </Transition>
 
-                <Card>
+                <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <div>
                                 <CardTitle class="flex items-center gap-2">
-                                    <Fish class="h-6 w-6" />
+                                    <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                        <Fish class="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                                    </div>
                                     Log Your Fishing Trip
                                 </CardTitle>
                                 <CardDescription>

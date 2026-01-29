@@ -11,7 +11,7 @@ import type { FishingLogInitialData } from '@/components/fishing-log/FishingLogF
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
-import { Fish, Pencil, Trash2, X, FileText, CheckCircle2, Trophy } from 'lucide-vue-next';
+import { Fish, Pencil, Trash2, X, FileText, CheckCircle2, Trophy, Plus } from 'lucide-vue-next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import confetti from 'canvas-confetti';

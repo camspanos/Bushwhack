@@ -21,14 +21,4 @@ class FishSpecies extends Model
     {
         return $this->hasMany(UserFish::class, 'fish_species_id');
     }
-
-    /**
-     * Get the fishing logs for this species.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function fishingLogs(): HasMany
-    {
-        return $this->hasMany(FishingLog::class, 'fish_species_id');
-    }
 }

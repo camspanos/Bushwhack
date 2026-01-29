@@ -62,16 +62,6 @@ class FishingLog extends Model
     }
 
     /**
-     * Alias for rod() to maintain backward compatibility.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function equipment(): BelongsTo
-    {
-        return $this->rod();
-    }
-
-    /**
      * Get the fish species caught in this fishing log.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

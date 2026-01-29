@@ -7,8 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import FishingLogForm from '@/components/fishing-log/FishingLogForm.vue';
-import type { FishingLogInitialData } from '@/components/fishing-log/FishingLogForm.vue';
-import { type BreadcrumbItem } from '@/types';
+import type { FishingLogInitialData, FishingLogFormData } from '@/components/fishing-log/FishingLogForm.vue';
+import { type BreadcrumbItem, type FishingLog } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import { Fish, Pencil, Trash2, X, FileText, CheckCircle2, Trophy, Plus } from 'lucide-vue-next';
@@ -23,18 +23,21 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Constants
+const NOTIFICATION_TIMEOUT_MS = 20000;
+
 
 
 // Show/hide add form dialog
 const showAddForm = ref(false);
 
 // Edit mode
-const editingLogId = ref(null);
+const editingLogId = ref<number | null>(null);
 const isEditMode = ref(false);
 
 // Delete confirmation
 const showDeleteConfirm = ref(false);
-const logToDelete = ref(null);
+const logToDelete = ref<FishingLog | null>(null);
 
 // Notes modal
 const showNotesModal = ref(false);
@@ -49,7 +52,7 @@ const personalBestSize = ref(0);
 const previousBestSize = ref(0);
 
 // Fishing logs data
-const fishingLogs = ref([]);
+const fishingLogs = ref<FishingLog[]>([]);
 
 // Pagination state
 const currentPage = ref(1);
@@ -77,7 +80,7 @@ const checkForNewSpecies = () => {
         // Auto-hide notification after 20 seconds
         setTimeout(() => {
             showSuccessNotification.value = false;
-        }, 20000);
+        }, NOTIFICATION_TIMEOUT_MS);
     }
 
     // Check for personal best notification
@@ -96,7 +99,7 @@ const checkForNewSpecies = () => {
         // Auto-hide notification after 20 seconds
         setTimeout(() => {
             showPersonalBestNotification.value = false;
-        }, 20000);
+        }, NOTIFICATION_TIMEOUT_MS);
     }
 };
 
@@ -150,7 +153,7 @@ onMounted(() => {
 });
 
 // Open edit dialog with log data
-const editLog = (log: any) => {
+const editLog = (log: FishingLog) => {
     isEditMode.value = true;
     editingLogId.value = log.id;
 
@@ -186,7 +189,7 @@ const openAddForm = () => {
 };
 
 // Open delete confirmation dialog
-const confirmDelete = (log: any) => {
+const confirmDelete = (log: FishingLog) => {
     logToDelete.value = log;
     showDeleteConfirm.value = true;
 };
@@ -216,7 +219,7 @@ const cancelDelete = () => {
 };
 
 // Handle form submission from FishingLogForm component
-const handleFormSubmit = async (submitData: any) => {
+const handleFormSubmit = async (submitData: FishingLogFormData) => {
     try {
         let response;
         if (isEditMode.value && editingLogId.value) {
@@ -237,7 +240,7 @@ const handleFormSubmit = async (submitData: any) => {
                 // Auto-hide notification after 20 seconds
                 setTimeout(() => {
                     showSuccessNotification.value = false;
-                }, 20000);
+                }, NOTIFICATION_TIMEOUT_MS);
             }
             // Check if it's a personal best (only show if not a new species)
             else if (response.data.is_personal_best && response.data.fishing_log.fish) {
@@ -250,7 +253,7 @@ const handleFormSubmit = async (submitData: any) => {
                 // Auto-hide notification after 20 seconds
                 setTimeout(() => {
                     showPersonalBestNotification.value = false;
-                }, 20000);
+                }, NOTIFICATION_TIMEOUT_MS);
             }
         }
 
@@ -699,8 +702,4 @@ const viewNotes = (notes: string) => {
         </Dialog>
     </AppLayout>
 </template>
-
-
-
-
 

@@ -94,36 +94,59 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     data-slot="calendar"
     :class="cn('p-3', props.class)"
   >
-    <CalendarHeader class="pt-0">
-      <nav class="flex items-center gap-1 absolute top-0 inset-x-0 justify-between">
-        <CalendarPrevButton>
-          <slot name="calendar-prev-icon" />
-        </CalendarPrevButton>
-        <CalendarNextButton>
-          <slot name="calendar-next-icon" />
-        </CalendarNextButton>
-      </nav>
-
+    <CalendarHeader :inline-nav="!!layout">
       <slot name="calendar-heading" :date="date" :month="ReuseMonthTemplate" :year="ReuseYearTemplate">
         <template v-if="layout === 'month-and-year'">
-          <div class="flex items-center justify-center gap-1">
-            <ReuseMonthTemplate :date="date" />
-            <ReuseYearTemplate :date="date" />
+          <div class="flex items-center justify-between w-full gap-1">
+            <CalendarPrevButton>
+              <slot name="calendar-prev-icon" />
+            </CalendarPrevButton>
+            <div class="flex items-center gap-1">
+              <ReuseMonthTemplate :date="date" />
+              <ReuseYearTemplate :date="date" />
+            </div>
+            <CalendarNextButton>
+              <slot name="calendar-next-icon" />
+            </CalendarNextButton>
           </div>
         </template>
         <template v-else-if="layout === 'month-only'">
-          <div class="flex items-center justify-center gap-1">
-            <ReuseMonthTemplate :date="date" />
-            {{ formatter.custom(toDate(date), { year: 'numeric' }) }}
+          <div class="flex items-center justify-between w-full gap-1">
+            <CalendarPrevButton>
+              <slot name="calendar-prev-icon" />
+            </CalendarPrevButton>
+            <div class="flex items-center gap-1">
+              <ReuseMonthTemplate :date="date" />
+              {{ formatter.custom(toDate(date), { year: 'numeric' }) }}
+            </div>
+            <CalendarNextButton>
+              <slot name="calendar-next-icon" />
+            </CalendarNextButton>
           </div>
         </template>
         <template v-else-if="layout === 'year-only'">
-          <div class="flex items-center justify-center gap-1">
-            {{ formatter.custom(toDate(date), { month: 'short' }) }}
-            <ReuseYearTemplate :date="date" />
+          <div class="flex items-center justify-between w-full gap-1">
+            <CalendarPrevButton>
+              <slot name="calendar-prev-icon" />
+            </CalendarPrevButton>
+            <div class="flex items-center gap-1">
+              {{ formatter.custom(toDate(date), { month: 'short' }) }}
+              <ReuseYearTemplate :date="date" />
+            </div>
+            <CalendarNextButton>
+              <slot name="calendar-next-icon" />
+            </CalendarNextButton>
           </div>
         </template>
         <template v-else>
+          <nav class="flex items-center gap-1 absolute top-0 inset-x-0 justify-between">
+            <CalendarPrevButton>
+              <slot name="calendar-prev-icon" />
+            </CalendarPrevButton>
+            <CalendarNextButton>
+              <slot name="calendar-next-icon" />
+            </CalendarNextButton>
+          </nav>
           <CalendarHeading />
         </template>
       </slot>

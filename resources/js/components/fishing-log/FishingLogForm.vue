@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -109,6 +110,8 @@ const emit = defineEmits<{
 // Date state
 const selectedDate = ref(today(getLocalTimeZone()));
 const dateInput = ref('');
+const datePickerOpen = ref(false);
+const maxDate = today(getLocalTimeZone()); // Prevent future date selection
 
 // Form data
 const formData = ref<FishingLogFormData>({
@@ -322,6 +325,19 @@ const handleInputChange = () => {
     } catch (error) {
         console.error('Invalid date format:', error);
     }
+};
+
+// Handle calendar date selection
+const handleCalendarSelect = (date: CalendarDate | undefined) => {
+    if (!date) return;
+    selectedDate.value = date;
+    const year = date.year;
+    const month = String(date.month).padStart(2, '0');
+    const day = String(date.day).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+    formData.value.moonPhase = calculateMoonPhase(date.year, date.month, date.day);
+    recalculateTimeOfDay();
+    datePickerOpen.value = false;
 };
 
 // Populate form with initial data (for edit mode)
@@ -626,13 +642,27 @@ defineExpose({
                         <CalendarIcon class="h-4 w-4" />
                         Date
                     </Label>
-                    <Input
-                        id="date"
-                        type="date"
-                        v-model="dateInput"
-                        @change="handleInputChange"
-                        required
-                    />
+                    <Popover v-model:open="datePickerOpen">
+                        <PopoverTrigger as-child>
+                            <Button
+                                id="date"
+                                variant="outline"
+                                class="w-full justify-between text-left font-normal"
+                                :class="{ 'text-muted-foreground': !dateInput }"
+                            >
+                                <span>{{ dateInput ? new Date(dateInput + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Pick a date' }}</span>
+                                <CalendarIcon class="h-4 w-4 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-auto p-0" align="start">
+                            <Calendar
+                                :model-value="selectedDate"
+                                @update:model-value="handleCalendarSelect"
+                                :max-value="maxDate"
+                                layout="month-and-year"
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 <div class="grid gap-2">

@@ -20,6 +20,14 @@ class DashboardController extends Controller
         private DashboardDataService $dashboardService
     ) {}
 
+    /**
+     * Check if we're using SQLite database.
+     */
+    private function isSqlite(): bool
+    {
+        return DB::connection()->getDriverName() === 'sqlite';
+    }
+
     public function index(Request $request): Response
     {
         $userId = auth()->id();
@@ -151,9 +159,12 @@ class DashboardController extends Controller
         } else {
             $monthQuery->whereYear('date', $yearFilter);
         }
+        $monthFormat = $this->isSqlite()
+            ? "strftime('%Y-%m', date)"
+            : "DATE_FORMAT(date, '%Y-%m')";
         $catchesByMonth = $monthQuery
             ->select(
-                DB::raw("DATE_FORMAT(date, '%Y-%m') as month"),
+                DB::raw("$monthFormat as month"),
                 DB::raw('SUM(quantity) as total')
             )
             ->groupBy('month')

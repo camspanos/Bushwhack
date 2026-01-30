@@ -14,12 +14,59 @@ use Illuminate\Support\Facades\DB;
 class DashboardDataService
 {
     /**
+     * Check if we're using SQLite database.
+     */
+    protected function isSqlite(): bool
+    {
+        return DB::connection()->getDriverName() === 'sqlite';
+    }
+
+    /**
+     * Get SQL expression for extracting year from a date column.
+     */
+    protected function yearExpression(string $column): string
+    {
+        return $this->isSqlite()
+            ? "strftime('%Y', $column)"
+            : "YEAR($column)";
+    }
+
+    /**
+     * Get SQL expression for extracting day of week from a date column.
+     * Returns 0-6 for SQLite (Sunday=0) and 1-7 for MySQL (Sunday=1).
+     */
+    protected function dayOfWeekExpression(string $column): string
+    {
+        return $this->isSqlite()
+            ? "strftime('%w', $column)"
+            : "DAYOFWEEK($column)";
+    }
+
+    /**
+     * Get SQL expression for formatting date.
+     */
+    protected function dateFormatExpression(string $column, string $format): string
+    {
+        if ($this->isSqlite()) {
+            // Convert MySQL format to SQLite strftime format
+            $sqliteFormat = str_replace(
+                ['%Y-%m', '%Y-%u'],
+                ['%Y-%m', '%Y-%W'],
+                $format
+            );
+            return "strftime('$sqliteFormat', $column)";
+        }
+        return "DATE_FORMAT($column, '$format')";
+    }
+
+    /**
      * Get available years from fishing logs for a user.
      */
     public function getAvailableYears(int $userId): array
     {
+        $yearExpr = $this->yearExpression('date');
         $years = FishingLog::where('user_id', $userId)
-            ->selectRaw('DISTINCT YEAR(date) as year')
+            ->selectRaw("DISTINCT $yearExpr as year")
             ->orderBy('year', 'desc')
             ->pluck('year')
             ->filter()
@@ -90,9 +137,20 @@ class DashboardDataService
      */
     public function getFavoriteWeekday(Builder $baseQuery): ?array
     {
-        $weekdayData = (clone $baseQuery)
-            ->select(
-                DB::raw("CASE DAYOFWEEK(date)
+        // SQLite strftime('%w') returns 0-6 (Sunday=0)
+        // MySQL DAYOFWEEK() returns 1-7 (Sunday=1)
+        if ($this->isSqlite()) {
+            $weekdayCase = "CASE strftime('%w', date)
+                    WHEN '0' THEN 'Sunday'
+                    WHEN '1' THEN 'Monday'
+                    WHEN '2' THEN 'Tuesday'
+                    WHEN '3' THEN 'Wednesday'
+                    WHEN '4' THEN 'Thursday'
+                    WHEN '5' THEN 'Friday'
+                    WHEN '6' THEN 'Saturday'
+                END";
+        } else {
+            $weekdayCase = "CASE DAYOFWEEK(date)
                     WHEN 1 THEN 'Sunday'
                     WHEN 2 THEN 'Monday'
                     WHEN 3 THEN 'Tuesday'
@@ -100,7 +158,12 @@ class DashboardDataService
                     WHEN 5 THEN 'Thursday'
                     WHEN 6 THEN 'Friday'
                     WHEN 7 THEN 'Saturday'
-                END as weekday"),
+                END";
+        }
+
+        $weekdayData = (clone $baseQuery)
+            ->select(
+                DB::raw("$weekdayCase as weekday"),
                 DB::raw('COUNT(*) as trip_count')
             )
             ->groupBy('weekday')
@@ -202,10 +265,14 @@ class DashboardDataService
         if ($yearFilter === 'lifetime') {
             // For lifetime, show last 12 months grouped by month
             $catchesOverTimeQuery->where('date', '>=', now()->subMonths(12));
-            $groupBy = "DATE_FORMAT(date, '%Y-%m')";
+            $groupBy = $this->isSqlite()
+                ? "strftime('%Y-%m', date)"
+                : "DATE_FORMAT(date, '%Y-%m')";
         } else {
             // For specific year, group by week to keep it manageable
-            $groupBy = "DATE_FORMAT(date, '%Y-%u')";
+            $groupBy = $this->isSqlite()
+                ? "strftime('%Y-%W', date)"
+                : "DATE_FORMAT(date, '%Y-%u')";
         }
 
         return $catchesOverTimeQuery

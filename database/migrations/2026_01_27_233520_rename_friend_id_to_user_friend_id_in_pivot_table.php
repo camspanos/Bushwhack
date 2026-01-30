@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the foreign key constraint first (using explicit constraint name)
+        // Drop the foreign key constraint first
+        // Note: The foreign key was created with the original table name 'fishing_log_friend'
+        // so we need to use that name, not the renamed table name
         Schema::table('fishing_log_user_friend', function (Blueprint $table) {
             $table->dropForeign('fishing_log_friend_friend_id_foreign');
         });
@@ -34,7 +36,7 @@ return new class extends Migration
     {
         // Drop the foreign key constraint
         Schema::table('fishing_log_user_friend', function (Blueprint $table) {
-            $table->dropForeign('fishing_log_user_friend_user_friend_id_foreign');
+            $table->dropForeign(['user_friend_id']);
         });
 
         // Rename the column back
@@ -44,7 +46,7 @@ return new class extends Migration
 
         // Re-add the foreign key constraint with the old column name
         Schema::table('fishing_log_user_friend', function (Blueprint $table) {
-            $table->foreign('friend_id', 'fishing_log_friend_friend_id_foreign')->references('id')->on('user_friends')->cascadeOnDelete();
+            $table->foreign('friend_id')->references('id')->on('user_friends')->cascadeOnDelete();
         });
     }
 };

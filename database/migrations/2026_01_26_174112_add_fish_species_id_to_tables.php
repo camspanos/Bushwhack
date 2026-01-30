@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Fish;
+use App\Models\UserFish;
 use App\Models\FishSpecies;
 use App\Models\FishingLog;
 
@@ -25,7 +25,7 @@ return new class extends Migration
         });
 
         // Migrate existing data: match user_fish species to fish_species
-        $userFish = Fish::all();
+        $userFish = UserFish::all();
         foreach ($userFish as $fish) {
             $fishSpecies = FishSpecies::where('species', $fish->species)
                 ->where('water_type', $fish->water_type)

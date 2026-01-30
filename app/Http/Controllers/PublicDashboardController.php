@@ -6,6 +6,7 @@ use App\Models\UserFish;
 use App\Models\FishingLog;
 use App\Models\UserFly;
 use App\Models\User;
+use App\Services\DashboardDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,10 @@ use Inertia\Response;
 
 class PublicDashboardController extends Controller
 {
+    public function __construct(
+        private DashboardDataService $dashboardService
+    ) {}
+
     public function show(User $user, Request $request): Response
     {
         // Check if the authenticated user is following this user
@@ -38,33 +43,23 @@ class PublicDashboardController extends Controller
 
     private function getPublicDashboardData(User $user, $userId, $authUser, Request $request): array
     {
-
         // Free users can only view current year data on public dashboards, UNLESS viewing user_id 1
         if (!$authUser->canFilterByYear() && $userId !== 1) {
             $yearFilter = (string) now()->year;
             $availableYears = [$yearFilter];
         } else {
-            // Get available years from fishing logs
-            $availableYears = FishingLog::where('user_id', $userId)
-                ->selectRaw('DISTINCT YEAR(date) as year')
-                ->orderBy('year', 'desc')
-                ->pluck('year')
-                ->filter()
-                ->values()
-                ->toArray();
+            // Get available years from fishing logs using service
+            $availableYears = $this->dashboardService->getAvailableYears($userId);
 
             // Get the year filter from request, default to current year if it has data, otherwise lifetime
             $currentYear = now()->year;
-            $hasCurrentYearData = in_array($currentYear, $availableYears);
+            $hasCurrentYearData = in_array((string) $currentYear, $availableYears);
             $defaultYear = $hasCurrentYearData ? (string) $currentYear : 'lifetime';
             $yearFilter = $request->input('year', $defaultYear);
         }
 
-        // Build base query with year filter
-        $baseQuery = FishingLog::where('user_id', $userId);
-        if ($yearFilter !== 'lifetime') {
-            $baseQuery->whereYear('date', $yearFilter);
-        }
+        // Build base query with year filter using service
+        $baseQuery = $this->dashboardService->buildBaseQuery($userId, $yearFilter);
 
         // Total counts (filtered by year)
         $totalCatches = (clone $baseQuery)->sum('quantity') ?? 0;
@@ -125,185 +120,22 @@ class PublicDashboardController extends Controller
                     'total' => $item->total ?? 0,
                 ];
             });
+        // Year statistics using service
+        $yearStats = $this->dashboardService->getYearStats(clone $baseQuery);
 
+        // Favorite weekday using service
+        $favoriteWeekday = $this->dashboardService->getFavoriteWeekday(clone $baseQuery);
 
+        // Fly statistics using service
+        $flyStatsData = $this->dashboardService->getFlyStats($userId, $yearFilter);
+        $mostSuccessfulFly = $flyStatsData['mostSuccessfulFly'];
+        $biggestFishFly = $flyStatsData['biggestFishFly'];
 
-        // Filtered fishing logs
-        $filteredLogs = (clone $baseQuery)->get();
+        // Catches over time using service
+        $catchesOverTime = $this->dashboardService->getCatchesOverTime(clone $baseQuery, $yearFilter);
 
-        // Days fished (unique dates, filtered by year)
-        $daysFished = $filteredLogs->pluck('date')->unique()->count();
-
-        // Days with fish caught
-        $daysWithFish = $filteredLogs
-            ->filter(fn($log) => $log->quantity > 0)
-            ->pluck('date')
-            ->unique()
-            ->count();
-
-        // Days skunked (no fish caught)
-        $daysSkunked = $filteredLogs
-            ->filter(fn($log) => !$log->quantity || $log->quantity === 0)
-            ->pluck('date')
-            ->unique()
-            ->count();
-
-        // Most caught in a day (sum all catches per day, then find max)
-        $mostInDay = $filteredLogs
-            ->groupBy('date')
-            ->map(fn($logs) => $logs->sum('quantity'))
-            ->max() ?? 0;
-
-        // Success rate
-        $successRate = $daysFished > 0 ? round(($daysWithFish / $daysFished) * 100, 1) : 0;
-
-        // Favorite weekday - most fished day of the week (filtered by year)
-        $weekdayData = (clone $baseQuery)
-            ->select(
-                DB::raw("CASE DAYOFWEEK(date)
-                    WHEN 1 THEN 'Sunday'
-                    WHEN 2 THEN 'Monday'
-                    WHEN 3 THEN 'Tuesday'
-                    WHEN 4 THEN 'Wednesday'
-                    WHEN 5 THEN 'Thursday'
-                    WHEN 6 THEN 'Friday'
-                    WHEN 7 THEN 'Saturday'
-                END as weekday"),
-                DB::raw('COUNT(*) as trip_count')
-            )
-            ->groupBy('weekday')
-            ->orderByDesc('trip_count')
-            ->first();
-
-        $favoriteWeekday = $weekdayData ? [
-            'day' => $weekdayData->weekday,
-            'count' => $weekdayData->trip_count,
-        ] : null;
-
-
-
-        // Most successful fly (filtered by year, grouped by fly name)
-        $mostSuccessfulFlyQuery = FishingLog::where('fishing_logs.user_id', $userId);
-        if ($yearFilter !== 'lifetime') {
-            $mostSuccessfulFlyQuery->whereYear('fishing_logs.date', $yearFilter);
-        }
-        $mostSuccessfulFly = $mostSuccessfulFlyQuery
-            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
-            ->select('user_flies.name', DB::raw('SUM(fishing_logs.quantity) as total_caught'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.user_fly_id')
-            ->where('fishing_logs.quantity', '>', 0)
-            ->where('user_flies.user_id', $userId)
-            ->groupBy('user_flies.name')
-            ->orderByDesc('total_caught')
-            ->first();
-
-        // Fly with biggest fish (filtered by year, grouped by fly name)
-        $biggestFishFlyQuery = FishingLog::where('fishing_logs.user_id', $userId);
-        if ($yearFilter !== 'lifetime') {
-            $biggestFishFlyQuery->whereYear('fishing_logs.date', $yearFilter);
-        }
-        $biggestFishFly = $biggestFishFlyQuery
-            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
-            ->select('user_flies.name', DB::raw('MAX(fishing_logs.max_size) as biggest_size'), DB::raw('COUNT(DISTINCT fishing_logs.date) as days_used'))
-            ->whereNotNull('fishing_logs.user_fly_id')
-            ->whereNotNull('fishing_logs.max_size')
-            ->where('fishing_logs.max_size', '>', 0)
-            ->where('user_flies.user_id', $userId)
-            ->groupBy('user_flies.name')
-            ->orderByDesc('biggest_size')
-            ->first();
-
-        // Catches over time - for line chart (filtered by year)
-        $catchesOverTimeQuery = (clone $baseQuery);
-
-        if ($yearFilter === 'lifetime') {
-            // For lifetime, show last 12 months grouped by month
-            $catchesOverTimeQuery->where('date', '>=', now()->subMonths(12));
-            $groupBy = "DATE_FORMAT(date, '%Y-%m')";
-            $dateFormat = '%Y-%m-01'; // First day of month for consistent formatting
-        } else {
-            // For specific year, group by week to keep it manageable
-            $groupBy = "DATE_FORMAT(date, '%Y-%u')";
-            $dateFormat = '%Y-%m-%d'; // Use actual date
-        }
-
-        $catchesOverTime = $catchesOverTimeQuery
-            ->select(
-                DB::raw("$groupBy as period"),
-                DB::raw("MIN(date) as date"), // Get first date in the period for display
-                DB::raw('SUM(quantity) as total')
-            )
-            ->groupBy('period')
-            ->orderBy('period')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'date' => $item->date,
-                    'total' => $item->total ?? 0,
-                ];
-            });
-
-        // Streak tracker - calculate streaks of consecutive calendar days with catches (filtered by year)
-        $streakQuery = FishingLog::where('user_id', $userId)
-            ->where('quantity', '>', 0);
-        if ($yearFilter !== 'lifetime') {
-            $streakQuery->whereYear('date', $yearFilter);
-        }
-        $allTripsOrdered = $streakQuery
-            ->orderBy('date')
-            ->get()
-            ->groupBy(function($log) {
-                return \Carbon\Carbon::parse($log->date)->format('Y-m-d');
-            });
-
-        $currentStreak = 0;
-        $longestStreak = 0;
-        $tempStreak = 0;
-        $lastDate = null;
-
-        foreach ($allTripsOrdered as $date => $logs) {
-            $currentDate = \Carbon\Carbon::parse($date);
-
-            // Check if this is consecutive to the last successful day
-            if ($lastDate === null) {
-                $tempStreak = 1;
-            } elseif ($lastDate->copy()->addDay()->isSameDay($currentDate)) {
-                // Current date is exactly 1 day after last date
-                $tempStreak++;
-            } else {
-                // Not consecutive, save the streak and start a new one
-                $longestStreak = max($longestStreak, $tempStreak);
-                $tempStreak = 1;
-            }
-            $lastDate = $currentDate;
-        }
-        $longestStreak = max($longestStreak, $tempStreak);
-
-        // Calculate current streak (only counts if they fished today or yesterday, filtered by year)
-        $today = \Carbon\Carbon::today();
-        $recentTripsQuery = FishingLog::where('user_id', $userId)
-            ->where('quantity', '>', 0);
-        if ($yearFilter !== 'lifetime') {
-            $recentTripsQuery->whereYear('date', $yearFilter);
-        }
-        $recentTrips = $recentTripsQuery
-            ->orderByDesc('date')
-            ->get()
-            ->groupBy(function($log) {
-                return \Carbon\Carbon::parse($log->date)->format('Y-m-d');
-            });
-
-        $expectedDate = $today;
-        foreach ($recentTrips as $date => $logs) {
-            $tripDate = \Carbon\Carbon::parse($date);
-
-            if ($tripDate->isSameDay($expectedDate)) {
-                $currentStreak++;
-                $expectedDate = $expectedDate->subDay();
-            } else {
-                break;
-            }
-        }
+        // Streak statistics using service
+        $streakStats = $this->dashboardService->getStreakStats($userId, $yearFilter);
 
         return [
             'user' => [
@@ -337,19 +169,10 @@ class PublicDashboardController extends Controller
                 'size' => $biggestFishFly->biggest_size ?? 0,
                 'days' => $biggestFishFly->days_used ?? 0,
             ] : null,
-            'yearStats' => [
-                'daysFished' => $daysFished,
-                'daysWithFish' => $daysWithFish,
-                'daysSkunked' => $daysSkunked,
-                'mostInDay' => $mostInDay,
-                'successRate' => $successRate,
-            ],
+            'yearStats' => $yearStats,
             'favoriteWeekday' => $favoriteWeekday,
             'catchesOverTime' => $catchesOverTime,
-            'streakStats' => [
-                'currentStreak' => $currentStreak,
-                'longestStreak' => $longestStreak,
-            ],
+            'streakStats' => $streakStats,
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
         ];

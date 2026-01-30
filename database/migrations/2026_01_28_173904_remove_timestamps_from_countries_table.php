@@ -11,9 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('countries', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
+        // Drop columns individually for SQLite compatibility
+        if (Schema::hasColumn('countries', 'created_at')) {
+            Schema::table('countries', function (Blueprint $table) {
+                $table->dropColumn('created_at');
+            });
+        }
+        if (Schema::hasColumn('countries', 'updated_at')) {
+            Schema::table('countries', function (Blueprint $table) {
+                $table->dropColumn('updated_at');
+            });
+        }
     }
 
     /**

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class FishingLog extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'user_location_id',
@@ -59,16 +61,6 @@ class FishingLog extends Model
     public function rod(): BelongsTo
     {
         return $this->belongsTo(UserRod::class, 'user_rod_id');
-    }
-
-    /**
-     * Alias for rod() to maintain backward compatibility.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function equipment(): BelongsTo
-    {
-        return $this->rod();
     }
 
     /**

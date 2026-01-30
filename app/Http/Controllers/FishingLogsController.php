@@ -25,7 +25,7 @@ class FishingLogsController extends Controller
         $perPage = $request->input('per_page', 15);
 
         $fishingLogs = FishingLog::where('user_id', auth()->id())
-            ->with(['location', 'fish', 'fly', 'equipment', 'friends', 'weather', 'waterCondition'])
+            ->with(['location', 'fish', 'fly', 'rod', 'friends', 'weather', 'waterCondition'])
             ->orderBy('date', 'desc')
             ->paginate($perPage);
 
@@ -236,7 +236,7 @@ class FishingLogsController extends Controller
             $fishingLog->friends()->sync([]);
         }
 
-        return response()->json($fishingLog->load(['location', 'fish', 'fly', 'equipment', 'friends', 'weather', 'waterCondition']));
+        return response()->json($fishingLog->load(['location', 'fish', 'fly', 'rod', 'friends', 'weather', 'waterCondition']));
     }
 
     /**

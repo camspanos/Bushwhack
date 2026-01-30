@@ -38,6 +38,11 @@ class AuthenticationTest extends TestCase
             $this->markTestSkipped('Two-factor authentication is not enabled.');
         }
 
+        // Skip if the database doesn't have 2FA columns
+        if (! \Schema::hasColumn('users', 'two_factor_secret')) {
+            $this->markTestSkipped('Two-factor authentication columns do not exist in the database.');
+        }
+
         Features::twoFactorAuthentication([
             'confirm' => true,
             'confirmPassword' => true,

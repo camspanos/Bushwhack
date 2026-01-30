@@ -44,3 +44,70 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export interface FishingLogLocation {
+    id: number;
+    name: string;
+}
+
+export interface FishingLogFish {
+    id: number;
+    species: string;
+}
+
+export interface FishingLogFly {
+    id: number;
+    name: string;
+}
+
+export interface FishingLogRod {
+    id: number;
+    rod_name: string;
+}
+
+export interface FishingLogFriend {
+    id: number;
+    name: string;
+}
+
+export interface FishingLogWeather {
+    id: number;
+    temperature?: number;
+    conditions?: string;
+    wind_speed?: number;
+    wind_direction?: string;
+    barometric_pressure?: number;
+    humidity?: number;
+}
+
+export interface FishingLogWaterCondition {
+    id: number;
+    water_temperature?: number;
+    water_level?: string;
+    water_clarity?: string;
+    surface_condition?: string;
+    current_speed?: string;
+}
+
+export interface FishingLog {
+    id: number;
+    date: string;
+    time?: string;
+    user_location_id?: number;
+    user_fish_id?: number;
+    quantity: number;
+    max_size?: number;
+    user_fly_id?: number;
+    user_rod_id?: number;
+    style?: string;
+    moon_phase?: string;
+    time_of_day?: string;
+    notes?: string;
+    location?: FishingLogLocation;
+    fish?: FishingLogFish;
+    fly?: FishingLogFly;
+    rod?: FishingLogRod;
+    friends?: FishingLogFriend[];
+    weather?: FishingLogWeather;
+    water_condition?: FishingLogWaterCondition;
+}

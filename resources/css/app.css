@@ -170,3 +170,36 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Custom scrollbar styles for dark mode */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: hsl(0 0% 92%);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 70%);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 55%);
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: hsl(0 0% 15%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 35%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 45%);
+}

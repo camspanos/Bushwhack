@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { following, usersDashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { UserPlus, UserMinus, Search, Eye, AlertCircle } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import axios from 'axios';
@@ -32,6 +33,7 @@ interface SearchUser {
     email: string;
     member_since: string;
     is_following: boolean;
+    can_follow: boolean;
 }
 
 const props = defineProps<{
@@ -54,11 +56,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const page = usePage();
 const searchQuery = ref('');
 const searchResults = ref<SearchUser[]>([]);
 const isSearching = ref(false);
 const showUnfollowConfirm = ref(false);
 const userToUnfollow = ref<FollowingUser | null>(null);
+const showPremiumDialog = ref(false);
 
 async function searchUsers() {
     if (!searchQuery.value.trim()) {
@@ -79,9 +83,15 @@ async function searchUsers() {
     }
 }
 
-async function followUser(userId: number) {
+async function followUser(user: SearchUser) {
+    // Check if user can follow (premium check)
+    if (!user.can_follow) {
+        showPremiumDialog.value = true;
+        return;
+    }
+
     try {
-        await axios.post(`/users/${userId}/follow`);
+        await axios.post(`/users/${user.id}/follow`);
         router.reload({ only: ['following'] });
         searchUsers(); // Refresh search results
     } catch (error) {
@@ -167,7 +177,7 @@ function viewDashboard(userId: number) {
                             </div>
                             <Button
                                 v-if="!user.is_following"
-                                @click="followUser(user.id)"
+                                @click="followUser(user)"
                                 size="sm"
                                 variant="default"
                             >
@@ -283,5 +293,12 @@ function viewDashboard(userId: number) {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <!-- Premium Feature Dialog -->
+        <PremiumFeatureDialog
+            v-model:open="showPremiumDialog"
+            title="Following Users is a Premium Feature"
+            description="Free users can only follow the featured angler. Upgrade to premium to follow other users and see their fishing statistics, catches, and more."
+        />
     </AppLayout>
 </template>

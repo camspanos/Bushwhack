@@ -201,7 +201,24 @@ const getCardOrder = (cardId: string) => {
 // Get the size for a card (using 12-column grid: 3=1/4, 4=1/3, 6=1/2, 8=2/3, 9=3/4, 12=Full)
 const getCardSize = (cardId: string) => {
     const pref = cardPreferences.value.find(c => c.card_id === cardId);
-    return pref?.size ?? 3; // Default to 1/4 (3 columns)
+    if (pref?.size) return pref.size;
+
+    // Default sizes for specific cards
+    const defaultSizes: Record<string, number> = {
+        // 1/2 width cards
+        'top_species_by_count': 6,
+        'top_species_by_size': 6,
+        'species_pie_chart': 6,
+        // 1/4 width cards (explicit for clarity)
+        'biggest_catch': 3,
+        'runner_up': 3,
+        'most_successful_fly': 3,
+        'biggest_fish_fly': 3,
+        'most_successful_fly_type': 3,
+        'most_successful_fly_color': 3,
+    };
+
+    return defaultSizes[cardId] ?? 3; // Default to 1/4 (3 columns)
 };
 
 // Check if a card is first among visible cards
@@ -765,6 +782,68 @@ const hoveredSunSlice = ref<number | null>(null);
                 title="Dashboard Customization is a Premium Feature"
                 description="Customize your dashboard layout, hide cards you don't need, and resize widgets to create your perfect fishing dashboard. Upgrade to premium to unlock full customization."
             />
+
+            <!-- AdSense & Premium Upgrade Row (shown at top for non-premium users) -->
+            <div v-if="!page.props.auth.isPremium" class="grid gap-4 md:grid-cols-2">
+                <!-- Google AdSense Card -->
+                <Card class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="flex items-center justify-center min-h-[200px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
+                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Premium Upgrade Card -->
+                <Card class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2 text-lg">
+                            <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+                                <Crown class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <span class="text-amber-900 dark:text-amber-100">Upgrade to Premium</span>
+                        </CardTitle>
+                        <CardDescription class="text-amber-700/80 dark:text-amber-300/80">
+                            Unlock the full Bushwhack experience
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4 space-y-4">
+                        <div class="space-y-2">
+                            <p class="text-sm text-amber-900/90 dark:text-amber-100/90 font-medium">
+                                Remove all advertisements and enjoy:
+                            </p>
+                            <ul class="text-sm text-amber-800/80 dark:text-amber-200/80 space-y-1 ml-4">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Ad-free experience across all pages</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Access to historical data and year filtering</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Advanced analytics and insights</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Priority support</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <Button
+                            class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md"
+                            @click="router.visit('/settings/subscription')"
+                        >
+                            <Crown class="mr-2 h-4 w-4" />
+                            Upgrade Now
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
 
             <!-- All Dashboard Cards in a single unified 12-column grid -->
             <div class="grid gap-4 grid-cols-1 md:grid-cols-6 lg:grid-cols-12">
@@ -2186,68 +2265,6 @@ const hoveredSunSlice = ref<number | null>(null);
                 </DashboardCard>
             </div>
             <!-- End of unified grid -->
-
-            <!-- AdSense & Premium Upgrade Row (not part of customizable cards) -->
-            <div v-if="!page.props.auth.isPremium" class="grid gap-4 md:grid-cols-2">
-                <!-- Google AdSense Card -->
-                <Card class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div class="flex items-center justify-center min-h-[200px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
-                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Premium Upgrade Card -->
-                <Card class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2 text-lg">
-                            <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                                <Crown class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            <span class="text-amber-900 dark:text-amber-100">Upgrade to Premium</span>
-                        </CardTitle>
-                        <CardDescription class="text-amber-700/80 dark:text-amber-300/80">
-                            Unlock the full Bushwhack experience
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4 space-y-4">
-                        <div class="space-y-2">
-                            <p class="text-sm text-amber-900/90 dark:text-amber-100/90 font-medium">
-                                Remove all advertisements and enjoy:
-                            </p>
-                            <ul class="text-sm text-amber-800/80 dark:text-amber-200/80 space-y-1 ml-4">
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Ad-free experience across all pages</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Access to historical data and year filtering</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Advanced analytics and insights</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Priority support</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <Button
-                            class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md"
-                            @click="router.visit('/settings/subscription')"
-                        >
-                            <Crown class="mr-2 h-4 w-4" />
-                            Upgrade Now
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
         </div>
     </AppLayout>
 </template>

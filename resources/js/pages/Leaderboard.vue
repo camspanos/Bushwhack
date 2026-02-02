@@ -109,6 +109,18 @@ const formatSize = (size: number | string): string => {
             <!-- Leaderboard Grid with Scroll -->
             <div v-if="leaderboard.length > 0 || !page.props.auth.isPremium" class="flex-1 overflow-auto">
                 <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-4">
+                <!-- Google AdSense Card for Free Users -->
+                <Card v-if="!page.props.auth.isPremium" class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="flex items-center justify-center min-h-[150px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
+                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 <!-- Premium Upsell Card for Free Users -->
                 <Card v-if="!page.props.auth.isPremium" class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
                     <div class="p-2 h-full flex flex-col">

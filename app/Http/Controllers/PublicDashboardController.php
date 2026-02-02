@@ -81,6 +81,14 @@ class PublicDashboardController extends Controller
             ->with(['fish', 'location', 'fly', 'rod'])
             ->first();
 
+        // Second biggest catch (filtered by year)
+        $secondBiggestCatch = (clone $baseQuery)
+            ->whereNotNull('max_size')
+            ->orderByDesc('max_size')
+            ->with(['fish', 'fly', 'rod'])
+            ->skip(1)
+            ->first();
+
         // All species caught with statistics (filtered by year)
         $allSpecies = (clone $baseQuery)
             ->select('user_fish_id', DB::raw('SUM(quantity) as total_caught'), DB::raw('MAX(max_size) as biggest_size'), DB::raw('COUNT(DISTINCT date) as trip_count'))
@@ -130,6 +138,81 @@ class PublicDashboardController extends Controller
         $flyStatsData = $this->dashboardService->getFlyStats($userId, $yearFilter);
         $mostSuccessfulFly = $flyStatsData['mostSuccessfulFly'];
         $biggestFishFly = $flyStatsData['biggestFishFly'];
+        $mostSuccessfulFlyType = $flyStatsData['mostSuccessfulFlyType'];
+        $mostSuccessfulFlyColor = $flyStatsData['mostSuccessfulFlyColor'];
+
+        // Fish caught per month (for pie chart, filtered by year)
+        $catchesByMonthPieQuery = FishingLog::where('user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $catchesByMonthPieQuery->whereYear('date', $yearFilter);
+        }
+        $catchesByMonthPie = $catchesByMonthPieQuery
+            ->select(
+                DB::raw("DATE_FORMAT(date, '%M') as month"),
+                DB::raw("MONTH(date) as month_number"),
+                DB::raw('SUM(quantity) as total_caught')
+            )
+            ->where('quantity', '>', 0)
+            ->groupBy('month', 'month_number')
+            ->orderBy('month_number')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'month' => $item->month,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
+        // Fish caught by moon phase (for pie chart, filtered by year)
+        $catchesByMoonPhaseQuery = FishingLog::where('user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $catchesByMoonPhaseQuery->whereYear('date', $yearFilter);
+        }
+        $catchesByMoonPhase = $catchesByMoonPhaseQuery
+            ->select(
+                'moon_phase',
+                DB::raw('SUM(quantity) as total_caught')
+            )
+            ->whereNotNull('moon_phase')
+            ->where('quantity', '>', 0)
+            ->groupBy('moon_phase')
+            ->orderByDesc('total_caught')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'moon_phase' => $item->moon_phase,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
+        // Fish caught by sun phase (for pie chart, filtered by year)
+        $catchesBySunPhaseQuery = FishingLog::where('user_id', $userId);
+        if ($yearFilter !== 'lifetime') {
+            $catchesBySunPhaseQuery->whereYear('date', $yearFilter);
+        }
+        $catchesBySunPhase = $catchesBySunPhaseQuery
+            ->select(
+                'time_of_day',
+                DB::raw('SUM(quantity) as total_caught')
+            )
+            ->whereNotNull('time_of_day')
+            ->where('quantity', '>', 0)
+            ->groupBy('time_of_day')
+            ->orderByRaw("FIELD(time_of_day, 'Pre-dawn', 'Morning', 'Midday', 'Afternoon', 'Evening', 'Night')")
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'time_of_day' => $item->time_of_day,
+                    'total_caught' => $item->total_caught ?? 0,
+                ];
+            });
+
+        // Top species by size (sorted by biggest_size)
+        $topSpeciesBySize = collect($allSpecies)
+            ->filter(fn($s) => $s['biggest_size'] > 0)
+            ->sortByDesc('biggest_size')
+            ->take(7)
+            ->values();
 
         // Catches over time using service
         $catchesOverTime = $this->dashboardService->getCatchesOverTime(clone $baseQuery, $yearFilter);
@@ -156,9 +239,20 @@ class PublicDashboardController extends Controller
                     'fly' => $biggestCatch->fly?->name,
                     'rod' => $biggestCatch->rod?->rod_name,
                 ] : null,
+                'secondBiggestCatch' => $secondBiggestCatch ? [
+                    'size' => $secondBiggestCatch->max_size,
+                    'species' => $secondBiggestCatch->fish?->species,
+                    'date' => $secondBiggestCatch->date,
+                    'fly' => $secondBiggestCatch->fly?->name,
+                    'rod' => $secondBiggestCatch->rod?->rod_name,
+                ] : null,
             ],
             'allSpecies' => $allSpecies,
+            'topSpeciesBySize' => $topSpeciesBySize,
             'catchesByMonth' => $catchesByMonth,
+            'catchesByMonthPie' => $catchesByMonthPie,
+            'catchesByMoonPhase' => $catchesByMoonPhase,
+            'catchesBySunPhase' => $catchesBySunPhase,
             'mostSuccessfulFly' => $mostSuccessfulFly ? [
                 'name' => $mostSuccessfulFly->name,
                 'total' => $mostSuccessfulFly->total_caught ?? 0,
@@ -168,6 +262,16 @@ class PublicDashboardController extends Controller
                 'name' => $biggestFishFly->name,
                 'size' => $biggestFishFly->biggest_size ?? 0,
                 'days' => $biggestFishFly->days_used ?? 0,
+            ] : null,
+            'mostSuccessfulFlyType' => $mostSuccessfulFlyType ? [
+                'type' => $mostSuccessfulFlyType->type,
+                'total' => $mostSuccessfulFlyType->total_caught ?? 0,
+                'days' => $mostSuccessfulFlyType->days_used ?? 0,
+            ] : null,
+            'mostSuccessfulFlyColor' => $mostSuccessfulFlyColor ? [
+                'color' => $mostSuccessfulFlyColor->color,
+                'total' => $mostSuccessfulFlyColor->total_caught ?? 0,
+                'days' => $mostSuccessfulFlyColor->days_used ?? 0,
             ] : null,
             'yearStats' => $yearStats,
             'favoriteWeekday' => $favoriteWeekday,

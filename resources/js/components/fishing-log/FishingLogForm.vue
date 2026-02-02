@@ -869,10 +869,10 @@ defineExpose({
                     <Button
                         type="button"
                         variant="outline"
-                        class="justify-start"
+                        class="justify-start overflow-hidden"
                         @click="showWeatherModal = true"
                     >
-                        <span v-if="hasWeatherData" class="text-foreground">
+                        <span v-if="hasWeatherData" class="text-foreground truncate">
                             {{ weatherSummary }}
                         </span>
                         <span v-else class="flex items-center gap-1 text-muted-foreground">
@@ -889,10 +889,10 @@ defineExpose({
                     <Button
                         type="button"
                         variant="outline"
-                        class="justify-start"
+                        class="justify-start overflow-hidden"
                         @click="showWaterConditionModal = true"
                     >
-                        <span v-if="hasWaterConditionData" class="text-foreground">
+                        <span v-if="hasWaterConditionData" class="text-foreground truncate">
                             {{ waterConditionSummary }}
                         </span>
                         <span v-else class="flex items-center gap-1 text-muted-foreground">

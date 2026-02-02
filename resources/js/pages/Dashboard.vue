@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import DashboardCard from '@/components/dashboard/DashboardCard.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun } from 'lucide-vue-next';
-import { computed, ref, watch, nextTick } from 'vue';
+import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
+
+interface CardPreference {
+    card_id: string;
+    order: number;
+    is_visible: boolean;
+    size: number;
+}
 
 interface Stats {
     totalCatches: number;
@@ -149,7 +157,238 @@ const props = defineProps<{
     favoriteWeekday: FavoriteWeekday | null;
     availableYears: string[];
     selectedYear: string;
+    dashboardPreferences: CardPreference[];
+    cardDisplayNames: Record<string, string>;
 }>();
+
+// Edit mode state
+const isEditMode = ref(false);
+const isSaving = ref(false);
+const cardPreferences = ref<CardPreference[]>([...props.dashboardPreferences]);
+
+// Get visible cards sorted by order (for determining first/last)
+const visibleCardsSorted = computed(() => {
+    return [...cardPreferences.value]
+        .filter(c => c.is_visible)
+        .sort((a, b) => a.order - b.order);
+});
+
+// Check if a card is visible (in normal mode, hidden cards are not shown; in edit mode, all cards are shown)
+const isCardVisible = (cardId: string) => {
+    if (isEditMode.value) return true; // Show all cards in edit mode
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    return pref?.is_visible ?? true;
+};
+
+// Check if a card is hidden (for styling in edit mode)
+const isCardHidden = (cardId: string) => {
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    return !(pref?.is_visible ?? true);
+};
+
+// Get the CSS order for a card (for grid ordering)
+// Hidden cards get a high order to appear at the bottom in edit mode
+const getCardOrder = (cardId: string) => {
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    if (!pref) return 999;
+    // In edit mode, hidden cards go to the bottom
+    if (isEditMode.value && !pref.is_visible) {
+        return 1000 + pref.order;
+    }
+    return pref.order;
+};
+
+// Get the size for a card (using 12-column grid: 3=1/4, 4=1/3, 6=1/2, 8=2/3, 9=3/4, 12=Full)
+const getCardSize = (cardId: string) => {
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    return pref?.size ?? 3; // Default to 1/4 (3 columns)
+};
+
+// Check if a card is first among visible cards
+const isCardFirst = (cardId: string) => {
+    const visible = visibleCardsSorted.value;
+    return visible.length > 0 && visible[0].card_id === cardId;
+};
+
+// Check if a card is last among visible cards
+const isCardLast = (cardId: string) => {
+    const visible = visibleCardsSorted.value;
+    return visible.length > 0 && visible[visible.length - 1].card_id === cardId;
+};
+
+// Get the 1-based display position of a card among visible cards
+const getCardDisplayPosition = (cardId: string) => {
+    const visible = visibleCardsSorted.value;
+    const index = visible.findIndex(c => c.card_id === cardId);
+    return index >= 0 ? index + 1 : 0;
+};
+
+// Get total number of visible cards
+const getTotalVisibleCards = computed(() => visibleCardsSorted.value.length);
+
+// Toggle edit mode
+const toggleEditMode = async () => {
+    if (isEditMode.value) {
+        // Exiting edit mode - save preferences and reload
+        await savePreferences();
+        window.location.reload();
+        return;
+    }
+    isEditMode.value = true;
+};
+
+// Hide a card (called from DashboardCard component)
+const hideCard = (cardId: string) => {
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    if (pref) {
+        pref.is_visible = false;
+    }
+};
+
+// Show a card (called from DashboardCard component)
+const showCard = (cardId: string) => {
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    if (pref) {
+        pref.is_visible = true;
+    }
+};
+
+// Resize a card (called from DashboardCard component)
+const resizeCard = (cardId: string, size: number) => {
+    const pref = cardPreferences.value.find(c => c.card_id === cardId);
+    if (pref) {
+        pref.size = size;
+    }
+};
+
+// Move a card up in order (swap with previous visible card)
+const moveCardUp = (cardId: string) => {
+    const visible = visibleCardsSorted.value;
+    const currentIndex = visible.findIndex(c => c.card_id === cardId);
+    if (currentIndex <= 0) return; // Already first or not found
+
+    const currentCard = cardPreferences.value.find(c => c.card_id === cardId);
+    const prevCard = cardPreferences.value.find(c => c.card_id === visible[currentIndex - 1].card_id);
+
+    if (currentCard && prevCard) {
+        // Swap orders
+        const tempOrder = currentCard.order;
+        currentCard.order = prevCard.order;
+        prevCard.order = tempOrder;
+    }
+};
+
+// Move a card down in order (swap with next visible card)
+const moveCardDown = (cardId: string) => {
+    const visible = visibleCardsSorted.value;
+    const currentIndex = visible.findIndex(c => c.card_id === cardId);
+    if (currentIndex < 0 || currentIndex >= visible.length - 1) return; // Already last or not found
+
+    const currentCard = cardPreferences.value.find(c => c.card_id === cardId);
+    const nextCard = cardPreferences.value.find(c => c.card_id === visible[currentIndex + 1].card_id);
+
+    if (currentCard && nextCard) {
+        // Swap orders
+        const tempOrder = currentCard.order;
+        currentCard.order = nextCard.order;
+        nextCard.order = tempOrder;
+    }
+};
+
+// Jump a card to a specific position (1-based)
+const jumpCardToPosition = (cardId: string, newPosition: number) => {
+    const visible = visibleCardsSorted.value;
+    const currentIndex = visible.findIndex(c => c.card_id === cardId);
+    if (currentIndex < 0) return;
+
+    // Convert to 0-based index
+    const targetIndex = newPosition - 1;
+    if (targetIndex === currentIndex) return; // No change needed
+
+    // Clamp target index to valid range
+    const clampedTargetIndex = Math.max(0, Math.min(visible.length - 1, targetIndex));
+    if (clampedTargetIndex === currentIndex) return;
+
+    // Capture all order values before making any changes
+    const orderValues = visible.map(c => c.order);
+
+    // Get the moving card's original order value
+    const movingCardOrder = orderValues[currentIndex];
+
+    if (clampedTargetIndex < currentIndex) {
+        // Moving up: shift cards between target and current-1 down by one position
+        // Each card takes the order of the card before it
+        for (let i = currentIndex - 1; i >= clampedTargetIndex; i--) {
+            const card = cardPreferences.value.find(c => c.card_id === visible[i].card_id);
+            if (card) {
+                // This card moves down one position, so it gets the order of the next card
+                card.order = orderValues[i + 1];
+            }
+        }
+        // Set the moving card to the target's original order
+        const movingCard = cardPreferences.value.find(c => c.card_id === cardId);
+        if (movingCard) {
+            movingCard.order = orderValues[clampedTargetIndex];
+        }
+    } else {
+        // Moving down: shift cards between current+1 and target up by one position
+        // Each card takes the order of the card after it
+        for (let i = currentIndex + 1; i <= clampedTargetIndex; i++) {
+            const card = cardPreferences.value.find(c => c.card_id === visible[i].card_id);
+            if (card) {
+                // This card moves up one position, so it gets the order of the previous card
+                card.order = orderValues[i - 1];
+            }
+        }
+        // Set the moving card to the target's original order
+        const movingCard = cardPreferences.value.find(c => c.card_id === cardId);
+        if (movingCard) {
+            movingCard.order = orderValues[clampedTargetIndex];
+        }
+    }
+};
+
+// Save preferences to backend
+const savePreferences = async () => {
+    isSaving.value = true;
+    try {
+        await fetch('/api/dashboard-preferences', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: JSON.stringify({ preferences: cardPreferences.value }),
+        });
+    } catch (error) {
+        console.error('Failed to save preferences:', error);
+    } finally {
+        isSaving.value = false;
+    }
+};
+
+// Reset preferences to defaults
+const resetPreferences = async () => {
+    isSaving.value = true;
+    try {
+        const response = await fetch('/api/dashboard-preferences/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+        const data = await response.json();
+        cardPreferences.value = data.preferences;
+        isEditMode.value = false;
+        // Reload the page to get fresh data from the server
+        window.location.reload();
+    } catch (error) {
+        console.error('Failed to reset preferences:', error);
+    } finally {
+        isSaving.value = false;
+    }
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -459,20 +698,51 @@ const hoveredSunSlice = ref<number | null>(null);
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-6">
-            <!-- Year Filter -->
+            <!-- Year Filter & Edit Mode Toggle -->
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
                     <p class="text-muted-foreground">Your fishing statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <label for="year-filter" class="text-sm font-medium">Filter by:</label>
-                    <NativeSelect v-model="selectedYearFilter" id="year-filter" class="w-[140px]">
-                        <NativeSelectOption value="lifetime">Lifetime</NativeSelectOption>
-                        <NativeSelectOption v-for="year in availableYears" :key="year" :value="year">
-                            {{ year }}
-                        </NativeSelectOption>
-                    </NativeSelect>
+                <div class="flex items-center gap-4">
+                    <!-- Edit Mode Controls -->
+                    <div class="flex items-center gap-2">
+                        <Button
+                            v-if="isEditMode"
+                            variant="outline"
+                            size="sm"
+                            @click="resetPreferences"
+                            :disabled="isSaving"
+                        >
+                            <RotateCcw class="h-4 w-4 mr-1" />
+                            Reset
+                        </Button>
+                        <Button
+                            :variant="isEditMode ? 'default' : 'outline'"
+                            size="sm"
+                            @click="toggleEditMode"
+                            :disabled="isSaving"
+                        >
+                            <template v-if="isEditMode">
+                                <Check class="h-4 w-4 mr-1" />
+                                Done
+                            </template>
+                            <template v-else>
+                                <Settings class="h-4 w-4 mr-1" />
+                                Customize
+                            </template>
+                        </Button>
+                    </div>
+                    <!-- Year Filter -->
+                    <div class="flex items-center gap-2">
+                        <label for="year-filter" class="text-sm font-medium">Filter by:</label>
+                        <NativeSelect v-model="selectedYearFilter" id="year-filter" class="w-[140px]">
+                            <NativeSelectOption value="lifetime">Lifetime</NativeSelectOption>
+                            <NativeSelectOption v-for="year in availableYears" :key="year" :value="year">
+                                {{ year }}
+                            </NativeSelectOption>
+                        </NativeSelect>
+                    </div>
                 </div>
             </div>
 
@@ -483,9 +753,28 @@ const hoveredSunSlice = ref<number | null>(null);
                 description="Access to historical data and year filtering is only available to premium users. Upgrade to premium to view your fishing statistics from previous years and lifetime totals."
             />
 
-            <!-- Stats Cards -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card class="bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20">
+            <!-- All Dashboard Cards in a single unified 12-column grid -->
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-6 lg:grid-cols-12">
+                <!-- Stats: Total Catches -->
+                <DashboardCard
+                    v-if="isCardVisible('stats_total_catches')"
+                    card-id="stats_total_catches"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('stats_total_catches')"
+                    :order="getCardOrder('stats_total_catches')"
+                    :size="getCardSize('stats_total_catches')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('stats_total_catches')"
+                    :is-last="isCardLast('stats_total_catches')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('stats_total_catches')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Total Catches</CardTitle>
                         <div class="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
@@ -496,9 +785,28 @@ const hoveredSunSlice = ref<number | null>(null);
                         <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ stats.totalCatches }}</div>
                         <p class="text-xs text-muted-foreground">Across {{ stats.totalTrips }} trips</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
-                <Card class="bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20">
+                <!-- Stats: Favorite Location -->
+                <DashboardCard
+                    v-if="isCardVisible('stats_favorite_location')"
+                    card-id="stats_favorite_location"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('stats_favorite_location')"
+                    :order="getCardOrder('stats_favorite_location')"
+                    :size="getCardSize('stats_favorite_location')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('stats_favorite_location')"
+                    :is-last="isCardLast('stats_favorite_location')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('stats_favorite_location')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Favorite Location</CardTitle>
                         <div class="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
@@ -509,9 +817,28 @@ const hoveredSunSlice = ref<number | null>(null);
                         <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ stats.favoriteLocation || 'N/A' }}</div>
                         <p class="text-xs text-muted-foreground">Most visited spot</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
-                <Card class="bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20">
+                <!-- Stats: Top Species -->
+                <DashboardCard
+                    v-if="isCardVisible('stats_top_species')"
+                    card-id="stats_top_species"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('stats_top_species')"
+                    :order="getCardOrder('stats_top_species')"
+                    :size="getCardSize('stats_top_species')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('stats_top_species')"
+                    :is-last="isCardLast('stats_top_species')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('stats_top_species')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Top Species</CardTitle>
                         <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
@@ -522,9 +849,28 @@ const hoveredSunSlice = ref<number | null>(null);
                         <div class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ stats.topFish || 'N/A' }}</div>
                         <p class="text-xs text-muted-foreground">{{ stats.topFishCount }} caught</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
-                <Card class="bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20">
+                <!-- Stats: Fishing Buddies -->
+                <DashboardCard
+                    v-if="isCardVisible('stats_fishing_buddies')"
+                    card-id="stats_fishing_buddies"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('stats_fishing_buddies')"
+                    :order="getCardOrder('stats_fishing_buddies')"
+                    :size="getCardSize('stats_fishing_buddies')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('stats_fishing_buddies')"
+                    :is-last="isCardLast('stats_fishing_buddies')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('stats_fishing_buddies')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Fishing Buddies</CardTitle>
                         <div class="rounded-full bg-purple-100 p-2 dark:bg-purple-900/30">
@@ -535,13 +881,27 @@ const hoveredSunSlice = ref<number | null>(null);
                         <div class="text-2xl font-bold text-purple-700 dark:text-purple-300">{{ stats.totalFriends }}</div>
                         <p class="text-xs text-muted-foreground">Friends fished with</p>
                     </CardContent>
-                </Card>
-            </div>
-
-            <!-- Biggest Catch & Runner Up & Species Row -->
-            <div class="grid gap-4 md:grid-cols-4">
+                </DashboardCard>
                 <!-- Biggest Catch -->
-                <Card v-if="stats.biggestCatch" class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('biggest_catch') && stats.biggestCatch"
+                    card-id="biggest_catch"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('biggest_catch')"
+                    :order="getCardOrder('biggest_catch')"
+                    :size="getCardSize('biggest_catch')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('biggest_catch')"
+                    :is-last="isCardLast('biggest_catch')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('biggest_catch')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
@@ -577,9 +937,27 @@ const hoveredSunSlice = ref<number | null>(null);
                             </div>
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
-                <Card v-else class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
+                <DashboardCard
+                    v-else-if="isCardVisible('biggest_catch')"
+                    card-id="biggest_catch"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('biggest_catch')"
+                    :order="getCardOrder('biggest_catch')"
+                    :size="getCardSize('biggest_catch')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('biggest_catch')"
+                    :is-last="isCardLast('biggest_catch')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('biggest_catch')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">
@@ -591,10 +969,28 @@ const hoveredSunSlice = ref<number | null>(null);
                     <CardContent class="pt-0 pb-3">
                         <p class="text-muted-foreground">No catches recorded yet</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Runner Up / Second Biggest Catch -->
-                <Card v-if="stats.secondBiggestCatch" class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('runner_up') && stats.secondBiggestCatch"
+                    card-id="runner_up"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('runner_up')"
+                    :order="getCardOrder('runner_up')"
+                    :size="getCardSize('runner_up')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('runner_up')"
+                    :is-last="isCardLast('runner_up')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('runner_up')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
@@ -630,9 +1026,27 @@ const hoveredSunSlice = ref<number | null>(null);
                             </div>
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
-                <Card v-else class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
+                <DashboardCard
+                    v-else-if="isCardVisible('runner_up')"
+                    card-id="runner_up"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('runner_up')"
+                    :order="getCardOrder('runner_up')"
+                    :size="getCardSize('runner_up')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('runner_up')"
+                    :is-last="isCardLast('runner_up')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('runner_up')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">
@@ -644,10 +1058,28 @@ const hoveredSunSlice = ref<number | null>(null);
                     <CardContent class="pt-0 pb-3">
                         <p class="text-muted-foreground">No second catch yet</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Species Distribution Pie Chart -->
-                <Card class="md:col-span-2 bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('species_pie_chart')"
+                    card-id="species_pie_chart"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('species_pie_chart')"
+                    :order="getCardOrder('species_pie_chart')"
+                    :size="getCardSize('species_pie_chart')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('species_pie_chart')"
+                    :is-last="isCardLast('species_pie_chart')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('species_pie_chart')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
@@ -737,72 +1169,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             </Link>
                         </div>
                     </CardContent>
-                </Card>
-            </div>
+                </DashboardCard>
 
-            <!-- AdSense & Premium Upgrade Row -->
-            <div v-if="!page.props.auth.isPremium" class="grid gap-4 md:grid-cols-2">
-                <!-- Google AdSense Card -->
-                <Card class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div class="flex items-center justify-center min-h-[200px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
-                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Premium Upgrade Card -->
-                <Card class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2 text-lg">
-                            <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                                <Crown class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            <span class="text-amber-900 dark:text-amber-100">Upgrade to Premium</span>
-                        </CardTitle>
-                        <CardDescription class="text-amber-700/80 dark:text-amber-300/80">
-                            Unlock the full Bushwhack experience
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4 space-y-4">
-                        <div class="space-y-2">
-                            <p class="text-sm text-amber-900/90 dark:text-amber-100/90 font-medium">
-                                Remove all advertisements and enjoy:
-                            </p>
-                            <ul class="text-sm text-amber-800/80 dark:text-amber-200/80 space-y-1 ml-4">
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Ad-free experience across all pages</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Access to historical data and year filtering</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Advanced analytics and insights</span>
-                                </li>
-                                <li class="flex items-start gap-2">
-                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
-                                    <span>Priority support</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <Button class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md">
-                            <Crown class="mr-2 h-4 w-4" />
-                            Upgrade Now
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Year Stats Grid -->
-            <div class="grid gap-4 md:grid-cols-3">
                 <!-- Favorite Weekday -->
-                <Card class="bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('favorite_weekday')"
+                    card-id="favorite_weekday"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('favorite_weekday')"
+                    :order="getCardOrder('favorite_weekday')"
+                    :size="getCardSize('favorite_weekday')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('favorite_weekday')"
+                    :is-last="isCardLast('favorite_weekday')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('favorite_weekday')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Favorite Weekday</CardTitle>
                         <div class="rounded-full bg-cyan-100 p-2 dark:bg-cyan-900/30">
@@ -816,10 +1204,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             {{ favoriteWeekday ? `${favoriteWeekday.count} trips` : 'No data yet' }}
                         </p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Streak Tracker -->
-                <Card class="bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('longest_streak')"
+                    card-id="longest_streak"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('longest_streak')"
+                    :order="getCardOrder('longest_streak')"
+                    :size="getCardSize('longest_streak')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('longest_streak')"
+                    :is-last="isCardLast('longest_streak')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('longest_streak')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Longest Streak</CardTitle>
                         <div class="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
@@ -833,10 +1239,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             <span v-if="streakStats.currentStreak > 0" class="ml-1">🔥</span>
                         </p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Average per Trip -->
-                <Card class="bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('average_per_trip')"
+                    card-id="average_per_trip"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('average_per_trip')"
+                    :order="getCardOrder('average_per_trip')"
+                    :size="getCardSize('average_per_trip')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('average_per_trip')"
+                    :is-last="isCardLast('average_per_trip')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('average_per_trip')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Average per Trip</CardTitle>
                         <div class="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/30">
@@ -851,13 +1275,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             Fish per outing
                         </p>
                     </CardContent>
-                </Card>
-            </div>
+                </DashboardCard>
 
-            <!-- Days Stats Grid -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Days Fished -->
-                <Card class="bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('days_fished')"
+                    card-id="days_fished"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('days_fished')"
+                    :order="getCardOrder('days_fished')"
+                    :size="getCardSize('days_fished')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('days_fished')"
+                    :is-last="isCardLast('days_fished')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('days_fished')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Days Fished</CardTitle>
                         <div class="rounded-full bg-sky-100 p-2 dark:bg-sky-900/30">
@@ -870,10 +1309,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             Total days on the water
                         </p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Successful Days -->
-                <Card class="bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('successful_days')"
+                    card-id="successful_days"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('successful_days')"
+                    :order="getCardOrder('successful_days')"
+                    :size="getCardSize('successful_days')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('successful_days')"
+                    :is-last="isCardLast('successful_days')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('successful_days')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Successful Days</CardTitle>
                         <div class="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
@@ -892,10 +1349,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             <span class="text-xs font-medium text-green-600 dark:text-green-400">{{ yearStats.successRate }}%</span>
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Days Skunked -->
-                <Card class="bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('days_skunked')"
+                    card-id="days_skunked"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('days_skunked')"
+                    :order="getCardOrder('days_skunked')"
+                    :size="getCardSize('days_skunked')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('days_skunked')"
+                    :is-last="isCardLast('days_skunked')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('days_skunked')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Days Skunked</CardTitle>
                         <div class="rounded-full bg-red-100 p-2 dark:bg-red-900/30">
@@ -908,10 +1383,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             Where the fish at?
                         </p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Most in a Day -->
-                <Card class="bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20">
+                <DashboardCard
+                    v-if="isCardVisible('most_in_day')"
+                    card-id="most_in_day"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_in_day')"
+                    :order="getCardOrder('most_in_day')"
+                    :size="getCardSize('most_in_day')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_in_day')"
+                    :is-last="isCardLast('most_in_day')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_in_day')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20"
+                >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Most in a Day</CardTitle>
                         <div class="rounded-full bg-violet-100 p-2 dark:bg-violet-900/30">
@@ -924,13 +1417,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             Personal best day
                         </p>
                     </CardContent>
-                </Card>
-            </div>
+                </DashboardCard>
 
-            <!-- Month, Moon Phase & Sun Phase Pie Charts -->
-            <div class="grid gap-4 md:grid-cols-3">
                 <!-- Fish Caught per Month -->
-                <Card class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_month')"
+                    card-id="catches_by_month"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_month')"
+                    :order="getCardOrder('catches_by_month')"
+                    :size="getCardSize('catches_by_month')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_month')"
+                    :is-last="isCardLast('catches_by_month')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_month')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
@@ -1020,10 +1528,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             </Link>
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Fish Caught by Moon Phase -->
-                <Card class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_moon_phase')"
+                    card-id="catches_by_moon_phase"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_moon_phase')"
+                    :order="getCardOrder('catches_by_moon_phase')"
+                    :size="getCardSize('catches_by_moon_phase')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_moon_phase')"
+                    :is-last="isCardLast('catches_by_moon_phase')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_moon_phase')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-slate-100 p-1.5 dark:bg-slate-900/30">
@@ -1114,10 +1640,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             </Link>
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Fish Caught by Sun Phase -->
-                <Card class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_sun_phase')"
+                    card-id="catches_by_sun_phase"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_sun_phase')"
+                    :order="getCardOrder('catches_by_sun_phase')"
+                    :size="getCardSize('catches_by_sun_phase')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_sun_phase')"
+                    :is-last="isCardLast('catches_by_sun_phase')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_sun_phase')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10"
+                >
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
@@ -1207,13 +1751,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             </Link>
                         </div>
                     </CardContent>
-                </Card>
-            </div>
+                </DashboardCard>
 
-            <!-- Top Performers -->
-            <div class="grid gap-4 md:grid-cols-4">
                 <!-- Most Successful Fly (by quantity) -->
-                <Card class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('most_successful_fly')"
+                    card-id="most_successful_fly"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_successful_fly')"
+                    :order="getCardOrder('most_successful_fly')"
+                    :size="getCardSize('most_successful_fly')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_successful_fly')"
+                    :is-last="isCardLast('most_successful_fly')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_successful_fly')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-rose-100 p-1.5 dark:bg-rose-900/30">
@@ -1240,10 +1799,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             No data yet
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Biggest Fish Fly -->
-                <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('biggest_fish_fly')"
+                    card-id="biggest_fish_fly"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('biggest_fish_fly')"
+                    :order="getCardOrder('biggest_fish_fly')"
+                    :size="getCardSize('biggest_fish_fly')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('biggest_fish_fly')"
+                    :is-last="isCardLast('biggest_fish_fly')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('biggest_fish_fly')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
@@ -1270,10 +1847,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             No data yet
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Most Successful Fly Type -->
-                <Card class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('most_successful_fly_type')"
+                    card-id="most_successful_fly_type"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_successful_fly_type')"
+                    :order="getCardOrder('most_successful_fly_type')"
+                    :size="getCardSize('most_successful_fly_type')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_successful_fly_type')"
+                    :is-last="isCardLast('most_successful_fly_type')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_successful_fly_type')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-purple-100 p-1.5 dark:bg-purple-900/30">
@@ -1300,10 +1895,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             No data yet
                         </div>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Most Successful Fly Color -->
-                <Card class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('most_successful_fly_color')"
+                    card-id="most_successful_fly_color"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_successful_fly_color')"
+                    :order="getCardOrder('most_successful_fly_color')"
+                    :size="getCardSize('most_successful_fly_color')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_successful_fly_color')"
+                    :is-last="isCardLast('most_successful_fly_color')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_successful_fly_color')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-indigo-100 p-1.5 dark:bg-indigo-900/30">
@@ -1330,13 +1943,28 @@ const hoveredSunSlice = ref<number | null>(null);
                             No data yet
                         </div>
                     </CardContent>
-                </Card>
-            </div>
+                </DashboardCard>
 
-            <!-- Top Species & Top Locations -->
-            <div class="grid gap-4 md:grid-cols-2">
                 <!-- Top Species Caught by Count -->
-                <Card class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('top_species_by_count')"
+                    card-id="top_species_by_count"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('top_species_by_count')"
+                    :order="getCardOrder('top_species_by_count')"
+                    :size="getCardSize('top_species_by_count')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('top_species_by_count')"
+                    :is-last="isCardLast('top_species_by_count')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('top_species_by_count')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
@@ -1372,10 +2000,28 @@ const hoveredSunSlice = ref<number | null>(null);
                         </div>
                         <p v-else class="text-muted-foreground">No species data available</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Top Species by Size -->
-                <Card class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('top_species_by_size')"
+                    card-id="top_species_by_size"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('top_species_by_size')"
+                    :order="getCardOrder('top_species_by_size')"
+                    :size="getCardSize('top_species_by_size')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('top_species_by_size')"
+                    :is-last="isCardLast('top_species_by_size')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('top_species_by_size')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
@@ -1413,10 +2059,28 @@ const hoveredSunSlice = ref<number | null>(null);
                         </div>
                         <p v-else class="text-muted-foreground">No species data available</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Top Locations by Count -->
-                <Card class="bg-gradient-to-br from-lime-50/30 to-transparent dark:from-lime-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('top_locations_by_count')"
+                    card-id="top_locations_by_count"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('top_locations_by_count')"
+                    :order="getCardOrder('top_locations_by_count')"
+                    :size="getCardSize('top_locations_by_count')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('top_locations_by_count')"
+                    :is-last="isCardLast('top_locations_by_count')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('top_locations_by_count')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-lime-50/30 to-transparent dark:from-lime-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-lime-100 p-1.5 dark:bg-lime-900/30">
@@ -1449,10 +2113,28 @@ const hoveredSunSlice = ref<number | null>(null);
                         </div>
                         <p v-else class="text-muted-foreground">No location data available</p>
                     </CardContent>
-                </Card>
+                </DashboardCard>
 
                 <!-- Top Locations by Size -->
-                <Card class="bg-gradient-to-br from-emerald-50/30 to-transparent dark:from-emerald-950/10">
+                <DashboardCard
+                    v-if="isCardVisible('top_locations_by_size')"
+                    card-id="top_locations_by_size"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('top_locations_by_size')"
+                    :order="getCardOrder('top_locations_by_size')"
+                    :size="getCardSize('top_locations_by_size')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('top_locations_by_size')"
+                    :is-last="isCardLast('top_locations_by_size')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('top_locations_by_size')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-transparent dark:from-emerald-950/10"
+                >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-emerald-100 p-1.5 dark:bg-emerald-900/30">
@@ -1487,6 +2169,66 @@ const hoveredSunSlice = ref<number | null>(null);
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No location data available</p>
+                    </CardContent>
+                </DashboardCard>
+            </div>
+            <!-- End of unified grid -->
+
+            <!-- AdSense & Premium Upgrade Row (not part of customizable cards) -->
+            <div v-if="!page.props.auth.isPremium" class="grid gap-4 md:grid-cols-2">
+                <!-- Google AdSense Card -->
+                <Card class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="flex items-center justify-center min-h-[200px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
+                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Premium Upgrade Card -->
+                <Card class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2 text-lg">
+                            <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+                                <Crown class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <span class="text-amber-900 dark:text-amber-100">Upgrade to Premium</span>
+                        </CardTitle>
+                        <CardDescription class="text-amber-700/80 dark:text-amber-300/80">
+                            Unlock the full Bushwhack experience
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4 space-y-4">
+                        <div class="space-y-2">
+                            <p class="text-sm text-amber-900/90 dark:text-amber-100/90 font-medium">
+                                Remove all advertisements and enjoy:
+                            </p>
+                            <ul class="text-sm text-amber-800/80 dark:text-amber-200/80 space-y-1 ml-4">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Ad-free experience across all pages</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Access to historical data and year filtering</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Advanced analytics and insights</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                    <span>Priority support</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <Button class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md">
+                            <Crown class="mr-2 h-4 w-4" />
+                            Upgrade Now
+                        </Button>
                     </CardContent>
                 </Card>
             </div>

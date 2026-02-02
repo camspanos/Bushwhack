@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserDashboardPreference;
 use App\Models\UserFish;
 use App\Models\FishingLog;
 use App\Models\UserFly;
@@ -382,6 +383,47 @@ class DashboardController extends Controller
             'streakStats' => $streakStats,
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
+            'dashboardPreferences' => $this->getDashboardPreferences($userId),
+            'cardDisplayNames' => UserDashboardPreference::getCardDisplayNames(),
         ];
+    }
+
+    /**
+     * Get the user's dashboard preferences.
+     */
+    private function getDashboardPreferences(int $userId): array
+    {
+        $preferences = UserDashboardPreference::where('user_id', $userId)
+            ->orderBy('order')
+            ->get()
+            ->keyBy('card_id');
+
+        // If user has no preferences, return defaults
+        if ($preferences->isEmpty()) {
+            return UserDashboardPreference::getDefaultCards();
+        }
+
+        // Merge with defaults to ensure all cards are present
+        $defaultCards = UserDashboardPreference::getDefaultCards();
+        $mergedPreferences = [];
+
+        foreach ($defaultCards as $default) {
+            if ($preferences->has($default['card_id'])) {
+                $pref = $preferences->get($default['card_id']);
+                $mergedPreferences[] = [
+                    'card_id' => $pref->card_id,
+                    'order' => $pref->order,
+                    'is_visible' => $pref->is_visible,
+                    'size' => $pref->size ?? $default['size'],
+                ];
+            } else {
+                $mergedPreferences[] = $default;
+            }
+        }
+
+        // Sort by order
+        usort($mergedPreferences, fn($a, $b) => $a['order'] <=> $b['order']);
+
+        return $mergedPreferences;
     }
 }

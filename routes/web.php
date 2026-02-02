@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardPreferencesController;
 use App\Http\Controllers\UserRodsController;
 use App\Http\Controllers\UserFishController;
 use App\Http\Controllers\FishingLogsController;
@@ -25,6 +26,13 @@ Route::get('/', function () {
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+// Dashboard Preferences API Routes
+Route::middleware(['auth', 'verified'])->prefix('api/dashboard-preferences')->group(function () {
+    Route::get('/', [DashboardPreferencesController::class, 'index'])->name('dashboard-preferences.index');
+    Route::put('/', [DashboardPreferencesController::class, 'update'])->name('dashboard-preferences.update');
+    Route::post('/reset', [DashboardPreferencesController::class, 'reset'])->name('dashboard-preferences.reset');
+});
 
 Route::get('fishing-log', function () {
     return Inertia::render('FishingLog');

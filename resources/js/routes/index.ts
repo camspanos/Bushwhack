@@ -218,7 +218,7 @@ registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 register.form = registerForm
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -232,7 +232,7 @@ home.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -240,7 +240,7 @@ home.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -249,7 +249,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -258,7 +258,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -267,7 +267,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -276,7 +276,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:19
+* @see routes/web.php:20
 * @route '/'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ home.form = homeForm
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -308,7 +308,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -317,7 +317,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -327,7 +327,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -337,7 +337,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -347,7 +347,7 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -357,7 +357,7 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\DashboardController::dashboard
-* @see app/Http/Controllers/DashboardController.php:31
+* @see app/Http/Controllers/DashboardController.php:32
 * @route '/dashboard'
 */
 dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -373,7 +373,7 @@ dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 dashboard.form = dashboardForm
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 export const fishingLog = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -387,7 +387,7 @@ fishingLog.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 fishingLog.url = (options?: RouteQueryOptions) => {
@@ -395,7 +395,7 @@ fishingLog.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 fishingLog.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -404,7 +404,7 @@ fishingLog.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 fishingLog.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -413,7 +413,7 @@ fishingLog.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 const fishingLogForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -422,7 +422,7 @@ const fishingLogForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 })
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 fishingLogForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -431,7 +431,7 @@ fishingLogForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:29
+* @see routes/web.php:37
 * @route '/fishing-log'
 */
 fishingLogForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -447,7 +447,7 @@ fishingLogForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 fishingLog.form = fishingLogForm
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 export const locationsPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -461,7 +461,7 @@ locationsPage.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 locationsPage.url = (options?: RouteQueryOptions) => {
@@ -469,7 +469,7 @@ locationsPage.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 locationsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -478,7 +478,7 @@ locationsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 locationsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -487,7 +487,7 @@ locationsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 const locationsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -496,7 +496,7 @@ const locationsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'ge
 })
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 locationsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -505,7 +505,7 @@ locationsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 })
 
 /**
-* @see routes/web.php:37
+* @see routes/web.php:45
 * @route '/locations-page'
 */
 locationsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -521,7 +521,7 @@ locationsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get
 locationsPage.form = locationsPageForm
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 export const rodsPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -535,7 +535,7 @@ rodsPage.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 rodsPage.url = (options?: RouteQueryOptions) => {
@@ -543,7 +543,7 @@ rodsPage.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 rodsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -552,7 +552,7 @@ rodsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 rodsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -561,7 +561,7 @@ rodsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 const rodsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -570,7 +570,7 @@ const rodsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 rodsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -579,7 +579,7 @@ rodsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:41
+* @see routes/web.php:49
 * @route '/rods-page'
 */
 rodsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -595,7 +595,7 @@ rodsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 rodsPage.form = rodsPageForm
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 export const fishPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -609,7 +609,7 @@ fishPage.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 fishPage.url = (options?: RouteQueryOptions) => {
@@ -617,7 +617,7 @@ fishPage.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 fishPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -626,7 +626,7 @@ fishPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 fishPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -635,7 +635,7 @@ fishPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 const fishPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -644,7 +644,7 @@ const fishPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 fishPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -653,7 +653,7 @@ fishPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:45
+* @see routes/web.php:53
 * @route '/fish-page'
 */
 fishPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -669,7 +669,7 @@ fishPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 fishPage.form = fishPageForm
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 export const fliesPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -683,7 +683,7 @@ fliesPage.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 fliesPage.url = (options?: RouteQueryOptions) => {
@@ -691,7 +691,7 @@ fliesPage.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 fliesPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -700,7 +700,7 @@ fliesPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 fliesPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -709,7 +709,7 @@ fliesPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 const fliesPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -718,7 +718,7 @@ const fliesPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 fliesPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -727,7 +727,7 @@ fliesPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:49
+* @see routes/web.php:57
 * @route '/flies-page'
 */
 fliesPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -743,7 +743,7 @@ fliesPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 fliesPage.form = fliesPageForm
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 export const friendsPage = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -757,7 +757,7 @@ friendsPage.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 friendsPage.url = (options?: RouteQueryOptions) => {
@@ -765,7 +765,7 @@ friendsPage.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 friendsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -774,7 +774,7 @@ friendsPage.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 friendsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -783,7 +783,7 @@ friendsPage.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 const friendsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -792,7 +792,7 @@ const friendsPageForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 })
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 friendsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -801,7 +801,7 @@ friendsPageForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:53
+* @see routes/web.php:61
 * @route '/friends-page'
 */
 friendsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -817,7 +817,7 @@ friendsPageForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 friendsPage.form = friendsPageForm
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 export const about = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -831,7 +831,7 @@ about.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 about.url = (options?: RouteQueryOptions) => {
@@ -839,7 +839,7 @@ about.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 about.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -848,7 +848,7 @@ about.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -857,7 +857,7 @@ about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 const aboutForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -866,7 +866,7 @@ const aboutForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 aboutForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -875,7 +875,7 @@ aboutForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:57
+* @see routes/web.php:65
 * @route '/about'
 */
 aboutForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

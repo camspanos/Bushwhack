@@ -137,7 +137,10 @@ const formatSize = (size: number | string): string => {
                                 </li>
                             </ul>
                         </div>
-                        <Button class="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs h-7">
+                        <Button
+                            class="w-full mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs h-7"
+                            @click="router.visit('/settings/subscription')"
+                        >
                             <Crown class="mr-1 h-3 w-3" />
                             Upgrade Now
                         </Button>

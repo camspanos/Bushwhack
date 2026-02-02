@@ -234,6 +234,11 @@ const toggleEditMode = async () => {
         window.location.reload();
         return;
     }
+    // Check if user is premium before allowing customization
+    if (!page.props.auth.isPremium) {
+        showCustomizePremiumDialog.value = true;
+        return;
+    }
     isEditMode.value = true;
 };
 
@@ -421,6 +426,7 @@ const formatSize = (size: number) => {
 // Year filter
 const selectedYearFilter = ref(props.selectedYear);
 const showPremiumDialog = ref(false);
+const showCustomizePremiumDialog = ref(false);
 const page = usePage();
 const currentYear = new Date().getFullYear().toString();
 
@@ -746,11 +752,18 @@ const hoveredSunSlice = ref<number | null>(null);
                 </div>
             </div>
 
-            <!-- Premium Feature Dialog -->
+            <!-- Premium Feature Dialog for Year Filtering -->
             <PremiumFeatureDialog
                 v-model:open="showPremiumDialog"
                 title="Year Filtering is a Premium Feature"
                 description="Access to historical data and year filtering is only available to premium users. Upgrade to premium to view your fishing statistics from previous years and lifetime totals."
+            />
+
+            <!-- Premium Feature Dialog for Dashboard Customization -->
+            <PremiumFeatureDialog
+                v-model:open="showCustomizePremiumDialog"
+                title="Dashboard Customization is a Premium Feature"
+                description="Customize your dashboard layout, hide cards you don't need, and resize widgets to create your perfect fishing dashboard. Upgrade to premium to unlock full customization."
             />
 
             <!-- All Dashboard Cards in a single unified 12-column grid -->
@@ -2225,7 +2238,10 @@ const hoveredSunSlice = ref<number | null>(null);
                                 </li>
                             </ul>
                         </div>
-                        <Button class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md">
+                        <Button
+                            class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md"
+                            @click="router.visit('/settings/subscription')"
+                        >
                             <Crown class="mr-2 h-4 w-4" />
                             Upgrade Now
                         </Button>

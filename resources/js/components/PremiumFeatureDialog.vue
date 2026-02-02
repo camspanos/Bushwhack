@@ -8,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { router } from '@inertiajs/vue3';
 import { Crown } from 'lucide-vue-next';
 
 interface Props {
@@ -27,6 +28,11 @@ const emit = defineEmits<{
 
 const handleClose = () => {
     emit('update:open', false);
+};
+
+const navigateToSubscription = () => {
+    emit('update:open', false);
+    router.visit('/settings/subscription');
 };
 </script>
 
@@ -54,7 +60,10 @@ const handleClose = () => {
                 <Button variant="outline" @click="handleClose">
                     Maybe Later
                 </Button>
-                <Button class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700">
+                <Button
+                    class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+                    @click="navigateToSubscription"
+                >
                     <Crown class="mr-2 h-4 w-4" />
                     Upgrade to Premium
                 </Button>

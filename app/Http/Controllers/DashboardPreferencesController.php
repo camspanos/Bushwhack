@@ -62,7 +62,16 @@ class DashboardPreferencesController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
-        $userId = auth()->id();
+        $user = auth()->user();
+
+        // Only premium users can customize their dashboard
+        if (!$user->isPremium()) {
+            return response()->json([
+                'message' => 'Dashboard customization is a premium feature.',
+            ], 403);
+        }
+
+        $userId = $user->id;
 
         $validated = $request->validate([
             'preferences' => 'required|array',

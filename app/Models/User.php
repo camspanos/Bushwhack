@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -113,10 +115,42 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all subscriptions for this user.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get the active subscription for this user.
+     */
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class)
+            ->where('status', Subscription::STATUS_ACTIVE);
+    }
+
+    /**
+     * Get all payment transactions for this user.
+     */
+    public function paymentTransactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
+    /**
      * Check if user has premium subscription.
+     * Checks for active subscription first, falls back to is_premium boolean.
      */
     public function isPremium(): bool
     {
+        // Check for active subscription
+        if ($this->activeSubscription()->exists()) {
+            return true;
+        }
+
+        // Fall back to legacy is_premium field for backwards compatibility
         return $this->is_premium;
     }
 
@@ -126,7 +160,7 @@ class User extends Authenticatable
     public function canFollow(User $user): bool
     {
         // Premium users can follow anyone
-        if ($this->is_premium) {
+        if ($this->isPremium()) {
             return true;
         }
 
@@ -139,6 +173,6 @@ class User extends Authenticatable
      */
     public function canFilterByYear(): bool
     {
-        return $this->is_premium;
+        return $this->isPremium();
     }
 }

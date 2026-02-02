@@ -28,6 +28,10 @@ const sidebarNavItems: NavItem[] = [
         title: 'Appearance',
         href: editAppearance(),
     },
+    {
+        title: 'Subscription',
+        href: { url: '/settings/subscription', method: 'get' },
+    },
 ];
 
 const { urlIsActive } = useActiveUrl();

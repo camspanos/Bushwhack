@@ -148,7 +148,7 @@ update.form = updateForm
 
 /**
 * @see \App\Http\Controllers\DashboardPreferencesController::reset
-* @see app/Http/Controllers/DashboardPreferencesController.php:111
+* @see app/Http/Controllers/DashboardPreferencesController.php:120
 * @route '/api/dashboard-preferences/reset'
 */
 export const reset = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -163,7 +163,7 @@ reset.definition = {
 
 /**
 * @see \App\Http\Controllers\DashboardPreferencesController::reset
-* @see app/Http/Controllers/DashboardPreferencesController.php:111
+* @see app/Http/Controllers/DashboardPreferencesController.php:120
 * @route '/api/dashboard-preferences/reset'
 */
 reset.url = (options?: RouteQueryOptions) => {
@@ -172,7 +172,7 @@ reset.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DashboardPreferencesController::reset
-* @see app/Http/Controllers/DashboardPreferencesController.php:111
+* @see app/Http/Controllers/DashboardPreferencesController.php:120
 * @route '/api/dashboard-preferences/reset'
 */
 reset.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -182,7 +182,7 @@ reset.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\DashboardPreferencesController::reset
-* @see app/Http/Controllers/DashboardPreferencesController.php:111
+* @see app/Http/Controllers/DashboardPreferencesController.php:120
 * @route '/api/dashboard-preferences/reset'
 */
 const resetForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -192,7 +192,7 @@ const resetForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\DashboardPreferencesController::reset
-* @see app/Http/Controllers/DashboardPreferencesController.php:111
+* @see app/Http/Controllers/DashboardPreferencesController.php:120
 * @route '/api/dashboard-preferences/reset'
 */
 resetForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

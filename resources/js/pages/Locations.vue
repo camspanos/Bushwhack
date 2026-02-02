@@ -12,7 +12,8 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed, watch } from 'vue';
-import { MapPin, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon } from 'lucide-vue-next';
+import { MapPin, Plus, Pencil, Trash2, Table as TableIcon, BarChart3, Fish, TrendingUp, Award, Calendar as CalendarIcon, Crown } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3';
 import axios from '@/lib/axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -178,7 +179,7 @@ onMounted(async () => {
     <Head title="Locations" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
-            <div class="mx-auto w-full max-w-6xl">
+            <div class="w-full">
                 <!-- Tab Navigation -->
                 <Tabs default-value="table" class="w-full">
                     <TabsList class="grid w-full grid-cols-2 mb-4">
@@ -373,8 +374,66 @@ onMounted(async () => {
                                 description="Access to historical data and year filtering is only available to premium users. Upgrade to premium to view your fishing statistics from previous years and lifetime totals."
                             />
 
+                            <!-- AdSense & Premium Upgrade Row (shown for non-premium users) -->
+                            <div v-if="!page.props.auth.isPremium" class="grid gap-4 md:grid-cols-2 mb-4">
+                                <!-- Google AdSense Card -->
+                                <Card class="bg-gradient-to-br from-slate-50/50 to-transparent dark:from-slate-950/20">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-sm font-medium text-muted-foreground">Advertisement</CardTitle>
+                                    </CardHeader>
+                                    <CardContent class="pt-0 pb-4">
+                                        <div class="flex items-center justify-center min-h-[200px] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
+                                            <p class="text-sm text-muted-foreground">Google AdSense Placeholder</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <!-- Premium Upgrade Card -->
+                                <Card class="bg-gradient-to-br from-amber-50/50 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10 border-amber-200/50 dark:border-amber-800/30">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="flex items-center gap-2 text-lg">
+                                            <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+                                                <Crown class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                            </div>
+                                            <span class="text-amber-900 dark:text-amber-100">Upgrade to Premium</span>
+                                        </CardTitle>
+                                        <CardDescription class="text-amber-700/80 dark:text-amber-300/80">
+                                            Unlock the full Bushwhack experience
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent class="pt-0 pb-4 space-y-4">
+                                        <div class="space-y-2">
+                                            <p class="text-sm text-amber-900/90 dark:text-amber-100/90 font-medium">
+                                                Remove all advertisements and enjoy:
+                                            </p>
+                                            <ul class="text-sm text-amber-800/80 dark:text-amber-200/80 space-y-1 ml-4">
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                                    <span>Ad-free experience across all pages</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                                    <span>Historical data & year filtering</span>
+                                                </li>
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-amber-600 dark:text-amber-400 mt-0.5">✓</span>
+                                                    <span>Dashboard customization</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <Button
+                                            class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md"
+                                            @click="router.visit('/settings/subscription')"
+                                        >
+                                            <Crown class="mr-2 h-4 w-4" />
+                                            Upgrade Now
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
                             <!-- Location Stats Grid -->
-                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 <Card v-for="location in locationStats" :key="location.id" class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
                                     <CardHeader>
                                         <CardTitle class="text-lg flex items-center gap-2">

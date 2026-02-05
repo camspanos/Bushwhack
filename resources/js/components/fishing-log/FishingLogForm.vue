@@ -276,15 +276,20 @@ const timeOfDayOptions = [
     'Night',
 ];
 
-// Moon position options
+// Moon position options based on Solunar Theory
+// - Overhead: Major feeding window (~2-3 hours around upper transit)
+// - Rising: Minor feeding window (~45-75 min around moonrise)
+// - Setting: Minor feeding window (~45-75 min around moonset)
+// - Underfoot: Major feeding window (~2-3 hours around lower transit)
+// - Above Horizon: Transitional period between Rising/Setting and Overhead
+// - Below Horizon: Transitional period between Setting and Rising (via Underfoot)
 const moonPositionOptions = [
     'Overhead',
-    'High',
     'Rising',
-    'Low',
     'Setting',
-    'Below Horizon',
     'Underfoot',
+    'Above Horizon',
+    'Below Horizon',
 ];
 
 // Weather options

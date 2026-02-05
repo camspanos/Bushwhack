@@ -10,15 +10,28 @@ use DateTimeZone;
 class MoonPositionCalculator
 {
     /**
-     * Moon position labels based on altitude.
+     * Moon position labels based on Solunar Theory.
+     *
+     * Solunar Theory positions with fishing relevance:
+     * - Overhead: Major feeding window (~2-3 hours around upper transit)
+     * - Rising: Minor feeding window (~45-75 min around moonrise)
+     * - Setting: Minor feeding window (~45-75 min around moonset)
+     * - Underfoot: Major feeding window (~2-3 hours around lower transit)
+     * - Above Horizon: Transitional period between Rising/Setting and Overhead
+     * - Below Horizon: Transitional period between Setting and Rising (via Underfoot)
      */
     public const POSITION_OVERHEAD = 'Overhead';
-    public const POSITION_HIGH = 'High';
     public const POSITION_RISING = 'Rising';
-    public const POSITION_LOW = 'Low';
     public const POSITION_SETTING = 'Setting';
-    public const POSITION_BELOW_HORIZON = 'Below Horizon';
     public const POSITION_UNDERFOOT = 'Underfoot';
+    public const POSITION_ABOVE_HORIZON = 'Above Horizon';
+    public const POSITION_BELOW_HORIZON = 'Below Horizon';
+
+    /**
+     * Time windows in seconds for position detection.
+     */
+    private const RISING_SETTING_WINDOW = 3600; // ±60 minutes from moonrise/moonset
+    private const OVERHEAD_UNDERFOOT_WINDOW = 5400; // ±90 minutes from transit
 
     /**
      * Calculate moon position for a given date, time, and location.
@@ -66,8 +79,8 @@ class MoonPositionCalculator
         // Convert altitude from radians to degrees
         $altitudeDegrees = rad2deg($moonPosition->altitude);
 
-        // Determine human-readable position label
-        $positionLabel = self::getPositionLabel($altitudeDegrees, $dateTime, $sunCalc);
+        // Determine human-readable position label based on Solunar Theory
+        $positionLabel = self::getPositionLabel($altitudeDegrees, $dateTime, $sunCalc, $latitude, $longitude);
 
         return [
             'altitude' => round($altitudeDegrees, 2),
@@ -76,55 +89,141 @@ class MoonPositionCalculator
     }
 
     /**
-     * Get human-readable position label based on altitude.
+     * Get human-readable position label based on Solunar Theory.
+     *
+     * The 6 positions are:
+     * - Overhead: ±90 min from upper transit (major feeding window)
+     * - Rising: ±60 min from moonrise (minor feeding window)
+     * - Setting: ±60 min from moonset (minor feeding window)
+     * - Underfoot: ±90 min from lower transit (major feeding window)
+     * - Above Horizon: Moon is up but not in Rising/Setting/Overhead windows
+     * - Below Horizon: Moon is down but not in Underfoot window
      *
      * @param float $altitudeDegrees Moon altitude in degrees
      * @param DateTime $dateTime Current date/time
      * @param SunCalc $sunCalc SunCalc instance for moon times
+     * @param float $latitude Location latitude
+     * @param float $longitude Location longitude
      * @return string
      */
-    private static function getPositionLabel(float $altitudeDegrees, DateTime $dateTime, SunCalc $sunCalc): string
+    private static function getPositionLabel(float $altitudeDegrees, DateTime $dateTime, SunCalc $sunCalc, float $latitude, float $longitude): string
     {
-        // If moon is below horizon
-        if ($altitudeDegrees < 0) {
-            // If very low (opposite side of Earth), it's "underfoot"
-            if ($altitudeDegrees < -45) {
+        $currentTimestamp = $dateTime->getTimestamp();
+        $moonTimes = $sunCalc->getMoonTimes();
+
+        // Get moonrise and moonset times
+        $moonrise = $moonTimes['moonrise'] ?? null;
+        $moonset = $moonTimes['moonset'] ?? null;
+
+        // Check for Rising (±60 min from moonrise)
+        if ($moonrise) {
+            $toRise = abs($currentTimestamp - $moonrise->getTimestamp());
+            if ($toRise <= self::RISING_SETTING_WINDOW) {
+                return self::POSITION_RISING;
+            }
+        }
+
+        // Check for Setting (±60 min from moonset)
+        if ($moonset) {
+            $toSet = abs($currentTimestamp - $moonset->getTimestamp());
+            if ($toSet <= self::RISING_SETTING_WINDOW) {
+                return self::POSITION_SETTING;
+            }
+        }
+
+        // Calculate upper and lower transit times
+        // Upper transit (moon at highest point) is approximately halfway between rise and set
+        // Lower transit (moon at lowest point/underfoot) is approximately 12 hours from upper transit
+        $upperTransit = self::calculateUpperTransit($moonrise, $moonset, $dateTime);
+        $lowerTransit = self::calculateLowerTransit($upperTransit, $dateTime);
+
+        // Check for Overhead (±90 min from upper transit)
+        if ($upperTransit) {
+            $toUpperTransit = abs($currentTimestamp - $upperTransit->getTimestamp());
+            if ($toUpperTransit <= self::OVERHEAD_UNDERFOOT_WINDOW) {
+                return self::POSITION_OVERHEAD;
+            }
+        }
+
+        // Check for Underfoot (±90 min from lower transit)
+        if ($lowerTransit) {
+            $toLowerTransit = abs($currentTimestamp - $lowerTransit->getTimestamp());
+            if ($toLowerTransit <= self::OVERHEAD_UNDERFOOT_WINDOW) {
                 return self::POSITION_UNDERFOOT;
             }
-            return self::POSITION_BELOW_HORIZON;
         }
 
-        // Moon is above horizon
-        // Check if it's near the horizon (rising or setting)
-        if ($altitudeDegrees < 15) {
-            // Try to determine if rising or setting based on moon times
-            $moonTimes = $sunCalc->getMoonTimes();
-            
-            if (isset($moonTimes['moonrise']) && isset($moonTimes['moonset'])) {
-                $moonrise = $moonTimes['moonrise'];
-                $moonset = $moonTimes['moonset'];
-                
-                // Calculate time differences
-                $toRise = abs($dateTime->getTimestamp() - $moonrise->getTimestamp());
-                $toSet = abs($dateTime->getTimestamp() - $moonset->getTimestamp());
-                
-                // If closer to moonrise, it's rising; if closer to moonset, it's setting
-                if ($toRise < $toSet && $toRise < 3600) { // Within 1 hour of moonrise
-                    return self::POSITION_RISING;
-                } elseif ($toSet < $toRise && $toSet < 3600) { // Within 1 hour of moonset
-                    return self::POSITION_SETTING;
-                }
+        // If moon is above horizon, it's "Above Horizon" (transitional)
+        if ($altitudeDegrees >= 0) {
+            return self::POSITION_ABOVE_HORIZON;
+        }
+
+        // Moon is below horizon (transitional)
+        return self::POSITION_BELOW_HORIZON;
+    }
+
+    /**
+     * Calculate approximate upper transit time (moon at highest point).
+     * Upper transit is approximately halfway between moonrise and moonset.
+     *
+     * @param DateTime|null $moonrise
+     * @param DateTime|null $moonset
+     * @param DateTime $dateTime Reference date/time
+     * @return DateTime|null
+     */
+    private static function calculateUpperTransit(?DateTime $moonrise, ?DateTime $moonset, DateTime $dateTime): ?DateTime
+    {
+        if ($moonrise && $moonset) {
+            $riseTimestamp = $moonrise->getTimestamp();
+            $setTimestamp = $moonset->getTimestamp();
+
+            // If moonset is before moonrise, add 24 hours to moonset
+            if ($setTimestamp < $riseTimestamp) {
+                $setTimestamp += 86400;
             }
-            
-            return self::POSITION_LOW;
+
+            // Upper transit is midpoint between rise and set
+            $transitTimestamp = (int)(($riseTimestamp + $setTimestamp) / 2);
+            $transit = new DateTime();
+            $transit->setTimestamp($transitTimestamp);
+            $transit->setTimezone($dateTime->getTimezone());
+            return $transit;
         }
 
-        // High in the sky
-        if ($altitudeDegrees >= 75) {
-            return self::POSITION_OVERHEAD;
+        return null;
+    }
+
+    /**
+     * Calculate approximate lower transit time (moon at lowest point/underfoot).
+     * Lower transit is approximately 12 hours (half a lunar day) from upper transit.
+     *
+     * @param DateTime|null $upperTransit
+     * @param DateTime $dateTime Reference date/time
+     * @return DateTime|null
+     */
+    private static function calculateLowerTransit(?DateTime $upperTransit, DateTime $dateTime): ?DateTime
+    {
+        if ($upperTransit) {
+            // Lower transit is approximately 12 hours and 25 minutes from upper transit
+            // (half of the ~24h 50min lunar day)
+            $lowerTransitTimestamp = $upperTransit->getTimestamp() + (12 * 3600 + 25 * 60);
+
+            // Adjust to be within reasonable range of current time
+            $currentTimestamp = $dateTime->getTimestamp();
+            while ($lowerTransitTimestamp > $currentTimestamp + 43200) {
+                $lowerTransitTimestamp -= 86400;
+            }
+            while ($lowerTransitTimestamp < $currentTimestamp - 43200) {
+                $lowerTransitTimestamp += 86400;
+            }
+
+            $transit = new DateTime();
+            $transit->setTimestamp($lowerTransitTimestamp);
+            $transit->setTimezone($dateTime->getTimezone());
+            return $transit;
         }
 
-        return self::POSITION_HIGH;
+        return null;
     }
 
     /**
@@ -158,12 +257,11 @@ class MoonPositionCalculator
     {
         return [
             self::POSITION_OVERHEAD,
-            self::POSITION_HIGH,
             self::POSITION_RISING,
-            self::POSITION_LOW,
             self::POSITION_SETTING,
-            self::POSITION_BELOW_HORIZON,
             self::POSITION_UNDERFOOT,
+            self::POSITION_ABOVE_HORIZON,
+            self::POSITION_BELOW_HORIZON,
         ];
     }
 }

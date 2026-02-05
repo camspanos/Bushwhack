@@ -4,8 +4,46 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e554df60f9ba24cfb999ea5e64284e21",
+    "content-hash": "7329b31e4eaf084646d27b2fce74fe11",
     "packages": [
+        {
+            "name": "auroras-live/suncalc-php",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gregseth/suncalc-php.git",
+                "reference": "e88805e686dbd327609fba18a34075bcb76ac221"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gregseth/suncalc-php/zipball/e88805e686dbd327609fba18a34075bcb76ac221",
+                "reference": "e88805e686dbd327609fba18a34075bcb76ac221",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "suncalc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPLv2"
+            ],
+            "authors": [
+                {
+                    "name": "David Gray and Greg Seth",
+                    "email": "david@auroras.live"
+                }
+            ],
+            "description": "Sun and moon calculations for PHP",
+            "support": {
+                "issues": "https://github.com/gregseth/suncalc-php/issues",
+                "source": "https://github.com/gregseth/suncalc-php/tree/master"
+            },
+            "time": "2019-02-01T10:20:40+00:00"
+        },
         {
             "name": "bacon/bacon-qr-code",
             "version": "v3.0.3",
@@ -9031,7 +9069,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "auroras-live/suncalc-php": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

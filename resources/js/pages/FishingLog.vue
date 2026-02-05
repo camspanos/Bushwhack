@@ -166,10 +166,13 @@ const editLog = (log: FishingLog) => {
         user_fish_id: log.user_fish_id,
         quantity: log.quantity,
         max_size: log.max_size,
+        max_weight: log.max_weight,
         user_fly_id: log.user_fly_id,
         user_rod_id: log.user_rod_id,
         style: log.style,
         moon_phase: log.moon_phase,
+        moon_altitude: log.moon_altitude,
+        moon_position: log.moon_position,
         time_of_day: log.time_of_day,
         friends: log.friends,
         notes: log.notes,
@@ -448,6 +451,7 @@ const viewNotes = (notes: string) => {
                                         <TableHead>Fish</TableHead>
                                         <TableHead>Quantity</TableHead>
                                         <TableHead>Max Size</TableHead>
+                                        <TableHead>Max Weight</TableHead>
                                         <TableHead>Fly</TableHead>
                                         <TableHead>Style</TableHead>
                                         <TableHead>Notes</TableHead>
@@ -456,7 +460,7 @@ const viewNotes = (notes: string) => {
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-if="fishingLogs.length === 0">
-                                        <TableCell colspan="9" class="text-center text-muted-foreground py-8">
+                                        <TableCell colspan="10" class="text-center text-muted-foreground py-8">
                                             No fishing logs yet. Click "Add New" to create your first log!
                                         </TableCell>
                                     </TableRow>
@@ -466,6 +470,7 @@ const viewNotes = (notes: string) => {
                                         <TableCell>{{ log.fish?.species || '-' }}</TableCell>
                                         <TableCell>{{ log.quantity || '-' }}</TableCell>
                                         <TableCell>{{ log.max_size ? `${formatSize(log.max_size)}"` : '-' }}</TableCell>
+                                        <TableCell>{{ log.max_weight ? `${formatSize(log.max_weight)} lbs` : '-' }}</TableCell>
                                         <TableCell>{{ log.fly?.name || '-' }}</TableCell>
                                         <TableCell>{{ log.style || '-' }}</TableCell>
                                         <TableCell>
@@ -545,10 +550,14 @@ const viewNotes = (notes: string) => {
                                                 <span class="ml-1">{{ log.max_size ? `${formatSize(log.max_size)}"` : '-' }}</span>
                                             </div>
                                             <div>
+                                                <span class="text-muted-foreground">Max Weight:</span>
+                                                <span class="ml-1">{{ log.max_weight ? `${formatSize(log.max_weight)} lbs` : '-' }}</span>
+                                            </div>
+                                            <div>
                                                 <span class="text-muted-foreground">Fly:</span>
                                                 <span class="ml-1">{{ log.fly?.name || '-' }}</span>
                                             </div>
-                                            <div class="col-span-2">
+                                            <div>
                                                 <span class="text-muted-foreground">Style:</span>
                                                 <span class="ml-1">{{ log.style || '-' }}</span>
                                             </div>

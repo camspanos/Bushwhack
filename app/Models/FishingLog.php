@@ -23,14 +23,19 @@ class FishingLog extends Model
         'time_of_day',
         'quantity',
         'max_size',
+        'max_weight',
         'style',
         'moon_phase',
+        'moon_altitude',
+        'moon_position',
         'notes',
     ];
 
     protected $casts = [
         'date' => 'date',
         'max_size' => 'decimal:2',
+        'max_weight' => 'decimal:2',
+        'moon_altitude' => 'decimal:2',
     ];
 
     /**

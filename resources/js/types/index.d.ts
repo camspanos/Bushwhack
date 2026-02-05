@@ -95,12 +95,15 @@ export interface FishingLog {
     time?: string;
     user_location_id?: number;
     user_fish_id?: number;
+    max_weight?: number;
     quantity: number;
     max_size?: number;
     user_fly_id?: number;
     user_rod_id?: number;
     style?: string;
     moon_phase?: string;
+    moon_altitude?: number;
+    moon_position?: string;
     time_of_day?: string;
     notes?: string;
     location?: FishingLogLocation;

@@ -93,6 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Utility Routes (must be before resource routes to avoid conflicts)
     Route::get('fishing-logs/available-years', [FishingLogsController::class, 'availableYears'])->name('fishing-logs.available-years');
     Route::post('fishing-logs/calculate-time-of-day', [FishingLogsController::class, 'calculateTimeOfDay'])->name('fishing-logs.calculate-time-of-day');
+    Route::post('fishing-logs/calculate-moon-position', [FishingLogsController::class, 'calculateMoonPosition'])->name('fishing-logs.calculate-moon-position');
     Route::get('countries', [UserLocationsController::class, 'countries'])->name('countries.index');
     Route::post('locations/geocode', [UserLocationsController::class, 'geocode'])->name('locations.geocode');
 

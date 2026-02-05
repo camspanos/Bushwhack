@@ -15,6 +15,67 @@ import { Fish, MapPin, Calendar as CalendarIcon, Clock, Plus, ChevronDown, X, Al
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import axios from '@/lib/axios';
 
+// Cache for form data by date+location (15 minute expiry)
+// Using sessionStorage to persist across component remounts
+interface CachedFormData {
+    weather: WeatherData;
+    water_condition: WaterConditionData;
+    friend_ids: number[];
+    timestamp: number;
+}
+
+const CACHE_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
+const CACHE_STORAGE_KEY = 'fishingLogFormCache';
+
+const getCacheKey = (date: string, locationId: string): string => {
+    return `${date}|${locationId}`;
+};
+
+const getStoredCache = (): Record<string, CachedFormData> => {
+    try {
+        const stored = sessionStorage.getItem(CACHE_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch {
+        return {};
+    }
+};
+
+const setStoredCache = (cache: Record<string, CachedFormData>): void => {
+    try {
+        sessionStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(cache));
+    } catch {
+        // Ignore storage errors
+    }
+};
+
+const getCachedData = (date: string, locationId: string): CachedFormData | null => {
+    const key = getCacheKey(date, locationId);
+    const cache = getStoredCache();
+    const cached = cache[key];
+
+    if (!cached) return null;
+
+    // Check if cache has expired
+    if (Date.now() - cached.timestamp > CACHE_EXPIRY_MS) {
+        delete cache[key];
+        setStoredCache(cache);
+        return null;
+    }
+
+    return cached;
+};
+
+const setCachedData = (date: string, locationId: string, data: Omit<CachedFormData, 'timestamp'>): void => {
+    const key = getCacheKey(date, locationId);
+    const cache = getStoredCache();
+    cache[key] = {
+        ...data,
+        timestamp: Date.now(),
+    };
+    setStoredCache(cache);
+    console.log('Cache SET:', key, data);
+};
+
 // Types
 export interface WeatherData {
     temperature: string;
@@ -40,10 +101,12 @@ export interface FishingLogFormData {
     user_fish_id: string;
     quantity: string;
     maxSize: string;
+    maxWeight: string;
     user_fly_id: string;
     user_rod_id: string;
     fishingStyle: string;
     moonPhase: string;
+    moonPosition: string;
     timeOfDay: string;
     friend_ids: number[];
     notes: string;
@@ -59,10 +122,13 @@ export interface FishingLogInitialData {
     user_fish_id?: number;
     quantity?: number;
     max_size?: number;
+    max_weight?: number;
     user_fly_id?: number;
     user_rod_id?: number;
     style?: string;
     moon_phase?: string;
+    moon_altitude?: number;
+    moon_position?: string;
     time_of_day?: string;
     friends?: { id: number; name: string }[];
     notes?: string;
@@ -113,6 +179,15 @@ const dateInput = ref('');
 const datePickerOpen = ref(false);
 const maxDate = today(getLocalTimeZone()); // Prevent future date selection
 
+// Time picker state
+const timePickerOpen = ref(false);
+const selectedHour = ref(12);
+const selectedMinute = ref(0);
+const selectedPeriod = ref<'AM' | 'PM'>('AM');
+
+// Moon altitude (for display purposes only)
+const moonAltitude = ref<number | null>(null);
+
 // Form data
 const formData = ref<FishingLogFormData>({
     date: '',
@@ -121,10 +196,12 @@ const formData = ref<FishingLogFormData>({
     user_fish_id: '',
     quantity: '',
     maxSize: '',
+    maxWeight: '',
     user_fly_id: '',
     user_rod_id: '',
     fishingStyle: '',
     moonPhase: '',
+    moonPosition: '',
     timeOfDay: '',
     friend_ids: [],
     notes: '',
@@ -197,6 +274,17 @@ const timeOfDayOptions = [
     'Afternoon',
     'Dusk',
     'Night',
+];
+
+// Moon position options
+const moonPositionOptions = [
+    'Overhead',
+    'High',
+    'Rising',
+    'Low',
+    'Setting',
+    'Below Horizon',
+    'Underfoot',
 ];
 
 // Weather options
@@ -301,6 +389,37 @@ const recalculateTimeOfDay = async () => {
     }
 };
 
+// Recalculate moon position by calling the backend API
+// Uses the MoonPositionCalculator service for accurate astronomical calculations
+// Only calculates when date, time, AND location are all set
+const recalculateMoonPosition = async () => {
+    // Require date, time, AND location to calculate moon position
+    if (!dateInput.value || !formData.value.time || !formData.value.user_location_id) {
+        formData.value.moonPosition = '';
+        moonAltitude.value = null;
+        return;
+    }
+
+    try {
+        const response = await axios.post('/fishing-logs/calculate-moon-position', {
+            time: formData.value.time,
+            date: dateInput.value,
+            location_id: parseInt(formData.value.user_location_id),
+        });
+
+        if (response.data.moon_position) {
+            formData.value.moonPosition = response.data.moon_position;
+            moonAltitude.value = response.data.moon_altitude;
+        } else {
+            formData.value.moonPosition = '';
+            moonAltitude.value = null;
+        }
+    } catch (error) {
+        console.error('Failed to calculate moon position:', error);
+        // Don't clear the value on error - keep whatever was there
+    }
+};
+
 // Initialize date input
 const initializeDateInput = () => {
     const todayDate = today(getLocalTimeZone());
@@ -321,6 +440,7 @@ const handleInputChange = () => {
             selectedDate.value = new CalendarDate(year, month, day);
             formData.value.moonPhase = calculateMoonPhase(year, month, day);
             recalculateTimeOfDay();
+            recalculateMoonPosition();
         }
     } catch (error) {
         console.error('Invalid date format:', error);
@@ -337,7 +457,56 @@ const handleCalendarSelect = (date: CalendarDate | undefined) => {
     dateInput.value = `${year}-${month}-${day}`;
     formData.value.moonPhase = calculateMoonPhase(date.year, date.month, date.day);
     recalculateTimeOfDay();
+    recalculateMoonPosition();
     datePickerOpen.value = false;
+};
+
+// Format time for display (12-hour format with AM/PM)
+const formatTimeDisplay = (time: string): string => {
+    if (!time) return 'Pick a time';
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    return `${displayHour}:${String(minutes).padStart(2, '0')} ${period}`;
+};
+
+// Parse time string to update time picker state
+const parseTimeToPickerState = (time: string) => {
+    if (!time) return;
+    const [hours, minutes] = time.split(':').map(Number);
+    selectedMinute.value = minutes;
+    if (hours === 0) {
+        selectedHour.value = 12;
+        selectedPeriod.value = 'AM';
+    } else if (hours === 12) {
+        selectedHour.value = 12;
+        selectedPeriod.value = 'PM';
+    } else if (hours > 12) {
+        selectedHour.value = hours - 12;
+        selectedPeriod.value = 'PM';
+    } else {
+        selectedHour.value = hours;
+        selectedPeriod.value = 'AM';
+    }
+};
+
+// Update formData.time from picker state
+const updateTimeFromPicker = () => {
+    let hours = selectedHour.value;
+    if (selectedPeriod.value === 'AM') {
+        hours = selectedHour.value === 12 ? 0 : selectedHour.value;
+    } else {
+        hours = selectedHour.value === 12 ? 12 : selectedHour.value + 12;
+    }
+    formData.value.time = `${String(hours).padStart(2, '0')}:${String(selectedMinute.value).padStart(2, '0')}`;
+    recalculateTimeOfDay();
+    recalculateMoonPosition();
+};
+
+// Handle time picker selection
+const handleTimeSelect = () => {
+    updateTimeFromPicker();
+    timePickerOpen.value = false;
 };
 
 // Populate form with initial data (for edit mode)
@@ -351,6 +520,14 @@ const populateForm = (data: FishingLogInitialData) => {
         selectedDate.value = new CalendarDate(year, parseInt(month), parseInt(day));
     }
 
+    // Parse time into picker state
+    if (data.time) {
+        parseTimeToPickerState(data.time.substring(0, 5));
+    }
+
+    // Set moon altitude for display
+    moonAltitude.value = data.moon_altitude || null;
+
     formData.value = {
         date: dateInput.value,
         time: data.time ? data.time.substring(0, 5) : '',
@@ -358,10 +535,12 @@ const populateForm = (data: FishingLogInitialData) => {
         user_fish_id: data.user_fish_id?.toString() || '',
         quantity: data.quantity?.toString() || '',
         maxSize: data.max_size?.toString() || '',
+        maxWeight: data.max_weight?.toString() || '',
         user_fly_id: data.user_fly_id?.toString() || '',
         user_rod_id: data.user_rod_id?.toString() || '',
         fishingStyle: data.style || '',
         moonPhase: data.moon_phase || '',
+        moonPosition: data.moon_position || '',
         timeOfDay: data.time_of_day || '',
         friend_ids: data.friends?.map((f) => f.id) || [],
         notes: data.notes || '',
@@ -391,6 +570,9 @@ const clearFormErrors = () => {
 
 // Reset form
 const resetForm = () => {
+    // Clear moon altitude
+    moonAltitude.value = null;
+
     formData.value = {
         date: '',
         time: '',
@@ -398,10 +580,12 @@ const resetForm = () => {
         user_fish_id: '',
         quantity: '',
         maxSize: '',
+        maxWeight: '',
         user_fly_id: '',
         user_rod_id: '',
         fishingStyle: '',
         moonPhase: '',
+        moonPosition: '',
         timeOfDay: '',
         friend_ids: [],
         notes: '',
@@ -559,16 +743,35 @@ const handleSubmit = () => {
         user_fish_id: formData.value.user_fish_id ? parseInt(formData.value.user_fish_id) : null,
         quantity: formData.value.quantity ? parseInt(formData.value.quantity) : null,
         max_size: formData.value.maxSize ? parseFloat(formData.value.maxSize) : null,
+        max_weight: formData.value.maxWeight ? parseFloat(formData.value.maxWeight) : null,
         user_fly_id: formData.value.user_fly_id ? parseInt(formData.value.user_fly_id) : null,
         user_rod_id: formData.value.user_rod_id ? parseInt(formData.value.user_rod_id) : null,
         style: formData.value.fishingStyle || null,
         moon_phase: formData.value.moonPhase || null,
+        moon_position: formData.value.moonPosition || null,
         time_of_day: formData.value.timeOfDay || null,
         friend_ids: formData.value.friend_ids,
         notes: formData.value.notes || null,
         weather: formData.value.weather,
         water_condition: formData.value.water_condition,
     };
+
+    // Cache weather, water conditions, and friends by date+location for quick re-entry
+    console.log('handleSubmit - checking cache conditions:', {
+        date: formattedDate.value,
+        locationId: formData.value.user_location_id,
+        weather: formData.value.weather,
+        water_condition: formData.value.water_condition,
+        friend_ids: formData.value.friend_ids
+    });
+
+    if (formattedDate.value && formData.value.user_location_id) {
+        setCachedData(formattedDate.value, formData.value.user_location_id, {
+            weather: { ...formData.value.weather },
+            water_condition: { ...formData.value.water_condition },
+            friend_ids: [...formData.value.friend_ids],
+        });
+    }
 
     emit('submit', submitData);
 };
@@ -585,14 +788,69 @@ watch(() => props.initialData, (newData) => {
     }
 }, { immediate: true });
 
-// Watch for time changes to recalculate time of day
+// Watch for time changes to recalculate time of day and moon position
 watch(() => formData.value.time, () => {
     recalculateTimeOfDay();
+    recalculateMoonPosition();
 });
 
-// Watch for location changes to recalculate time of day (sunrise/sunset depends on location)
+// Watch for location changes to recalculate time of day and moon position
 watch(() => formData.value.user_location_id, () => {
     recalculateTimeOfDay();
+    recalculateMoonPosition();
+});
+
+// Apply cached form data (weather, water conditions, friends) when date+location match
+// Clears fields first, then applies cached data if available
+const applyCachedFormData = () => {
+    // Only apply cache in create mode
+    if (props.mode !== 'create') return;
+
+    const date = dateInput.value;
+    const locationId = formData.value.user_location_id;
+
+    console.log('applyCachedFormData called:', { date, locationId });
+
+    if (!date || !locationId) return;
+
+    // Clear the fields first when date/location changes
+    formData.value.weather = {
+        temperature: '',
+        cloud: '',
+        wind: '',
+        precipitation: '',
+        barometric_pressure: '',
+    };
+    formData.value.water_condition = {
+        temperature: '',
+        clarity: '',
+        level: '',
+        speed: '',
+        surface_condition: '',
+        tide: '',
+    };
+    formData.value.friend_ids = [];
+
+    // Then apply cached data if it exists for this date+location
+    const cached = getCachedData(date, locationId);
+    console.log('Cache GET:', getCacheKey(date, locationId), cached);
+
+    if (cached) {
+        console.log('Applying cached data');
+        formData.value.weather = { ...cached.weather };
+        formData.value.water_condition = { ...cached.water_condition };
+        formData.value.friend_ids = [...cached.friend_ids];
+    }
+};
+
+// Watch for date changes to apply cached data
+watch(() => dateInput.value, () => {
+    applyCachedFormData();
+});
+
+// Watch for location changes to apply cached data
+watch(() => formData.value.user_location_id, () => {
+    applyCachedFormData();
 });
 
 // Load data on mount
@@ -656,6 +914,7 @@ defineExpose({
                         </PopoverTrigger>
                         <PopoverContent class="w-auto p-0" align="start">
                             <Calendar
+                                class="min-w-[280px]"
                                 :model-value="selectedDate"
                                 @update:model-value="handleCalendarSelect"
                                 :max-value="maxDate"
@@ -670,11 +929,77 @@ defineExpose({
                         <Clock class="h-4 w-4" />
                         Time
                     </Label>
-                    <Input
-                        id="time"
-                        type="time"
-                        v-model="formData.time"
-                    />
+                    <Popover v-model:open="timePickerOpen">
+                        <PopoverTrigger as-child>
+                            <Button
+                                id="time"
+                                variant="outline"
+                                class="w-full justify-between text-left font-normal"
+                                :class="{ 'text-muted-foreground': !formData.time }"
+                            >
+                                <span>{{ formatTimeDisplay(formData.time) }}</span>
+                                <Clock class="h-4 w-4 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-44 p-0" align="start" @interact-outside="timePickerOpen = false">
+                            <div class="flex h-48">
+                                <!-- Hours column -->
+                                <div class="flex flex-col border-r border-border flex-1">
+                                    <div class="py-1 text-xs font-medium text-muted-foreground text-center border-b border-border bg-muted/50">Hr</div>
+                                    <div class="overflow-y-auto flex-1">
+                                        <button
+                                            v-for="h in 12"
+                                            :key="h"
+                                            type="button"
+                                            class="w-full py-1 text-xs hover:bg-accent hover:text-accent-foreground text-center"
+                                            :class="{ 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground': selectedHour === h }"
+                                            @click="selectedHour = h; updateTimeFromPicker()"
+                                        >
+                                            {{ h }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Minutes column (5-minute increments) -->
+                                <div class="flex flex-col border-r border-border flex-1">
+                                    <div class="py-1 text-xs font-medium text-muted-foreground text-center border-b border-border bg-muted/50">Min</div>
+                                    <div class="overflow-y-auto flex-1">
+                                        <button
+                                            v-for="m in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]"
+                                            :key="m"
+                                            type="button"
+                                            class="w-full py-1 text-xs hover:bg-accent hover:text-accent-foreground text-center"
+                                            :class="{ 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground': selectedMinute === m }"
+                                            @click="selectedMinute = m; updateTimeFromPicker()"
+                                        >
+                                            {{ String(m).padStart(2, '0') }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- AM/PM column -->
+                                <div class="flex flex-col flex-1">
+                                    <div class="py-1 text-xs font-medium text-muted-foreground text-center border-b border-border bg-muted/50">AM/PM</div>
+                                    <div class="flex flex-col">
+                                        <button
+                                            type="button"
+                                            class="py-1.5 text-xs hover:bg-accent hover:text-accent-foreground text-center"
+                                            :class="{ 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground': selectedPeriod === 'AM' }"
+                                            @click="selectedPeriod = 'AM'; updateTimeFromPicker()"
+                                        >
+                                            AM
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="py-1.5 text-xs hover:bg-accent hover:text-accent-foreground text-center"
+                                            :class="{ 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground': selectedPeriod === 'PM' }"
+                                            @click="selectedPeriod = 'PM'; updateTimeFromPicker()"
+                                        >
+                                            PM
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 
@@ -685,7 +1010,7 @@ defineExpose({
                     Location
                 </Label>
                 <div class="flex gap-2">
-                    <Select v-model="formData.user_location_id">
+                    <Select v-model="formData.user_location_id" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                         <SelectTrigger id="location" class="flex-1">
                             <SelectValue placeholder="Select a location" />
                         </SelectTrigger>
@@ -715,7 +1040,7 @@ defineExpose({
                     Fish Species
                 </Label>
                 <div class="flex gap-2">
-                    <Select v-model="formData.user_fish_id">
+                    <Select v-model="formData.user_fish_id" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                         <SelectTrigger id="fish" class="flex-1">
                             <SelectValue placeholder="Select fish species" />
                         </SelectTrigger>
@@ -738,8 +1063,8 @@ defineExpose({
                 </div>
             </div>
 
-            <!-- Quantity and Max Size -->
-            <div class="grid gap-4 sm:grid-cols-2">
+            <!-- Quantity, Max Size, and Max Weight -->
+            <div class="grid gap-4 sm:grid-cols-3">
                 <div class="grid gap-2">
                     <Label for="quantity">Quantity Caught</Label>
                     <Input
@@ -761,13 +1086,24 @@ defineExpose({
                         step="0.1"
                     />
                 </div>
+                <div class="grid gap-2">
+                    <Label for="maxWeight">Max Weight (lbs)</Label>
+                    <Input
+                        id="maxWeight"
+                        type="number"
+                        v-model="formData.maxWeight"
+                        placeholder="e.g., 2.5"
+                        min="0"
+                        step="0.01"
+                    />
+                </div>
             </div>
 
             <!-- Fly -->
             <div class="grid gap-2">
                 <Label for="fly">Fly Used</Label>
                 <div class="flex gap-2">
-                    <Select v-model="formData.user_fly_id">
+                    <Select v-model="formData.user_fly_id" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                         <SelectTrigger id="fly" class="flex-1">
                             <SelectValue placeholder="Select a fly" />
                         </SelectTrigger>
@@ -796,7 +1132,7 @@ defineExpose({
             <div class="grid gap-2">
                 <Label for="equipment">Rod</Label>
                 <div class="flex gap-2">
-                    <Select v-model="formData.user_rod_id">
+                    <Select v-model="formData.user_rod_id" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                         <SelectTrigger id="equipment" class="flex-1">
                             <SelectValue placeholder="Select rod" />
                         </SelectTrigger>
@@ -829,11 +1165,11 @@ defineExpose({
                 />
             </div>
 
-            <!-- Moon Phase and Time of Day -->
-            <div class="grid grid-cols-2 gap-4">
+            <!-- Moon Phase, Moon Position, and Time of Day -->
+            <div class="grid grid-cols-3 gap-4">
                 <div class="grid gap-2">
                     <Label for="moonPhase">Moon Phase</Label>
-                    <Select v-model="formData.moonPhase">
+                    <Select v-model="formData.moonPhase" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                         <SelectTrigger id="moonPhase">
                             <SelectValue placeholder="Select moon phase" />
                         </SelectTrigger>
@@ -845,8 +1181,21 @@ defineExpose({
                     </Select>
                 </div>
                 <div class="grid gap-2">
+                    <Label for="moonPosition">Moon Position</Label>
+                    <Select v-model="formData.moonPosition" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
+                        <SelectTrigger id="moonPosition">
+                            <SelectValue placeholder="Select moon position" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="pos in moonPositionOptions" :key="pos" :value="pos">
+                                {{ pos }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="grid gap-2">
                     <Label for="timeOfDay">Time of Day</Label>
-                    <Select v-model="formData.timeOfDay">
+                    <Select v-model="formData.timeOfDay" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                         <SelectTrigger id="timeOfDay">
                             <SelectValue placeholder="Select time of day" />
                         </SelectTrigger>
@@ -1137,7 +1486,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="weather-cloud">Cloud Cover</Label>
-                        <Select v-model="formData.weather.cloud">
+                        <Select v-model="formData.weather.cloud" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="weather-cloud">
                                 <SelectValue placeholder="Select cloud cover" />
                             </SelectTrigger>
@@ -1150,7 +1499,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="weather-wind">Wind</Label>
-                        <Select v-model="formData.weather.wind">
+                        <Select v-model="formData.weather.wind" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="weather-wind">
                                 <SelectValue placeholder="Select wind conditions" />
                             </SelectTrigger>
@@ -1163,7 +1512,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="weather-precipitation">Precipitation</Label>
-                        <Select v-model="formData.weather.precipitation">
+                        <Select v-model="formData.weather.precipitation" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="weather-precipitation">
                                 <SelectValue placeholder="Select precipitation" />
                             </SelectTrigger>
@@ -1207,7 +1556,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="water-clarity">Clarity</Label>
-                        <Select v-model="formData.water_condition.clarity">
+                        <Select v-model="formData.water_condition.clarity" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="water-clarity">
                                 <SelectValue placeholder="Select water clarity" />
                             </SelectTrigger>
@@ -1220,7 +1569,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="water-level">Water Level</Label>
-                        <Select v-model="formData.water_condition.level">
+                        <Select v-model="formData.water_condition.level" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="water-level">
                                 <SelectValue placeholder="Select water level" />
                             </SelectTrigger>
@@ -1233,7 +1582,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="water-speed">Current Speed</Label>
-                        <Select v-model="formData.water_condition.speed">
+                        <Select v-model="formData.water_condition.speed" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="water-speed">
                                 <SelectValue placeholder="Select current speed" />
                             </SelectTrigger>
@@ -1246,7 +1595,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="water-surface">Surface Condition</Label>
-                        <Select v-model="formData.water_condition.surface_condition">
+                        <Select v-model="formData.water_condition.surface_condition" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="water-surface">
                                 <SelectValue placeholder="Select surface condition" />
                             </SelectTrigger>
@@ -1259,7 +1608,7 @@ defineExpose({
                     </div>
                     <div class="grid gap-2">
                         <Label for="water-tide">Tide (if applicable)</Label>
-                        <Select v-model="formData.water_condition.tide">
+                        <Select v-model="formData.water_condition.tide" @update:open="(open: boolean) => { if (open) { timePickerOpen = false; datePickerOpen = false; } }">
                             <SelectTrigger id="water-tide">
                                 <SelectValue placeholder="Select tide" />
                             </SelectTrigger>

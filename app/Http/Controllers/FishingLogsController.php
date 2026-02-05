@@ -7,6 +7,7 @@ use App\Models\FishingLog;
 use App\Models\UserLocation;
 use App\Models\UserWaterCondition;
 use App\Models\UserWeather;
+use App\Services\MoonPositionCalculator;
 use App\Services\TimeOfDayCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -98,6 +99,28 @@ class FishingLogsController extends Controller
             $userWaterConditionId = $waterCondition->id;
         }
 
+        // Use user-provided moon position, or calculate if not provided
+        $moonAltitude = null;
+        $moonPosition = $validated['moon_position'] ?? null;
+
+        // Only calculate if user didn't provide a moon position and we have location
+        if (empty($moonPosition) && !empty($validated['user_location_id'])) {
+            $location = UserLocation::where('id', $validated['user_location_id'])
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if ($location && $location->latitude && $location->longitude) {
+                $moonData = MoonPositionCalculator::calculate(
+                    $validated['date'],
+                    $validated['time'] ?? null,
+                    $location->latitude,
+                    $location->longitude
+                );
+                $moonAltitude = $moonData['altitude'];
+                $moonPosition = $moonData['position'];
+            }
+        }
+
         // Create the fishing log
         $fishingLog = FishingLog::create([
             'user_id' => auth()->id(),
@@ -108,12 +131,15 @@ class FishingLogsController extends Controller
             'user_fish_id' => $validated['user_fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
             'max_size' => $validated['max_size'] ?? null,
+            'max_weight' => $validated['max_weight'] ?? null,
             'user_fly_id' => $validated['user_fly_id'] ?? null,
             'user_rod_id' => $validated['user_rod_id'] ?? null,
             'user_weather_id' => $userWeatherId,
             'user_water_condition_id' => $userWaterConditionId,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
+            'moon_altitude' => $moonAltitude,
+            'moon_position' => $moonPosition,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -211,6 +237,28 @@ class FishingLogsController extends Controller
             }
         }
 
+        // Use user-provided moon position, or calculate if not provided
+        $moonAltitude = null;
+        $moonPosition = $validated['moon_position'] ?? null;
+
+        // Only calculate if user didn't provide a moon position and we have location
+        if (empty($moonPosition) && !empty($validated['user_location_id'])) {
+            $location = UserLocation::where('id', $validated['user_location_id'])
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if ($location && $location->latitude && $location->longitude) {
+                $moonData = MoonPositionCalculator::calculate(
+                    $validated['date'],
+                    $validated['time'] ?? null,
+                    $location->latitude,
+                    $location->longitude
+                );
+                $moonAltitude = $moonData['altitude'];
+                $moonPosition = $moonData['position'];
+            }
+        }
+
         // Update the fishing log
         $fishingLog->update([
             'date' => $validated['date'],
@@ -220,12 +268,15 @@ class FishingLogsController extends Controller
             'user_fish_id' => $validated['user_fish_id'] ?? null,
             'quantity' => $validated['quantity'] ?? null,
             'max_size' => $validated['max_size'] ?? null,
+            'max_weight' => $validated['max_weight'] ?? null,
             'user_fly_id' => $validated['user_fly_id'] ?? null,
             'user_rod_id' => $validated['user_rod_id'] ?? null,
             'user_weather_id' => $userWeatherId,
             'user_water_condition_id' => $userWaterConditionId,
             'style' => $validated['style'] ?? null,
             'moon_phase' => $validated['moon_phase'] ?? null,
+            'moon_altitude' => $moonAltitude,
+            'moon_position' => $moonPosition,
             'notes' => $validated['notes'] ?? null,
         ]);
 
@@ -321,6 +372,56 @@ class FishingLogsController extends Controller
 
         return response()->json([
             'time_of_day' => $timeOfDay,
+        ]);
+    }
+
+    /**
+     * Calculate moon position based on time, date, and location.
+     *
+     * Uses the MoonPositionCalculator service to determine the moon's position
+     * based on astronomical calculations for the given location.
+     */
+    public function calculateMoonPosition(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'time' => 'nullable|string',
+            'date' => 'required|date',
+            'location_id' => 'nullable|integer|exists:user_locations,id',
+        ]);
+
+        $latitude = null;
+        $longitude = null;
+
+        // Get coordinates from location if provided
+        if (!empty($validated['location_id'])) {
+            $location = UserLocation::where('id', $validated['location_id'])
+                ->where('user_id', auth()->id())
+                ->first();
+
+            if ($location) {
+                $latitude = $location->latitude;
+                $longitude = $location->longitude;
+            }
+        }
+
+        // If no coordinates, return empty
+        if ($latitude === null || $longitude === null) {
+            return response()->json([
+                'moon_position' => null,
+                'moon_altitude' => null,
+            ]);
+        }
+
+        $moonData = MoonPositionCalculator::calculate(
+            $validated['date'],
+            $validated['time'] ?? null,
+            $latitude,
+            $longitude
+        );
+
+        return response()->json([
+            'moon_position' => $moonData['position'],
+            'moon_altitude' => $moonData['altitude'],
         ]);
     }
 

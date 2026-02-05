@@ -7,8 +7,8 @@ import { createReusableTemplate, reactiveOmit, useVModel } from "@vueuse/core"
 import { CalendarRoot, useDateFormatter, useForwardPropsEmits } from "reka-ui"
 import { createYear, createYearRange, toDate } from "reka-ui/date"
 import { computed, toRaw } from "vue"
+import { ChevronDownIcon } from "lucide-vue-next"
 import { cn } from "@/lib/utils"
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { CalendarCell, CalendarCellTrigger, CalendarGrid, CalendarGridBody, CalendarGridHead, CalendarGridRow, CalendarHeadCell, CalendarHeader, CalendarHeading, CalendarNextButton, CalendarPrevButton } from "."
 
 const props = withDefaults(defineProps<CalendarRootProps & { class?: HTMLAttributes["class"], layout?: LayoutTypes, yearRange?: DateValue[] }>(), {
@@ -44,46 +44,38 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
 
 <template>
   <DefineMonthTemplate v-slot="{ date }">
-    <div class="**:data-[slot=native-select-icon]:right-1">
-      <div class="relative">
-        <div class="absolute inset-0 flex h-full items-center text-sm pl-2 pointer-events-none">
-          {{ formatter.custom(toDate(date), { month: 'short' }) }}
-        </div>
-        <NativeSelect
-          class="text-xs h-8 pr-6 pl-2 text-transparent relative"
-          @change="(e: Event) => {
-            placeholder = placeholder.set({
-              month: Number((e?.target as any)?.value),
-            })
-          }"
-        >
-          <NativeSelectOption v-for="(month) in createYear({ dateObj: date })" :key="month.toString()" :value="month.month" :selected="date.month === month.month">
-            {{ formatter.custom(toDate(month), { month: 'short' }) }}
-          </NativeSelectOption>
-        </NativeSelect>
-      </div>
+    <div class="relative inline-flex items-center">
+      <select
+        class="h-8 pl-3 pr-7 text-sm cursor-pointer appearance-none bg-transparent border border-input rounded-md outline-none focus:border-ring focus:ring-ring/50 focus:ring-[3px]"
+        @change="(e: Event) => {
+          placeholder = placeholder.set({
+            month: Number((e?.target as any)?.value),
+          })
+        }"
+      >
+        <option v-for="(month) in createYear({ dateObj: date })" :key="month.toString()" :value="month.month" :selected="date.month === month.month">
+          {{ formatter.custom(toDate(month), { month: 'short' }) }}
+        </option>
+      </select>
+      <ChevronDownIcon class="absolute right-2 size-4 pointer-events-none opacity-50" />
     </div>
   </DefineMonthTemplate>
 
   <DefineYearTemplate v-slot="{ date }">
-    <div class="**:data-[slot=native-select-icon]:right-1">
-      <div class="relative">
-        <div class="absolute inset-0 flex h-full items-center text-sm pl-2 pointer-events-none">
-          {{ formatter.custom(toDate(date), { year: 'numeric' }) }}
-        </div>
-        <NativeSelect
-          class="text-xs h-8 pr-6 pl-2 text-transparent relative"
-          @change="(e: Event) => {
-            placeholder = placeholder.set({
-              year: Number((e?.target as any)?.value),
-            })
-          }"
-        >
-          <NativeSelectOption v-for="(year) in yearRange" :key="year.toString()" :value="year.year" :selected="date.year === year.year">
-            {{ formatter.custom(toDate(year), { year: 'numeric' }) }}
-          </NativeSelectOption>
-        </NativeSelect>
-      </div>
+    <div class="relative inline-flex items-center">
+      <select
+        class="h-8 pl-3 pr-7 text-sm cursor-pointer appearance-none bg-transparent border border-input rounded-md outline-none focus:border-ring focus:ring-ring/50 focus:ring-[3px]"
+        @change="(e: Event) => {
+          placeholder = placeholder.set({
+            year: Number((e?.target as any)?.value),
+          })
+        }"
+      >
+        <option v-for="(year) in yearRange" :key="year.toString()" :value="year.year" :selected="date.year === year.year">
+          {{ formatter.custom(toDate(year), { year: 'numeric' }) }}
+        </option>
+      </select>
+      <ChevronDownIcon class="absolute right-2 size-4 pointer-events-none opacity-50" />
     </div>
   </DefineYearTemplate>
 
@@ -155,7 +147,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     <div class="flex flex-col gap-y-4 mt-4 sm:flex-row sm:gap-x-4 sm:gap-y-0">
       <CalendarGrid v-for="month in grid" :key="month.value.toString()">
         <CalendarGridHead>
-          <CalendarGridRow>
+          <CalendarGridRow class="w-full">
             <CalendarHeadCell
               v-for="day in weekDays" :key="day"
             >

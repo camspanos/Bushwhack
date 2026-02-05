@@ -136,6 +136,235 @@ interface SunPhaseData {
     total_caught: number;
 }
 
+// Weather stats interfaces
+interface BestCondition {
+    cloud?: string;
+    wind?: string;
+    pressure?: string;
+    total: number;
+}
+
+interface PrecipitationData {
+    precipitation: string;
+    total_caught: number;
+}
+
+// Water condition interfaces
+interface WaterLevelData {
+    level: string;
+    total_caught: number;
+}
+
+interface TideData {
+    tide: string;
+    total_caught: number;
+}
+
+// Moon position interfaces
+interface MoonPositionData {
+    position: string;
+    total_caught: number;
+}
+
+interface MajorMinorFeeding {
+    major: number;
+    minor: number;
+}
+
+interface BestMoonForBigFish {
+    position: string;
+    biggest_size: number;
+    avg_size: number;
+}
+
+// Weight interfaces
+interface HeaviestCatch {
+    weight: number;
+    species: string | null;
+    location: string | null;
+    date: string;
+}
+
+interface AvgWeightBySpecies {
+    species: string | null;
+    avg_weight: number;
+    count: number;
+}
+
+// Friend interfaces
+interface MostProductiveBuddy {
+    name: string;
+    total: number;
+    trips: number;
+}
+
+interface SoloVsGroup {
+    solo: { catches: number; trips: number; avg: number };
+    group: { catches: number; trips: number; avg: number };
+}
+
+interface LuckyCharmFriend {
+    name: string;
+    biggest_fish: number;
+    avg_size: number;
+}
+
+// Rod and style interfaces
+interface RodStats {
+    name: string | null;
+    total: number;
+    days: number;
+}
+
+interface BestRodForTrophies {
+    name: string | null;
+    biggest_size: number;
+    avg_size: number;
+}
+
+interface StyleData {
+    style: string;
+    total_caught: number;
+}
+
+interface MostSuccessfulStyle {
+    style: string;
+    total: number;
+    days: number;
+}
+
+// Golden conditions interfaces
+interface GoldenConditions {
+    moon_position: string | null;
+    moon_phase: string | null;
+    time_of_day: string | null;
+    cloud: string | null;
+    clarity: string | null;
+}
+
+interface BestConditions {
+    moon_position?: string;
+    time_of_day?: string;
+    cloud?: string;
+    clarity?: string;
+}
+
+// Time pattern interfaces
+interface BestHour {
+    hour: number;
+    formatted: string;
+    total: number;
+}
+
+interface BestDayOfMonth {
+    day: number;
+    total: number;
+}
+
+interface SeasonalTrend {
+    total: number;
+    days: number;
+    avg: number;
+}
+
+// Location intelligence interfaces
+interface MostConsistentSpot {
+    name: string;
+    success_rate: number;
+    days: number;
+}
+
+interface BestLocationBySeason {
+    name: string;
+    total: number;
+}
+
+// Species deep dive interfaces
+interface RarestCatch {
+    name: string;
+    count: number;
+}
+
+interface SpeciesStreak {
+    name: string;
+    count: number;
+}
+
+interface SizeImprovementItem {
+    name: string;
+    improvement: number;
+    current_avg: number;
+}
+
+// Fly pattern interfaces
+interface OneHitWonder {
+    name: string;
+    caught: number;
+}
+
+interface ReliableProducer {
+    name: string;
+    success_rate: number;
+    total: number;
+}
+
+interface BestFlyByLocation {
+    location: string;
+    fly: string;
+    total: number;
+}
+
+interface BestFlyBySpecies {
+    species: string;
+    fly: string;
+    total: number;
+}
+
+// Progress interfaces
+interface YoyComparison {
+    thisYear: { catches: number; days: number; biggest: number | null };
+    lastYear: { catches: number; days: number; biggest: number | null };
+    catchChange: number | null;
+}
+
+interface PersonalBest {
+    size: number;
+    species: string;
+    location: string;
+    date: string;
+}
+
+// Environmental combo interfaces
+interface WindCloudCombo {
+    wind: string;
+    cloud: string;
+    total: number;
+}
+
+interface MoonTimeCombo {
+    moon: string;
+    time: string;
+    total: number;
+}
+
+interface WaterWeatherCombo {
+    clarity: string;
+    cloud: string;
+    total: number;
+}
+
+// Gamification interfaces
+interface Badge {
+    name: string;
+    icon: string;
+    description: string;
+}
+
+interface LuckyNumber {
+    number: number;
+    occurrences: number;
+}
+
 const props = defineProps<{
     stats: Stats;
     allSpecies: SpeciesData[];
@@ -155,6 +384,76 @@ const props = defineProps<{
     catchesOverTime: CatchOverTime[];
     streakStats: StreakStats;
     favoriteWeekday: FavoriteWeekday | null;
+    // Weather stats
+    bestCloudCover: { cloud: string; total: number } | null;
+    bestWindCondition: { wind: string; total: number } | null;
+    catchesByPrecipitation: PrecipitationData[];
+    bestBarometricPressure: { pressure: string; total: number } | null;
+    // Water condition stats
+    bestWaterClarity: { clarity: string; total: number } | null;
+    catchesByWaterLevel: WaterLevelData[];
+    bestWaterSpeed: { speed: string; total: number } | null;
+    bestSurfaceCondition: { condition: string; total: number } | null;
+    catchesByTide: TideData[];
+    // Moon position stats (Solunar)
+    catchesByMoonPosition: MoonPositionData[];
+    majorVsMinorFeeding: MajorMinorFeeding;
+    bestMoonForBigFish: BestMoonForBigFish | null;
+    // Weight stats
+    heaviestCatch: HeaviestCatch | null;
+    totalWeight: number;
+    avgWeightBySpecies: AvgWeightBySpecies | null;
+    // Friend stats
+    mostProductiveBuddy: MostProductiveBuddy | null;
+    soloVsGroup: SoloVsGroup;
+    luckyCharmFriend: LuckyCharmFriend | null;
+    // Rod and style stats
+    mostSuccessfulRod: RodStats | null;
+    bestRodForTrophies: BestRodForTrophies | null;
+    catchesByStyle: StyleData[];
+    mostSuccessfulStyle: MostSuccessfulStyle | null;
+    // Golden conditions
+    goldenConditions: GoldenConditions;
+    bestConditions: BestConditions;
+    // Time pattern stats
+    bestHour: BestHour | null;
+    timeBlocks: Record<string, number>;
+    bestDayOfMonth: BestDayOfMonth | null;
+    seasonalTrends: Record<string, SeasonalTrend>;
+    consecutiveDaysStreak: number | null;
+    daysSinceSkunk: number | null;
+    // Location stats
+    locationVariety: number;
+    mostConsistentSpot: MostConsistentSpot | null;
+    underexploredSpots: number;
+    bestLocationBySeason: Record<string, BestLocationBySeason>;
+    newSpotSuccessRate: number | null;
+    // Species stats
+    speciesDiversity: number;
+    rarestCatches: RarestCatch[];
+    speciesStreak: SpeciesStreak | null;
+    newSpeciesThisYear: number;
+    sizeImprovement: SizeImprovementItem[];
+    // Fly pattern stats
+    flyRotation: number;
+    oneHitWonders: OneHitWonder[];
+    reliableProducers: ReliableProducer[];
+    bestFlyByLocation: BestFlyByLocation[];
+    bestFlyBySpecies: BestFlyBySpecies[];
+    // Progress stats
+    yoyComparison: YoyComparison;
+    personalBests: PersonalBest[];
+    improvementRate: number | null;
+    fishingFrequency: Record<string, number>;
+    // Environmental combo stats
+    windCloudCombo: WindCloudCombo | null;
+    moonTimeCombo: MoonTimeCombo | null;
+    waterWeatherCombo: WaterWeatherCombo | null;
+    // Gamification stats
+    fishingScore: number;
+    badges: Badge[];
+    hotStreak: number | null;
+    luckyNumber: LuckyNumber | null;
     availableYears: string[];
     selectedYear: string;
     dashboardPreferences: CardPreference[];
@@ -2261,6 +2560,2333 @@ const hoveredSunSlice = ref<number | null>(null);
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No location data available</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== WEATHER CARDS ========== -->
+
+                <!-- Best Cloud Cover -->
+                <DashboardCard
+                    v-if="isCardVisible('best_cloud_cover')"
+                    card-id="best_cloud_cover"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_cloud_cover')"
+                    :order="getCardOrder('best_cloud_cover')"
+                    :size="getCardSize('best_cloud_cover')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_cloud_cover')"
+                    :is-last="isCardLast('best_cloud_cover')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_cloud_cover')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/30 to-transparent dark:from-sky-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-sky-100 p-1.5 dark:bg-sky-900/30">
+                                <span class="text-lg">☁️</span>
+                            </div>
+                            Best Cloud Cover
+                        </CardTitle>
+                        <CardDescription>Most productive sky condition</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestCloudCover" class="space-y-2">
+                            <div class="text-xl font-bold text-sky-700 dark:text-sky-300">{{ bestCloudCover.cloud }}</div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+                                🎣 {{ bestCloudCover.total }} fish caught
+                            </span>
+                        </div>
+                        <p v-else class="text-muted-foreground">No weather data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Wind Condition -->
+                <DashboardCard
+                    v-if="isCardVisible('best_wind_condition')"
+                    card-id="best_wind_condition"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_wind_condition')"
+                    :order="getCardOrder('best_wind_condition')"
+                    :size="getCardSize('best_wind_condition')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_wind_condition')"
+                    :is-last="isCardLast('best_wind_condition')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_wind_condition')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-slate-100 p-1.5 dark:bg-slate-900/30">
+                                <span class="text-lg">💨</span>
+                            </div>
+                            Best Wind Condition
+                        </CardTitle>
+                        <CardDescription>Most productive wind</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestWindCondition" class="space-y-2">
+                            <div class="text-xl font-bold text-slate-700 dark:text-slate-300">{{ bestWindCondition.wind }}</div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-900/30 dark:text-slate-300">
+                                🎣 {{ bestWindCondition.total }} fish caught
+                            </span>
+                        </div>
+                        <p v-else class="text-muted-foreground">No wind data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Precipitation -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_precipitation')"
+                    card-id="catches_by_precipitation"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_precipitation')"
+                    :order="getCardOrder('catches_by_precipitation')"
+                    :size="getCardSize('catches_by_precipitation')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_precipitation')"
+                    :is-last="isCardLast('catches_by_precipitation')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_precipitation')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
+                                <span class="text-lg">🌧️</span>
+                            </div>
+                            Catches by Precipitation
+                        </CardTitle>
+                        <CardDescription>Fish caught in different weather</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByPrecipitation.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByPrecipitation" :key="item.precipitation" class="flex items-center justify-between">
+                                <span class="text-sm font-medium">{{ item.precipitation }}</span>
+                                <span class="text-sm font-bold text-blue-700 dark:text-blue-300">{{ item.total_caught }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No precipitation data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Barometric Pressure -->
+                <DashboardCard
+                    v-if="isCardVisible('best_barometric_pressure')"
+                    card-id="best_barometric_pressure"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_barometric_pressure')"
+                    :order="getCardOrder('best_barometric_pressure')"
+                    :size="getCardSize('best_barometric_pressure')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_barometric_pressure')"
+                    :is-last="isCardLast('best_barometric_pressure')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_barometric_pressure')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-indigo-100 p-1.5 dark:bg-indigo-900/30">
+                                <span class="text-lg">📊</span>
+                            </div>
+                            Best Barometric Pressure
+                        </CardTitle>
+                        <CardDescription>Most productive pressure trend</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestBarometricPressure" class="space-y-2">
+                            <div class="text-xl font-bold text-indigo-700 dark:text-indigo-300">{{ bestBarometricPressure.pressure }}</div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                                🎣 {{ bestBarometricPressure.total }} fish caught
+                            </span>
+                        </div>
+                        <p v-else class="text-muted-foreground">No pressure data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== WATER CONDITION CARDS ========== -->
+
+                <!-- Best Water Clarity -->
+                <DashboardCard
+                    v-if="isCardVisible('best_water_clarity')"
+                    card-id="best_water_clarity"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_water_clarity')"
+                    :order="getCardOrder('best_water_clarity')"
+                    :size="getCardSize('best_water_clarity')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_water_clarity')"
+                    :is-last="isCardLast('best_water_clarity')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_water_clarity')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-cyan-50/30 to-transparent dark:from-cyan-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-cyan-100 p-1.5 dark:bg-cyan-900/30">
+                                <span class="text-lg">💧</span>
+                            </div>
+                            Best Water Clarity
+                        </CardTitle>
+                        <CardDescription>Most productive water clarity</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestWaterClarity" class="space-y-2">
+                            <div class="text-xl font-bold text-cyan-700 dark:text-cyan-300">{{ bestWaterClarity.clarity }}</div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300">
+                                🎣 {{ bestWaterClarity.total }} fish caught
+                            </span>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water clarity data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Water Level -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_water_level')"
+                    card-id="catches_by_water_level"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_water_level')"
+                    :order="getCardOrder('catches_by_water_level')"
+                    :size="getCardSize('catches_by_water_level')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_water_level')"
+                    :is-last="isCardLast('catches_by_water_level')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_water_level')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                <span class="text-lg">📏</span>
+                            </div>
+                            Catches by Water Level
+                        </CardTitle>
+                        <CardDescription>Fish caught at different levels</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByWaterLevel.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByWaterLevel" :key="item.level" class="flex items-center justify-between">
+                                <span class="text-sm font-medium">{{ item.level }}</span>
+                                <span class="text-sm font-bold text-teal-700 dark:text-teal-300">{{ item.total_caught }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water level data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Water Speed -->
+                <DashboardCard
+                    v-if="isCardVisible('best_water_speed')"
+                    card-id="best_water_speed"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_water_speed')"
+                    :order="getCardOrder('best_water_speed')"
+                    :size="getCardSize('best_water_speed')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_water_speed')"
+                    :is-last="isCardLast('best_water_speed')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_water_speed')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
+                                <span class="text-lg">🌊</span>
+                            </div>
+                            Best Water Speed
+                        </CardTitle>
+                        <CardDescription>Most productive current speed</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestWaterSpeed" class="space-y-2">
+                            <div class="text-xl font-bold text-blue-700 dark:text-blue-300">{{ bestWaterSpeed.speed }}</div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                🎣 {{ bestWaterSpeed.total }} fish caught
+                            </span>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water speed data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Surface Condition -->
+                <DashboardCard
+                    v-if="isCardVisible('best_surface_condition')"
+                    card-id="best_surface_condition"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_surface_condition')"
+                    :order="getCardOrder('best_surface_condition')"
+                    :size="getCardSize('best_surface_condition')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_surface_condition')"
+                    :is-last="isCardLast('best_surface_condition')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_surface_condition')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/30 to-transparent dark:from-sky-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-sky-100 p-1.5 dark:bg-sky-900/30">
+                                <span class="text-lg">〰️</span>
+                            </div>
+                            Best Surface Condition
+                        </CardTitle>
+                        <CardDescription>Most productive surface</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestSurfaceCondition" class="space-y-2">
+                            <div class="text-xl font-bold text-sky-700 dark:text-sky-300">{{ bestSurfaceCondition.condition }}</div>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+                                🎣 {{ bestSurfaceCondition.total }} fish caught
+                            </span>
+                        </div>
+                        <p v-else class="text-muted-foreground">No surface data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Tide -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_tide')"
+                    card-id="catches_by_tide"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_tide')"
+                    :order="getCardOrder('catches_by_tide')"
+                    :size="getCardSize('catches_by_tide')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_tide')"
+                    :is-last="isCardLast('catches_by_tide')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_tide')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-indigo-100 p-1.5 dark:bg-indigo-900/30">
+                                <span class="text-lg">🌊</span>
+                            </div>
+                            Catches by Tide
+                        </CardTitle>
+                        <CardDescription>Fish caught at different tides</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByTide.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByTide" :key="item.tide" class="flex items-center justify-between">
+                                <span class="text-sm font-medium">{{ item.tide }}</span>
+                                <span class="text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ item.total_caught }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No tide data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== MOON POSITION CARDS (SOLUNAR) ========== -->
+
+                <!-- Catches by Moon Position -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_moon_position')"
+                    card-id="catches_by_moon_position"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_moon_position')"
+                    :order="getCardOrder('catches_by_moon_position')"
+                    :size="getCardSize('catches_by_moon_position')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_moon_position')"
+                    :is-last="isCardLast('catches_by_moon_position')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_moon_position')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-violet-50/30 to-transparent dark:from-violet-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-violet-100 p-1.5 dark:bg-violet-900/30">
+                                <Moon class="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            Catches by Moon Position
+                        </CardTitle>
+                        <CardDescription>Solunar theory analysis</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByMoonPosition.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByMoonPosition" :key="item.position" class="flex items-center justify-between">
+                                <span class="text-sm font-medium">{{ item.position }}</span>
+                                <span class="text-sm font-bold text-violet-700 dark:text-violet-300">{{ item.total_caught }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No moon position data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Major vs Minor Feeding -->
+                <DashboardCard
+                    v-if="isCardVisible('major_vs_minor_feeding')"
+                    card-id="major_vs_minor_feeding"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('major_vs_minor_feeding')"
+                    :order="getCardOrder('major_vs_minor_feeding')"
+                    :size="getCardSize('major_vs_minor_feeding')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('major_vs_minor_feeding')"
+                    :is-last="isCardLast('major_vs_minor_feeding')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('major_vs_minor_feeding')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-purple-100 p-1.5 dark:bg-purple-900/30">
+                                <span class="text-lg">🌙</span>
+                            </div>
+                            Major vs Minor Feeding
+                        </CardTitle>
+                        <CardDescription>Overhead/Underfoot vs Rising/Setting</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="majorVsMinorFeeding.major > 0 || majorVsMinorFeeding.minor > 0" class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">⭐</span>
+                                    <span class="text-sm font-medium">Major (Overhead/Underfoot)</span>
+                                </div>
+                                <span class="text-lg font-bold text-purple-700 dark:text-purple-300">{{ majorVsMinorFeeding.major }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">✨</span>
+                                    <span class="text-sm font-medium">Minor (Rising/Setting)</span>
+                                </div>
+                                <span class="text-lg font-bold text-purple-700 dark:text-purple-300">{{ majorVsMinorFeeding.minor }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No feeding window data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Moon for Big Fish -->
+                <DashboardCard
+                    v-if="isCardVisible('best_moon_for_big_fish')"
+                    card-id="best_moon_for_big_fish"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_moon_for_big_fish')"
+                    :order="getCardOrder('best_moon_for_big_fish')"
+                    :size="getCardSize('best_moon_for_big_fish')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_moon_for_big_fish')"
+                    :is-last="isCardLast('best_moon_for_big_fish')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_moon_for_big_fish')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-fuchsia-50/30 to-transparent dark:from-fuchsia-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-fuchsia-100 p-1.5 dark:bg-fuchsia-900/30">
+                                <span class="text-lg">🏆</span>
+                            </div>
+                            Best Moon for Big Fish
+                        </CardTitle>
+                        <CardDescription>Moon position for trophy catches</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestMoonForBigFish" class="space-y-2">
+                            <div class="text-xl font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ bestMoonForBigFish.position }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                                    📏 Biggest: {{ formatSize(bestMoonForBigFish.biggest_size) }}"
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                                    📊 Avg: {{ formatSize(bestMoonForBigFish.avg_size) }}"
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No size data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== WEIGHT CARDS ========== -->
+
+                <!-- Heaviest Catch -->
+                <DashboardCard
+                    v-if="isCardVisible('heaviest_catch')"
+                    card-id="heaviest_catch"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('heaviest_catch')"
+                    :order="getCardOrder('heaviest_catch')"
+                    :size="getCardSize('heaviest_catch')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('heaviest_catch')"
+                    :is-last="isCardLast('heaviest_catch')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('heaviest_catch')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
+                                <span class="text-lg">⚖️</span>
+                            </div>
+                            Heaviest Catch
+                        </CardTitle>
+                        <CardDescription>Your biggest fish by weight</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="heaviestCatch" class="space-y-2">
+                            <div class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ heaviestCatch.weight }} lbs</div>
+                            <div class="text-sm text-muted-foreground">
+                                <span v-if="heaviestCatch.species">{{ heaviestCatch.species }}</span>
+                                <span v-if="heaviestCatch.location"> @ {{ heaviestCatch.location }}</span>
+                            </div>
+                            <div class="text-xs text-muted-foreground">{{ formatDate(heaviestCatch.date) }}</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No weight data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Total Weight -->
+                <DashboardCard
+                    v-if="isCardVisible('total_weight')"
+                    card-id="total_weight"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('total_weight')"
+                    :order="getCardOrder('total_weight')"
+                    :size="getCardSize('total_weight')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('total_weight')"
+                    :is-last="isCardLast('total_weight')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('total_weight')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
+                                <span class="text-lg">📦</span>
+                            </div>
+                            Total Weight Caught
+                        </CardTitle>
+                        <CardDescription>Combined weight of all catches</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="totalWeight > 0" class="space-y-2">
+                            <div class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ totalWeight }} lbs</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No weight data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Avg Weight by Species -->
+                <DashboardCard
+                    v-if="isCardVisible('avg_weight_by_species')"
+                    card-id="avg_weight_by_species"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('avg_weight_by_species')"
+                    :order="getCardOrder('avg_weight_by_species')"
+                    :size="getCardSize('avg_weight_by_species')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('avg_weight_by_species')"
+                    :is-last="isCardLast('avg_weight_by_species')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('avg_weight_by_species')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
+                                <span class="text-lg">📊</span>
+                            </div>
+                            Avg Weight by Species
+                        </CardTitle>
+                        <CardDescription>Heaviest species on average</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="avgWeightBySpecies" class="space-y-2">
+                            <div class="text-xl font-bold text-yellow-700 dark:text-yellow-300">{{ avgWeightBySpecies.species }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                    ⚖️ Avg: {{ avgWeightBySpecies.avg_weight }} lbs
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                    🎣 {{ avgWeightBySpecies.count }} caught
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Need 2+ catches with weight</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== FRIEND/SOCIAL CARDS ========== -->
+
+                <!-- Most Productive Buddy -->
+                <DashboardCard
+                    v-if="isCardVisible('most_productive_buddy')"
+                    card-id="most_productive_buddy"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_productive_buddy')"
+                    :order="getCardOrder('most_productive_buddy')"
+                    :size="getCardSize('most_productive_buddy')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_productive_buddy')"
+                    :is-last="isCardLast('most_productive_buddy')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_productive_buddy')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-transparent dark:from-green-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-green-100 p-1.5 dark:bg-green-900/30">
+                                <Users class="h-5 w-5 text-green-600 dark:text-green-400" />
+                            </div>
+                            Most Productive Buddy
+                        </CardTitle>
+                        <CardDescription>Best fishing partner</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostProductiveBuddy" class="space-y-2">
+                            <div class="text-xl font-bold text-green-700 dark:text-green-300">{{ mostProductiveBuddy.name }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                    🎣 {{ mostProductiveBuddy.total }} fish together
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                    📅 {{ mostProductiveBuddy.trips }} trips
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No buddy data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Solo vs Group -->
+                <DashboardCard
+                    v-if="isCardVisible('solo_vs_group')"
+                    card-id="solo_vs_group"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('solo_vs_group')"
+                    :order="getCardOrder('solo_vs_group')"
+                    :size="getCardSize('solo_vs_group')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('solo_vs_group')"
+                    :is-last="isCardLast('solo_vs_group')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('solo_vs_group')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
+                                <span class="text-lg">🎯</span>
+                            </div>
+                            Solo vs Group Fishing
+                        </CardTitle>
+                        <CardDescription>Compare your fishing styles</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="soloVsGroup.solo.trips > 0 || soloVsGroup.group.trips > 0" class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">🧘</span>
+                                    <span class="text-sm font-medium">Solo</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-bold text-teal-700 dark:text-teal-300">{{ soloVsGroup.solo.catches }}</span>
+                                    <span class="text-xs text-muted-foreground ml-1">({{ soloVsGroup.solo.avg }}/trip)</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">👥</span>
+                                    <span class="text-sm font-medium">Group</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-bold text-teal-700 dark:text-teal-300">{{ soloVsGroup.group.catches }}</span>
+                                    <span class="text-xs text-muted-foreground ml-1">({{ soloVsGroup.group.avg }}/trip)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No trip data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Lucky Charm Friend -->
+                <DashboardCard
+                    v-if="isCardVisible('lucky_charm_friend')"
+                    card-id="lucky_charm_friend"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('lucky_charm_friend')"
+                    :order="getCardOrder('lucky_charm_friend')"
+                    :size="getCardSize('lucky_charm_friend')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('lucky_charm_friend')"
+                    :is-last="isCardLast('lucky_charm_friend')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('lucky_charm_friend')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-transparent dark:from-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-emerald-100 p-1.5 dark:bg-emerald-900/30">
+                                <span class="text-lg">🍀</span>
+                            </div>
+                            Lucky Charm Friend
+                        </CardTitle>
+                        <CardDescription>Present during biggest catches</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="luckyCharmFriend" class="space-y-2">
+                            <div class="text-xl font-bold text-emerald-700 dark:text-emerald-300">{{ luckyCharmFriend.name }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                    📏 Biggest: {{ formatSize(luckyCharmFriend.biggest_fish) }}"
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                    📊 Avg: {{ formatSize(luckyCharmFriend.avg_size) }}"
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No friend data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== ROD & STYLE CARDS ========== -->
+
+                <!-- Most Successful Rod -->
+                <DashboardCard
+                    v-if="isCardVisible('most_successful_rod')"
+                    card-id="most_successful_rod"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_successful_rod')"
+                    :order="getCardOrder('most_successful_rod')"
+                    :size="getCardSize('most_successful_rod')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_successful_rod')"
+                    :is-last="isCardLast('most_successful_rod')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_successful_rod')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-stone-50/30 to-transparent dark:from-stone-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-stone-100 p-1.5 dark:bg-stone-900/30">
+                                <span class="text-lg">🎣</span>
+                            </div>
+                            Most Successful Rod
+                        </CardTitle>
+                        <CardDescription>Your go-to rod</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulRod" class="space-y-2">
+                            <div class="text-xl font-bold text-stone-700 dark:text-stone-300">{{ mostSuccessfulRod.name }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-800 dark:bg-stone-900/30 dark:text-stone-300">
+                                    🎣 {{ mostSuccessfulRod.total }} fish
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-800 dark:bg-stone-900/30 dark:text-stone-300">
+                                    📅 {{ mostSuccessfulRod.days }} days
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No rod data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Rod for Trophies -->
+                <DashboardCard
+                    v-if="isCardVisible('best_rod_for_trophies')"
+                    card-id="best_rod_for_trophies"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_rod_for_trophies')"
+                    :order="getCardOrder('best_rod_for_trophies')"
+                    :size="getCardSize('best_rod_for_trophies')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_rod_for_trophies')"
+                    :is-last="isCardLast('best_rod_for_trophies')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_rod_for_trophies')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
+                                <span class="text-lg">🏆</span>
+                            </div>
+                            Best Rod for Trophies
+                        </CardTitle>
+                        <CardDescription>Rod for biggest catches</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestRodForTrophies" class="space-y-2">
+                            <div class="text-xl font-bold text-amber-700 dark:text-amber-300">{{ bestRodForTrophies.name }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                    📏 Biggest: {{ formatSize(bestRodForTrophies.biggest_size) }}"
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                    📊 Avg: {{ formatSize(bestRodForTrophies.avg_size) }}"
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No rod size data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Style -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_style')"
+                    card-id="catches_by_style"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_style')"
+                    :order="getCardOrder('catches_by_style')"
+                    :size="getCardSize('catches_by_style')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_style')"
+                    :is-last="isCardLast('catches_by_style')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_style')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-rose-100 p-1.5 dark:bg-rose-900/30">
+                                <span class="text-lg">🎨</span>
+                            </div>
+                            Catches by Style
+                        </CardTitle>
+                        <CardDescription>Fish caught per technique</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByStyle.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByStyle" :key="item.style" class="flex items-center justify-between">
+                                <span class="text-sm font-medium">{{ item.style }}</span>
+                                <span class="text-sm font-bold text-rose-700 dark:text-rose-300">{{ item.total_caught }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No style data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Most Successful Style -->
+                <DashboardCard
+                    v-if="isCardVisible('most_successful_style')"
+                    card-id="most_successful_style"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_successful_style')"
+                    :order="getCardOrder('most_successful_style')"
+                    :size="getCardSize('most_successful_style')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_successful_style')"
+                    :is-last="isCardLast('most_successful_style')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_successful_style')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
+                                <span class="text-lg">⭐</span>
+                            </div>
+                            Most Successful Style
+                        </CardTitle>
+                        <CardDescription>Your best technique</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulStyle" class="space-y-2">
+                            <div class="text-xl font-bold text-pink-700 dark:text-pink-300">{{ mostSuccessfulStyle.style }}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-medium text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">
+                                    🎣 {{ mostSuccessfulStyle.total }} fish
+                                </span>
+                                <span class="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-medium text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">
+                                    📅 {{ mostSuccessfulStyle.days }} days
+                                </span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No style data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ========== COMBINED ANALYSIS CARDS ========== -->
+
+                <!-- Golden Conditions -->
+                <DashboardCard
+                    v-if="isCardVisible('golden_conditions')"
+                    card-id="golden_conditions"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('golden_conditions')"
+                    :order="getCardOrder('golden_conditions')"
+                    :size="getCardSize('golden_conditions')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('golden_conditions')"
+                    :is-last="isCardLast('golden_conditions')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('golden_conditions')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-yellow-50/30 to-amber-50/30 dark:from-yellow-950/10 dark:to-amber-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-yellow-100 to-amber-100 p-1.5 dark:from-yellow-900/30 dark:to-amber-900/30">
+                                <span class="text-lg">✨</span>
+                            </div>
+                            Golden Conditions
+                        </CardTitle>
+                        <CardDescription>Conditions on your best fishing days</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="goldenConditions.moon_position || goldenConditions.time_of_day || goldenConditions.cloud || goldenConditions.clarity" class="grid grid-cols-2 gap-3">
+                            <div v-if="goldenConditions.moon_position" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Moon Position</div>
+                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">🌙 {{ goldenConditions.moon_position }}</div>
+                            </div>
+                            <div v-if="goldenConditions.moon_phase" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Moon Phase</div>
+                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">🌕 {{ goldenConditions.moon_phase }}</div>
+                            </div>
+                            <div v-if="goldenConditions.time_of_day" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Time of Day</div>
+                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">☀️ {{ goldenConditions.time_of_day }}</div>
+                            </div>
+                            <div v-if="goldenConditions.cloud" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Cloud Cover</div>
+                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">☁️ {{ goldenConditions.cloud }}</div>
+                            </div>
+                            <div v-if="goldenConditions.clarity" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Water Clarity</div>
+                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">💧 {{ goldenConditions.clarity }}</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Conditions Summary -->
+                <DashboardCard
+                    v-if="isCardVisible('best_conditions_summary')"
+                    card-id="best_conditions_summary"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_conditions_summary')"
+                    :order="getCardOrder('best_conditions_summary')"
+                    :size="getCardSize('best_conditions_summary')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_conditions_summary')"
+                    :is-last="isCardLast('best_conditions_summary')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_conditions_summary')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 p-1.5 dark:from-emerald-900/30 dark:to-teal-900/30">
+                                <span class="text-lg">🎯</span>
+                            </div>
+                            Best Conditions Summary
+                        </CardTitle>
+                        <CardDescription>Your most productive conditions overall</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestConditions.moon_position || bestConditions.time_of_day || bestConditions.cloud || bestConditions.clarity" class="grid grid-cols-2 gap-3">
+                            <div v-if="bestConditions.moon_position" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Best Moon Position</div>
+                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">🌙 {{ bestConditions.moon_position }}</div>
+                            </div>
+                            <div v-if="bestConditions.time_of_day" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Best Time of Day</div>
+                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">☀️ {{ bestConditions.time_of_day }}</div>
+                            </div>
+                            <div v-if="bestConditions.cloud" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Best Cloud Cover</div>
+                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">☁️ {{ bestConditions.cloud }}</div>
+                            </div>
+                            <div v-if="bestConditions.clarity" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Best Water Clarity</div>
+                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">💧 {{ bestConditions.clarity }}</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== TIME & PATTERN ANALYSIS CARDS ===== -->
+
+                <!-- Best Hour of Day -->
+                <DashboardCard
+                    v-if="isCardVisible('best_hour')"
+                    card-id="best_hour"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_hour')"
+                    :order="getCardOrder('best_hour')"
+                    :size="getCardSize('best_hour')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_hour')"
+                    :is-last="isCardLast('best_hour')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_hour')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-orange-50/30 dark:from-amber-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1.5 dark:from-amber-900/30 dark:to-orange-900/30">
+                                <span class="text-lg">⏰</span>
+                            </div>
+                            Best Hour of Day
+                        </CardTitle>
+                        <CardDescription>Your most productive hour</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestHour" class="space-y-2">
+                            <div class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ bestHour.formatted }}</div>
+                            <div class="text-sm text-muted-foreground">{{ bestHour.total }} fish caught</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Time Blocks (Morning vs Afternoon vs Evening) -->
+                <DashboardCard
+                    v-if="isCardVisible('time_blocks')"
+                    card-id="time_blocks"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('time_blocks')"
+                    :order="getCardOrder('time_blocks')"
+                    :size="getCardSize('time_blocks')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('time_blocks')"
+                    :is-last="isCardLast('time_blocks')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('time_blocks')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/30 to-indigo-50/30 dark:from-sky-950/10 dark:to-indigo-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-sky-100 to-indigo-100 p-1.5 dark:from-sky-900/30 dark:to-indigo-900/30">
+                                <Sun class="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                            </div>
+                            Time of Day Analysis
+                        </CardTitle>
+                        <CardDescription>Catches by time block</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="Object.keys(timeBlocks).length > 0" class="space-y-2">
+                            <div v-for="(count, block) in timeBlocks" :key="block" class="flex justify-between items-center">
+                                <span class="text-sm">{{ block }}</span>
+                                <span class="font-semibold text-sky-600 dark:text-sky-400">{{ count }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Day of Month -->
+                <DashboardCard
+                    v-if="isCardVisible('best_day_of_month')"
+                    card-id="best_day_of_month"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_day_of_month')"
+                    :order="getCardOrder('best_day_of_month')"
+                    :size="getCardSize('best_day_of_month')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_day_of_month')"
+                    :is-last="isCardLast('best_day_of_month')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_day_of_month')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-violet-100 to-purple-100 p-1.5 dark:from-violet-900/30 dark:to-purple-900/30">
+                                <Calendar class="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            Best Day of Month
+                        </CardTitle>
+                        <CardDescription>Most productive day number</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestDayOfMonth" class="space-y-2">
+                            <div class="text-3xl font-bold text-violet-600 dark:text-violet-400">{{ bestDayOfMonth.day }}<span class="text-lg">{{ bestDayOfMonth.day === 1 || bestDayOfMonth.day === 21 || bestDayOfMonth.day === 31 ? 'st' : bestDayOfMonth.day === 2 || bestDayOfMonth.day === 22 ? 'nd' : bestDayOfMonth.day === 3 || bestDayOfMonth.day === 23 ? 'rd' : 'th' }}</span></div>
+                            <div class="text-sm text-muted-foreground">{{ bestDayOfMonth.total }} fish caught</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Seasonal Trends -->
+                <DashboardCard
+                    v-if="isCardVisible('seasonal_trends')"
+                    card-id="seasonal_trends"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('seasonal_trends')"
+                    :order="getCardOrder('seasonal_trends')"
+                    :size="getCardSize('seasonal_trends')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('seasonal_trends')"
+                    :is-last="isCardLast('seasonal_trends')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('seasonal_trends')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-950/10 dark:to-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-emerald-100 p-1.5 dark:from-green-900/30 dark:to-emerald-900/30">
+                                <span class="text-lg">🍂</span>
+                            </div>
+                            Seasonal Trends
+                        </CardTitle>
+                        <CardDescription>Catches by season</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="Object.keys(seasonalTrends).length > 0" class="grid grid-cols-2 gap-3">
+                            <div v-for="(data, season) in seasonalTrends" :key="season" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">{{ season }}</div>
+                                <div class="text-lg font-semibold text-green-600 dark:text-green-400">{{ data.total }}</div>
+                                <div class="text-xs text-muted-foreground">{{ data.avg }}/trip avg</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Consecutive Days Streak -->
+                <DashboardCard
+                    v-if="isCardVisible('consecutive_days_streak')"
+                    card-id="consecutive_days_streak"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('consecutive_days_streak')"
+                    :order="getCardOrder('consecutive_days_streak')"
+                    :size="getCardSize('consecutive_days_streak')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('consecutive_days_streak')"
+                    :is-last="isCardLast('consecutive_days_streak')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('consecutive_days_streak')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/30 to-red-50/30 dark:from-orange-950/10 dark:to-red-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-orange-100 to-red-100 p-1.5 dark:from-orange-900/30 dark:to-red-900/30">
+                                <Flame class="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            Consecutive Days Streak
+                        </CardTitle>
+                        <CardDescription>Longest streak with fish</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="consecutiveDaysStreak" class="space-y-2">
+                            <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ consecutiveDaysStreak }} days</div>
+                            <div class="text-sm text-muted-foreground">Catching fish every day!</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Days Since Last Skunk -->
+                <DashboardCard
+                    v-if="isCardVisible('days_since_skunk')"
+                    card-id="days_since_skunk"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('days_since_skunk')"
+                    :order="getCardOrder('days_since_skunk')"
+                    :size="getCardSize('days_since_skunk')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('days_since_skunk')"
+                    :is-last="isCardLast('days_since_skunk')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('days_since_skunk')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-cyan-50/30 dark:from-teal-950/10 dark:to-cyan-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 p-1.5 dark:from-teal-900/30 dark:to-cyan-900/30">
+                                <span class="text-lg">🦨</span>
+                            </div>
+                            Days Since Skunk
+                        </CardTitle>
+                        <CardDescription>Last time you got skunked</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="daysSinceSkunk !== null" class="space-y-2">
+                            <div class="text-3xl font-bold text-teal-600 dark:text-teal-400">{{ daysSinceSkunk }} days</div>
+                            <div class="text-sm text-muted-foreground">Keep the streak going!</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No skunks recorded!</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== LOCATION INTELLIGENCE CARDS ===== -->
+
+                <!-- Location Variety -->
+                <DashboardCard
+                    v-if="isCardVisible('location_variety')"
+                    card-id="location_variety"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('location_variety')"
+                    :order="getCardOrder('location_variety')"
+                    :size="getCardSize('location_variety')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('location_variety')"
+                    :is-last="isCardLast('location_variety')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('location_variety')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 p-1.5 dark:from-blue-900/30 dark:to-indigo-900/30">
+                                <MapPin class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            Location Variety
+                        </CardTitle>
+                        <CardDescription>Different spots fished</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ locationVariety }}</div>
+                        <div class="text-sm text-muted-foreground">unique locations</div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Most Consistent Spot -->
+                <DashboardCard
+                    v-if="isCardVisible('most_consistent_spot')"
+                    card-id="most_consistent_spot"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_consistent_spot')"
+                    :order="getCardOrder('most_consistent_spot')"
+                    :size="getCardSize('most_consistent_spot')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_consistent_spot')"
+                    :is-last="isCardLast('most_consistent_spot')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_consistent_spot')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-green-50/30 dark:from-emerald-950/10 dark:to-green-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-green-100 p-1.5 dark:from-emerald-900/30 dark:to-green-900/30">
+                                <Target class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            Most Consistent Spot
+                        </CardTitle>
+                        <CardDescription>Highest success rate</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostConsistentSpot" class="space-y-2">
+                            <div class="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{{ mostConsistentSpot.name }}</div>
+                            <div class="text-2xl font-bold">{{ mostConsistentSpot.success_rate }}%</div>
+                            <div class="text-sm text-muted-foreground">success rate ({{ mostConsistentSpot.days }} days)</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Underexplored Spots -->
+                <DashboardCard
+                    v-if="isCardVisible('underexplored_spots')"
+                    card-id="underexplored_spots"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('underexplored_spots')"
+                    :order="getCardOrder('underexplored_spots')"
+                    :size="getCardSize('underexplored_spots')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('underexplored_spots')"
+                    :is-last="isCardLast('underexplored_spots')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('underexplored_spots')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-yellow-50/30 dark:from-amber-950/10 dark:to-yellow-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-yellow-100 p-1.5 dark:from-amber-900/30 dark:to-yellow-900/30">
+                                <span class="text-lg">🗺️</span>
+                            </div>
+                            Underexplored Spots
+                        </CardTitle>
+                        <CardDescription>Not visited in 30+ days</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ underexploredSpots }}</div>
+                        <div class="text-sm text-muted-foreground">spots waiting for you</div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Location by Season -->
+                <DashboardCard
+                    v-if="isCardVisible('best_location_by_season')"
+                    card-id="best_location_by_season"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_location_by_season')"
+                    :order="getCardOrder('best_location_by_season')"
+                    :size="getCardSize('best_location_by_season')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_location_by_season')"
+                    :is-last="isCardLast('best_location_by_season')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_location_by_season')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-rose-50/30 to-pink-50/30 dark:from-rose-950/10 dark:to-pink-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-rose-100 to-pink-100 p-1.5 dark:from-rose-900/30 dark:to-pink-900/30">
+                                <span class="text-lg">📍</span>
+                            </div>
+                            Best Location by Season
+                        </CardTitle>
+                        <CardDescription>Top spot for each season</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="Object.keys(bestLocationBySeason).length > 0" class="grid grid-cols-2 gap-3">
+                            <div v-for="(data, season) in bestLocationBySeason" :key="season" class="space-y-1">
+                                <div class="text-xs text-muted-foreground">{{ season }}</div>
+                                <div class="text-sm font-semibold text-rose-600 dark:text-rose-400 truncate">{{ data.name }}</div>
+                                <div class="text-xs text-muted-foreground">{{ data.total }} fish</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- New Spot Success Rate -->
+                <DashboardCard
+                    v-if="isCardVisible('new_spot_success_rate')"
+                    card-id="new_spot_success_rate"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('new_spot_success_rate')"
+                    :order="getCardOrder('new_spot_success_rate')"
+                    :size="getCardSize('new_spot_success_rate')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('new_spot_success_rate')"
+                    :is-last="isCardLast('new_spot_success_rate')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('new_spot_success_rate')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-cyan-50/30 to-teal-50/30 dark:from-cyan-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 p-1.5 dark:from-cyan-900/30 dark:to-teal-900/30">
+                                <span class="text-lg">🆕</span>
+                            </div>
+                            New Spot Success
+                        </CardTitle>
+                        <CardDescription>Success at new locations</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="newSpotSuccessRate !== null" class="space-y-2">
+                            <div class="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{{ newSpotSuccessRate }}%</div>
+                            <div class="text-sm text-muted-foreground">of new spots produced fish</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== SPECIES DEEP DIVE CARDS ===== -->
+
+                <!-- Species Diversity -->
+                <DashboardCard
+                    v-if="isCardVisible('species_diversity')"
+                    card-id="species_diversity"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('species_diversity')"
+                    :order="getCardOrder('species_diversity')"
+                    :size="getCardSize('species_diversity')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('species_diversity')"
+                    :is-last="isCardLast('species_diversity')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('species_diversity')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-purple-50/30 to-violet-50/30 dark:from-purple-950/10 dark:to-violet-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-purple-100 to-violet-100 p-1.5 dark:from-purple-900/30 dark:to-violet-900/30">
+                                <Fish class="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            Species Diversity
+                        </CardTitle>
+                        <CardDescription>Different species caught</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ speciesDiversity }}</div>
+                        <div class="text-sm text-muted-foreground">unique species</div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Rarest Catches -->
+                <DashboardCard
+                    v-if="isCardVisible('rarest_catches')"
+                    card-id="rarest_catches"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('rarest_catches')"
+                    :order="getCardOrder('rarest_catches')"
+                    :size="getCardSize('rarest_catches')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('rarest_catches')"
+                    :is-last="isCardLast('rarest_catches')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('rarest_catches')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-orange-50/30 dark:from-amber-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1.5 dark:from-amber-900/30 dark:to-orange-900/30">
+                                <span class="text-lg">💎</span>
+                            </div>
+                            Rarest Catches
+                        </CardTitle>
+                        <CardDescription>Species caught only 1-2 times</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="rarestCatches.length > 0" class="space-y-2">
+                            <div v-for="catch_ in rarestCatches" :key="catch_.name" class="flex justify-between items-center">
+                                <span class="text-sm truncate">{{ catch_.name }}</span>
+                                <span class="text-xs text-muted-foreground">{{ catch_.count }}x</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No rare catches yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Most Caught Species -->
+                <DashboardCard
+                    v-if="isCardVisible('species_streak')"
+                    card-id="species_streak"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('species_streak')"
+                    :order="getCardOrder('species_streak')"
+                    :size="getCardSize('species_streak')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('species_streak')"
+                    :is-last="isCardLast('species_streak')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('species_streak')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-emerald-50/30 dark:from-teal-950/10 dark:to-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 p-1.5 dark:from-teal-900/30 dark:to-emerald-900/30">
+                                <span class="text-lg">🎯</span>
+                            </div>
+                            Most Caught Species
+                        </CardTitle>
+                        <CardDescription>Your go-to target</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="speciesStreak" class="space-y-2">
+                            <div class="text-lg font-semibold text-teal-600 dark:text-teal-400">{{ speciesStreak.name }}</div>
+                            <div class="text-2xl font-bold">{{ speciesStreak.count }}</div>
+                            <div class="text-sm text-muted-foreground">times caught</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- New Species This Year -->
+                <DashboardCard
+                    v-if="isCardVisible('new_species_this_year')"
+                    card-id="new_species_this_year"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('new_species_this_year')"
+                    :order="getCardOrder('new_species_this_year')"
+                    :size="getCardSize('new_species_this_year')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('new_species_this_year')"
+                    :is-last="isCardLast('new_species_this_year')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('new_species_this_year')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-lime-50/30 dark:from-green-950/10 dark:to-lime-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-lime-100 p-1.5 dark:from-green-900/30 dark:to-lime-900/30">
+                                <span class="text-lg">🆕</span>
+                            </div>
+                            New Species This Year
+                        </CardTitle>
+                        <CardDescription>First-time catches</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ newSpeciesThisYear }}</div>
+                        <div class="text-sm text-muted-foreground">new species caught</div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Size Improvement -->
+                <DashboardCard
+                    v-if="isCardVisible('size_improvement')"
+                    card-id="size_improvement"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('size_improvement')"
+                    :order="getCardOrder('size_improvement')"
+                    :size="getCardSize('size_improvement')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('size_improvement')"
+                    :is-last="isCardLast('size_improvement')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('size_improvement')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/30 to-blue-50/30 dark:from-indigo-950/10 dark:to-blue-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 p-1.5 dark:from-indigo-900/30 dark:to-blue-900/30">
+                                <TrendingUp class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            Size Improvement
+                        </CardTitle>
+                        <CardDescription>Species getting bigger</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="sizeImprovement.length > 0" class="space-y-2">
+                            <div v-for="item in sizeImprovement" :key="item.name" class="flex justify-between items-center">
+                                <span class="text-sm truncate">{{ item.name }}</span>
+                                <span class="text-sm font-semibold text-green-600 dark:text-green-400">+{{ item.improvement }}%</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== FLY/LURE PATTERN CARDS ===== -->
+
+                <!-- Fly Rotation -->
+                <DashboardCard
+                    v-if="isCardVisible('fly_rotation')"
+                    card-id="fly_rotation"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fly_rotation')"
+                    :order="getCardOrder('fly_rotation')"
+                    :size="getCardSize('fly_rotation')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fly_rotation')"
+                    :is-last="isCardLast('fly_rotation')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fly_rotation')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-pink-50/30 to-rose-50/30 dark:from-pink-950/10 dark:to-rose-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-pink-100 to-rose-100 p-1.5 dark:from-pink-900/30 dark:to-rose-900/30">
+                                <span class="text-lg">🪰</span>
+                            </div>
+                            Fly Rotation
+                        </CardTitle>
+                        <CardDescription>Different flies used</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="text-3xl font-bold text-pink-600 dark:text-pink-400">{{ flyRotation }}</div>
+                        <div class="text-sm text-muted-foreground">unique flies</div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- One-Hit Wonders -->
+                <DashboardCard
+                    v-if="isCardVisible('one_hit_wonders')"
+                    card-id="one_hit_wonders"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('one_hit_wonders')"
+                    :order="getCardOrder('one_hit_wonders')"
+                    :size="getCardSize('one_hit_wonders')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('one_hit_wonders')"
+                    :is-last="isCardLast('one_hit_wonders')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('one_hit_wonders')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-yellow-50/30 to-amber-50/30 dark:from-yellow-950/10 dark:to-amber-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-yellow-100 to-amber-100 p-1.5 dark:from-yellow-900/30 dark:to-amber-900/30">
+                                <span class="text-lg">⭐</span>
+                            </div>
+                            One-Hit Wonders
+                        </CardTitle>
+                        <CardDescription>Flies that worked great once</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="oneHitWonders.length > 0" class="space-y-2">
+                            <div v-for="fly in oneHitWonders" :key="fly.name" class="flex justify-between items-center">
+                                <span class="text-sm truncate">{{ fly.name }}</span>
+                                <span class="text-xs text-muted-foreground">{{ fly.caught }} fish</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No one-hit wonders yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Reliable Producers -->
+                <DashboardCard
+                    v-if="isCardVisible('reliable_producers')"
+                    card-id="reliable_producers"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('reliable_producers')"
+                    :order="getCardOrder('reliable_producers')"
+                    :size="getCardSize('reliable_producers')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('reliable_producers')"
+                    :is-last="isCardLast('reliable_producers')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('reliable_producers')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 p-1.5 dark:from-emerald-900/30 dark:to-teal-900/30">
+                                <span class="text-lg">✅</span>
+                            </div>
+                            Reliable Producers
+                        </CardTitle>
+                        <CardDescription>Consistently catch fish</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="reliableProducers.length > 0" class="space-y-2">
+                            <div v-for="fly in reliableProducers" :key="fly.name" class="flex justify-between items-center">
+                                <span class="text-sm truncate">{{ fly.name }}</span>
+                                <span class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{{ fly.success_rate }}%</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Fly by Location -->
+                <DashboardCard
+                    v-if="isCardVisible('best_fly_by_location')"
+                    card-id="best_fly_by_location"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_fly_by_location')"
+                    :order="getCardOrder('best_fly_by_location')"
+                    :size="getCardSize('best_fly_by_location')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_fly_by_location')"
+                    :is-last="isCardLast('best_fly_by_location')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_fly_by_location')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-cyan-50/30 dark:from-blue-950/10 dark:to-cyan-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 p-1.5 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                <MapPin class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            Best Fly by Location
+                        </CardTitle>
+                        <CardDescription>Top fly for each spot</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestFlyByLocation.length > 0" class="space-y-2">
+                            <div v-for="item in bestFlyByLocation.slice(0, 5)" :key="item.location" class="flex justify-between items-center">
+                                <div class="truncate">
+                                    <span class="text-sm">{{ item.location }}</span>
+                                    <span class="text-xs text-muted-foreground ml-1">→ {{ item.fly }}</span>
+                                </div>
+                                <span class="text-xs text-muted-foreground">{{ item.total }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Fly by Species -->
+                <DashboardCard
+                    v-if="isCardVisible('best_fly_by_species')"
+                    card-id="best_fly_by_species"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_fly_by_species')"
+                    :order="getCardOrder('best_fly_by_species')"
+                    :size="getCardSize('best_fly_by_species')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_fly_by_species')"
+                    :is-last="isCardLast('best_fly_by_species')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_fly_by_species')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-violet-100 to-purple-100 p-1.5 dark:from-violet-900/30 dark:to-purple-900/30">
+                                <Fish class="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            Best Fly by Species
+                        </CardTitle>
+                        <CardDescription>Top fly for each species</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestFlyBySpecies.length > 0" class="space-y-2">
+                            <div v-for="item in bestFlyBySpecies.slice(0, 5)" :key="item.species" class="flex justify-between items-center">
+                                <div class="truncate">
+                                    <span class="text-sm">{{ item.species }}</span>
+                                    <span class="text-xs text-muted-foreground ml-1">→ {{ item.fly }}</span>
+                                </div>
+                                <span class="text-xs text-muted-foreground">{{ item.total }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== PROGRESS & GOALS CARDS ===== -->
+
+                <!-- Year-over-Year Comparison -->
+                <DashboardCard
+                    v-if="isCardVisible('yoy_comparison')"
+                    card-id="yoy_comparison"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('yoy_comparison')"
+                    :order="getCardOrder('yoy_comparison')"
+                    :size="getCardSize('yoy_comparison')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('yoy_comparison')"
+                    :is-last="isCardLast('yoy_comparison')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('yoy_comparison')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/30 to-blue-50/30 dark:from-indigo-950/10 dark:to-blue-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 p-1.5 dark:from-indigo-900/30 dark:to-blue-900/30">
+                                <BarChart3 class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            Year-over-Year
+                        </CardTitle>
+                        <CardDescription>This year vs last year</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Catches</div>
+                                <div class="text-lg font-semibold">{{ yoyComparison.thisYear.catches }}</div>
+                                <div class="text-xs text-muted-foreground">vs {{ yoyComparison.lastYear.catches }}</div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Days</div>
+                                <div class="text-lg font-semibold">{{ yoyComparison.thisYear.days }}</div>
+                                <div class="text-xs text-muted-foreground">vs {{ yoyComparison.lastYear.days }}</div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="text-xs text-muted-foreground">Change</div>
+                                <div v-if="yoyComparison.catchChange !== null" :class="['text-lg font-semibold', yoyComparison.catchChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
+                                    {{ yoyComparison.catchChange >= 0 ? '+' : '' }}{{ yoyComparison.catchChange }}%
+                                </div>
+                                <div v-else class="text-lg font-semibold text-muted-foreground">—</div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Personal Bests -->
+                <DashboardCard
+                    v-if="isCardVisible('personal_bests')"
+                    card-id="personal_bests"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('personal_bests')"
+                    :order="getCardOrder('personal_bests')"
+                    :size="getCardSize('personal_bests')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('personal_bests')"
+                    :is-last="isCardLast('personal_bests')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('personal_bests')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-yellow-50/30 dark:from-amber-950/10 dark:to-yellow-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-yellow-100 p-1.5 dark:from-amber-900/30 dark:to-yellow-900/30">
+                                <Award class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            Personal Bests
+                        </CardTitle>
+                        <CardDescription>Your biggest catches</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="personalBests.length > 0" class="space-y-2">
+                            <div v-for="(pb, index) in personalBests.slice(0, 5)" :key="index" class="flex justify-between items-center">
+                                <div class="truncate">
+                                    <span class="text-sm font-semibold">{{ pb.size }}"</span>
+                                    <span class="text-xs text-muted-foreground ml-1">{{ pb.species }}</span>
+                                </div>
+                                <span class="text-xs text-muted-foreground">{{ pb.location }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No personal bests yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Improvement Rate -->
+                <DashboardCard
+                    v-if="isCardVisible('improvement_rate')"
+                    card-id="improvement_rate"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('improvement_rate')"
+                    :order="getCardOrder('improvement_rate')"
+                    :size="getCardSize('improvement_rate')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('improvement_rate')"
+                    :is-last="isCardLast('improvement_rate')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('improvement_rate')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-950/10 dark:to-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-emerald-100 p-1.5 dark:from-green-900/30 dark:to-emerald-900/30">
+                                <TrendingUp class="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </div>
+                            Improvement Rate
+                        </CardTitle>
+                        <CardDescription>Catches per trip trend</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="improvementRate !== null" class="space-y-2">
+                            <div :class="['text-3xl font-bold', improvementRate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
+                                {{ improvementRate >= 0 ? '+' : '' }}{{ improvementRate }}%
+                            </div>
+                            <div class="text-sm text-muted-foreground">since start of year</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Fishing Frequency -->
+                <DashboardCard
+                    v-if="isCardVisible('fishing_frequency')"
+                    card-id="fishing_frequency"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fishing_frequency')"
+                    :order="getCardOrder('fishing_frequency')"
+                    :size="getCardSize('fishing_frequency')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fishing_frequency')"
+                    :is-last="isCardLast('fishing_frequency')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fishing_frequency')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/30 to-blue-50/30 dark:from-sky-950/10 dark:to-blue-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-sky-100 to-blue-100 p-1.5 dark:from-sky-900/30 dark:to-blue-900/30">
+                                <Calendar class="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                            </div>
+                            Fishing Frequency
+                        </CardTitle>
+                        <CardDescription>Days fished per month</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="Object.keys(fishingFrequency).length > 0" class="flex flex-wrap gap-2">
+                            <div v-for="(days, month) in fishingFrequency" :key="month" class="text-center px-2 py-1 bg-sky-100/50 dark:bg-sky-900/20 rounded">
+                                <div class="text-xs text-muted-foreground">{{ month }}</div>
+                                <div class="text-sm font-semibold text-sky-600 dark:text-sky-400">{{ days }}</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== ENVIRONMENTAL COMBO CARDS ===== -->
+
+                <!-- Wind + Cloud Combo -->
+                <DashboardCard
+                    v-if="isCardVisible('wind_cloud_combo')"
+                    card-id="wind_cloud_combo"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('wind_cloud_combo')"
+                    :order="getCardOrder('wind_cloud_combo')"
+                    :size="getCardSize('wind_cloud_combo')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('wind_cloud_combo')"
+                    :is-last="isCardLast('wind_cloud_combo')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('wind_cloud_combo')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-slate-50/30 to-gray-50/30 dark:from-slate-950/10 dark:to-gray-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-slate-100 to-gray-100 p-1.5 dark:from-slate-900/30 dark:to-gray-900/30">
+                                <span class="text-lg">💨☁️</span>
+                            </div>
+                            Wind + Cloud Combo
+                        </CardTitle>
+                        <CardDescription>Best weather combination</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="windCloudCombo" class="space-y-2">
+                            <div class="text-lg font-semibold">{{ windCloudCombo.wind }} + {{ windCloudCombo.cloud }}</div>
+                            <div class="text-2xl font-bold text-slate-600 dark:text-slate-400">{{ windCloudCombo.total }} fish</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Moon + Time Combo -->
+                <DashboardCard
+                    v-if="isCardVisible('moon_time_combo')"
+                    card-id="moon_time_combo"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('moon_time_combo')"
+                    :order="getCardOrder('moon_time_combo')"
+                    :size="getCardSize('moon_time_combo')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('moon_time_combo')"
+                    :is-last="isCardLast('moon_time_combo')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('moon_time_combo')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-indigo-50/30 to-violet-50/30 dark:from-indigo-950/10 dark:to-violet-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 p-1.5 dark:from-indigo-900/30 dark:to-violet-900/30">
+                                <Moon class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            Moon + Time Combo
+                        </CardTitle>
+                        <CardDescription>Best solunar timing</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="moonTimeCombo" class="space-y-2">
+                            <div class="text-lg font-semibold">{{ moonTimeCombo.moon }} + {{ moonTimeCombo.time }}</div>
+                            <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ moonTimeCombo.total }} fish</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Water + Weather Combo -->
+                <DashboardCard
+                    v-if="isCardVisible('water_weather_combo')"
+                    card-id="water_weather_combo"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('water_weather_combo')"
+                    :order="getCardOrder('water_weather_combo')"
+                    :size="getCardSize('water_weather_combo')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('water_weather_combo')"
+                    :is-last="isCardLast('water_weather_combo')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('water_weather_combo')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-cyan-50/30 to-teal-50/30 dark:from-cyan-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 p-1.5 dark:from-cyan-900/30 dark:to-teal-900/30">
+                                <span class="text-lg">💧☀️</span>
+                            </div>
+                            Water + Weather Combo
+                        </CardTitle>
+                        <CardDescription>Best conditions combo</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="waterWeatherCombo" class="space-y-2">
+                            <div class="text-lg font-semibold">{{ waterWeatherCombo.clarity }} + {{ waterWeatherCombo.cloud }}</div>
+                            <div class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{{ waterWeatherCombo.total }} fish</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- ===== GAMIFICATION CARDS ===== -->
+
+                <!-- Fishing Score -->
+                <DashboardCard
+                    v-if="isCardVisible('fishing_score')"
+                    card-id="fishing_score"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fishing_score')"
+                    :order="getCardOrder('fishing_score')"
+                    :size="getCardSize('fishing_score')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fishing_score')"
+                    :is-last="isCardLast('fishing_score')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fishing_score')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-orange-50/30 dark:from-amber-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1.5 dark:from-amber-900/30 dark:to-orange-900/30">
+                                <Crown class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            Fishing Score
+                        </CardTitle>
+                        <CardDescription>Your overall rating</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ fishingScore.toLocaleString() }}</div>
+                        <div class="text-sm text-muted-foreground">points earned</div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Achievement Badges -->
+                <DashboardCard
+                    v-if="isCardVisible('badges')"
+                    card-id="badges"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('badges')"
+                    :order="getCardOrder('badges')"
+                    :size="getCardSize('badges')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('badges')"
+                    :is-last="isCardLast('badges')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('badges')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-purple-50/30 to-pink-50/30 dark:from-purple-950/10 dark:to-pink-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-purple-100 to-pink-100 p-1.5 dark:from-purple-900/30 dark:to-pink-900/30">
+                                <Award class="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            Achievement Badges
+                        </CardTitle>
+                        <CardDescription>Milestones unlocked</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="badges.length > 0" class="flex flex-wrap gap-2">
+                            <div v-for="badge in badges" :key="badge.name" class="flex items-center gap-1 px-2 py-1 bg-purple-100/50 dark:bg-purple-900/20 rounded-full" :title="badge.description">
+                                <span>{{ badge.icon }}</span>
+                                <span class="text-xs font-medium">{{ badge.name }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Keep fishing to unlock badges!</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Hot Streak -->
+                <DashboardCard
+                    v-if="isCardVisible('hot_streak')"
+                    card-id="hot_streak"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('hot_streak')"
+                    :order="getCardOrder('hot_streak')"
+                    :size="getCardSize('hot_streak')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('hot_streak')"
+                    :is-last="isCardLast('hot_streak')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('hot_streak')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-red-50/30 to-orange-50/30 dark:from-red-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-red-100 to-orange-100 p-1.5 dark:from-red-900/30 dark:to-orange-900/30">
+                                <Flame class="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </div>
+                            Hot Streak
+                        </CardTitle>
+                        <CardDescription>Current success streak</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="hotStreak" class="space-y-2">
+                            <div class="text-3xl font-bold text-red-600 dark:text-red-400">🔥 {{ hotStreak }} days</div>
+                            <div class="text-sm text-muted-foreground">You're on fire!</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Start a streak today!</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Lucky Number -->
+                <DashboardCard
+                    v-if="isCardVisible('lucky_number')"
+                    card-id="lucky_number"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('lucky_number')"
+                    :order="getCardOrder('lucky_number')"
+                    :size="getCardSize('lucky_number')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('lucky_number')"
+                    :is-last="isCardLast('lucky_number')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('lucky_number')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-950/10 dark:to-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-emerald-100 p-1.5 dark:from-green-900/30 dark:to-emerald-900/30">
+                                <span class="text-lg">🍀</span>
+                            </div>
+                            Lucky Number
+                        </CardTitle>
+                        <CardDescription>Most common catch count</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="luckyNumber" class="space-y-2">
+                            <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ luckyNumber.number }}</div>
+                            <div class="text-sm text-muted-foreground">caught {{ luckyNumber.occurrences }} times</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
                     </CardContent>
                 </DashboardCard>
             </div>

@@ -313,6 +313,48 @@ class DashboardController extends Controller
         // Streak statistics using service
         $streakStats = $this->dashboardService->getStreakStats($userId, $yearFilter);
 
+        // Weather statistics
+        $weatherStats = $this->dashboardService->getWeatherStats($userId, $yearFilter);
+
+        // Water condition statistics
+        $waterConditionStats = $this->dashboardService->getWaterConditionStats($userId, $yearFilter);
+
+        // Moon position statistics (Solunar Theory)
+        $moonPositionStats = $this->dashboardService->getMoonPositionStats($userId, $yearFilter);
+
+        // Weight statistics
+        $weightStats = $this->dashboardService->getWeightStats($userId, $yearFilter);
+
+        // Friend/social statistics
+        $friendStats = $this->dashboardService->getFriendStats($userId, $yearFilter);
+
+        // Rod and style statistics
+        $rodStyleStats = $this->dashboardService->getRodStyleStats($userId, $yearFilter);
+
+        // Golden conditions analysis
+        $goldenConditions = $this->dashboardService->getGoldenConditions($userId, $yearFilter);
+
+        // Time and pattern analysis
+        $timePatternStats = $this->dashboardService->getTimePatternStats($userId, $yearFilter);
+
+        // Location intelligence
+        $locationStats = $this->dashboardService->getLocationStats($userId, $yearFilter);
+
+        // Species deep dive
+        $speciesStats = $this->dashboardService->getSpeciesStats($userId, $yearFilter);
+
+        // Fly pattern analysis
+        $flyPatternStats = $this->dashboardService->getFlyPatternStats($userId, $yearFilter);
+
+        // Progress and goals
+        $progressStats = $this->dashboardService->getProgressStats($userId, $yearFilter);
+
+        // Environmental combos
+        $environmentalComboStats = $this->dashboardService->getEnvironmentalComboStats($userId, $yearFilter);
+
+        // Gamification
+        $gamificationStats = $this->dashboardService->getGamificationStats($userId, $yearFilter);
+
         return [
             'stats' => [
                 'totalCatches' => $totalCatches,
@@ -381,6 +423,76 @@ class DashboardController extends Controller
             'favoriteWeekday' => $favoriteWeekday,
             'catchesOverTime' => $catchesOverTime,
             'streakStats' => $streakStats,
+            // Weather stats
+            'bestCloudCover' => $weatherStats['bestCloudCover'],
+            'bestWindCondition' => $weatherStats['bestWindCondition'],
+            'catchesByPrecipitation' => $weatherStats['catchesByPrecipitation'],
+            'bestBarometricPressure' => $weatherStats['bestBarometricPressure'],
+            // Water condition stats
+            'bestWaterClarity' => $waterConditionStats['bestWaterClarity'],
+            'catchesByWaterLevel' => $waterConditionStats['catchesByWaterLevel'],
+            'bestWaterSpeed' => $waterConditionStats['bestWaterSpeed'],
+            'bestSurfaceCondition' => $waterConditionStats['bestSurfaceCondition'],
+            'catchesByTide' => $waterConditionStats['catchesByTide'],
+            // Moon position stats (Solunar)
+            'catchesByMoonPosition' => $moonPositionStats['catchesByMoonPosition'],
+            'majorVsMinorFeeding' => $moonPositionStats['majorVsMinorFeeding'],
+            'bestMoonForBigFish' => $moonPositionStats['bestMoonForBigFish'],
+            // Weight stats
+            'heaviestCatch' => $weightStats['heaviestCatch'],
+            'totalWeight' => $weightStats['totalWeight'],
+            'avgWeightBySpecies' => $weightStats['avgWeightBySpecies'],
+            // Friend stats
+            'mostProductiveBuddy' => $friendStats['mostProductiveBuddy'],
+            'soloVsGroup' => $friendStats['soloVsGroup'],
+            'luckyCharmFriend' => $friendStats['luckyCharmFriend'],
+            // Rod and style stats
+            'mostSuccessfulRod' => $rodStyleStats['mostSuccessfulRod'],
+            'bestRodForTrophies' => $rodStyleStats['bestRodForTrophies'],
+            'catchesByStyle' => $rodStyleStats['catchesByStyle'],
+            'mostSuccessfulStyle' => $rodStyleStats['mostSuccessfulStyle'],
+            // Golden conditions
+            'goldenConditions' => $goldenConditions['goldenConditions'],
+            'bestConditions' => $goldenConditions['bestConditions'],
+            // Time pattern stats
+            'bestHour' => $timePatternStats['bestHour'],
+            'timeBlocks' => $timePatternStats['timeBlocks'],
+            'bestDayOfMonth' => $timePatternStats['bestDayOfMonth'],
+            'seasonalTrends' => $timePatternStats['seasonalTrends'],
+            'consecutiveDaysStreak' => $timePatternStats['consecutiveDaysStreak'],
+            'daysSinceSkunk' => $timePatternStats['daysSinceSkunk'],
+            // Location stats
+            'locationVariety' => $locationStats['locationVariety'],
+            'mostConsistentSpot' => $locationStats['mostConsistentSpot'],
+            'underexploredSpots' => $locationStats['underexploredSpots'],
+            'bestLocationBySeason' => $locationStats['bestLocationBySeason'],
+            'newSpotSuccessRate' => $locationStats['newSpotSuccessRate'],
+            // Species stats
+            'speciesDiversity' => $speciesStats['speciesDiversity'],
+            'rarestCatches' => $speciesStats['rarestCatches'],
+            'speciesStreak' => $speciesStats['speciesStreak'],
+            'newSpeciesThisYear' => $speciesStats['newSpeciesThisYear'],
+            'sizeImprovement' => $speciesStats['sizeImprovement'],
+            // Fly pattern stats
+            'flyRotation' => $flyPatternStats['flyRotation'],
+            'oneHitWonders' => $flyPatternStats['oneHitWonders'],
+            'reliableProducers' => $flyPatternStats['reliableProducers'],
+            'bestFlyByLocation' => $flyPatternStats['bestFlyByLocation'],
+            'bestFlyBySpecies' => $flyPatternStats['bestFlyBySpecies'],
+            // Progress stats
+            'yoyComparison' => $progressStats['yoyComparison'],
+            'personalBests' => $progressStats['personalBests'],
+            'improvementRate' => $progressStats['improvementRate'],
+            'fishingFrequency' => $progressStats['fishingFrequency'],
+            // Environmental combo stats
+            'windCloudCombo' => $environmentalComboStats['windCloudCombo'],
+            'moonTimeCombo' => $environmentalComboStats['moonTimeCombo'],
+            'waterWeatherCombo' => $environmentalComboStats['waterWeatherCombo'],
+            // Gamification stats
+            'fishingScore' => $gamificationStats['fishingScore'],
+            'badges' => $gamificationStats['badges'],
+            'hotStreak' => $gamificationStats['hotStreak'],
+            'luckyNumber' => $gamificationStats['luckyNumber'],
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
             'dashboardPreferences' => $this->getDashboardPreferences($userId),

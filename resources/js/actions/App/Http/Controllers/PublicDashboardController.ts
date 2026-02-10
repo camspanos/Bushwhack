@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 export const show = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 show.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ show.url = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 show.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,7 +59,7 @@ show.get = (args: { user: number | { id: number } } | [user: number | { id: numb
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 show.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -69,7 +69,7 @@ show.head = (args: { user: number | { id: number } } | [user: number | { id: num
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 const showForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ const showForm = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 showForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -89,7 +89,7 @@ showForm.get = (args: { user: number | { id: number } } | [user: number | { id: 
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::show
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 showForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

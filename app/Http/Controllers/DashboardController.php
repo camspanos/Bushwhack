@@ -459,7 +459,6 @@ class DashboardController extends Controller
             'timeBlocks' => $timePatternStats['timeBlocks'],
             'bestDayOfMonth' => $timePatternStats['bestDayOfMonth'],
             'seasonalTrends' => $timePatternStats['seasonalTrends'],
-            'consecutiveDaysStreak' => $timePatternStats['consecutiveDaysStreak'],
             'daysSinceSkunk' => $timePatternStats['daysSinceSkunk'],
             // Location stats
             'locationVariety' => $locationStats['locationVariety'],

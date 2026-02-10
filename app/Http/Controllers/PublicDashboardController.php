@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Badge;
 use App\Models\UserFish;
 use App\Models\FishingLog;
 use App\Models\UserFly;
@@ -220,6 +221,27 @@ class PublicDashboardController extends Controller
         // Streak statistics using service
         $streakStats = $this->dashboardService->getStreakStats($userId, $yearFilter);
 
+        // Get earned badges for the user (limited to most recent 12 for display)
+        $earnedBadges = $user->badges()
+            ->orderByPivot('earned_at', 'desc')
+            ->take(12)
+            ->get()
+            ->map(function ($badge) {
+                return [
+                    'id' => $badge->id,
+                    'name' => $badge->name,
+                    'icon' => $badge->icon,
+                    'description' => $badge->description,
+                    'rarity' => $badge->rarity,
+                    'rarity_colors' => $badge->rarity_colors,
+                    'earned_at' => $badge->pivot->earned_at,
+                ];
+            });
+
+        // Get badge stats
+        $totalBadges = Badge::active()->count();
+        $earnedBadgeCount = $user->badges()->count();
+
         return [
             'user' => [
                 'id' => $user->id,
@@ -279,6 +301,11 @@ class PublicDashboardController extends Controller
             'streakStats' => $streakStats,
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
+            'badges' => [
+                'earned' => $earnedBadges,
+                'totalEarned' => $earnedBadgeCount,
+                'totalAvailable' => $totalBadges,
+            ],
         ];
     }
 }

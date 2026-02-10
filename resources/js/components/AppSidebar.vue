@@ -12,10 +12,10 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { toUrl } from '@/lib/utils';
-import { dashboard, fishingLog, locationsPage, rodsPage, fishPage, fliesPage, friendsPage, leaderboard, following, about, home } from '@/routes';
+import { dashboard, fishingLog, locationsPage, rodsPage, fishPage, fliesPage, friendsPage, badgesPage, leaderboard, following, about, home } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Info, LayoutGrid, Fish, MapPin, Wrench, Bug, Users, UserPlus, Trophy } from 'lucide-vue-next';
+import { Info, LayoutGrid, Fish, MapPin, Wrench, Bug, Users, UserPlus, Trophy, Award } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -53,6 +53,11 @@ const mainNavItems: NavItem[] = [
         title: 'Friends',
         href: friendsPage(),
         icon: Users,
+    },
+    {
+        title: 'Badges',
+        href: badgesPage(),
+        icon: Award,
     },
 ];
 

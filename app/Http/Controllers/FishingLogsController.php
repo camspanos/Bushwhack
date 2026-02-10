@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFishingLogRequest;
+use App\Jobs\CheckUserBadgesJob;
 use App\Models\FishingLog;
 use App\Models\UserLocation;
 use App\Models\UserWaterCondition;
@@ -148,6 +149,9 @@ class FishingLogsController extends Controller
             $fishingLog->friends()->attach($validated['friend_ids']);
         }
 
+        // Dispatch badge checking job asynchronously
+        CheckUserBadgesJob::dispatch(auth()->id());
+
         return response()->json([
             'fishing_log' => $fishingLog->load(['friends', 'fish', 'weather', 'waterCondition']),
             'is_new_species' => $isNewSpecies,
@@ -287,7 +291,12 @@ class FishingLogsController extends Controller
             $fishingLog->friends()->sync([]);
         }
 
-        return response()->json($fishingLog->load(['location', 'fish', 'fly', 'rod', 'friends', 'weather', 'waterCondition']));
+        // Dispatch badge checking job asynchronously
+        CheckUserBadgesJob::dispatch(auth()->id());
+
+        return response()->json([
+            'fishing_log' => $fishingLog->load(['location', 'fish', 'fly', 'rod', 'friends', 'weather', 'waterCondition']),
+        ]);
     }
 
     /**
@@ -302,8 +311,13 @@ class FishingLogsController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $userId = auth()->id();
+
         // Delete the fishing log (friends will be automatically detached due to cascade)
         $fishingLog->delete();
+
+        // Dispatch badge checking job to revoke any badges no longer qualified for
+        CheckUserBadgesJob::dispatch($userId);
 
         return response()->json(['message' => 'Fishing log deleted successfully']);
     }

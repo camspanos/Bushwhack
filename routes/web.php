@@ -13,6 +13,7 @@ use App\Http\Controllers\PublicDashboardController;
 use App\Http\Controllers\PublicRodsController;
 use App\Http\Controllers\PublicFishController;
 use App\Http\Controllers\PublicFliesController;
+use App\Http\Controllers\BadgesController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -62,6 +63,10 @@ Route::get('friends-page', function () {
     return Inertia::render('Friends');
 })->middleware(['auth', 'verified'])->name('friends-page');
 
+Route::get('badges-page', [BadgesController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('badges-page');
+
 Route::get('about', function () {
     return Inertia::render('About');
 })->middleware(['auth', 'verified'])->name('about');
@@ -96,6 +101,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('fishing-logs/calculate-moon-position', [FishingLogsController::class, 'calculateMoonPosition'])->name('fishing-logs.calculate-moon-position');
     Route::get('countries', [UserLocationsController::class, 'countries'])->name('countries.index');
     Route::post('locations/geocode', [UserLocationsController::class, 'geocode'])->name('locations.geocode');
+
+    // Badge Routes
+    Route::get('badges/unnotified', [BadgesController::class, 'getUnnotified'])->name('badges.unnotified');
+    Route::post('badges/mark-notified', [BadgesController::class, 'markNotified'])->name('badges.mark-notified');
 
     // Resource Routes
     Route::resource('locations', UserLocationsController::class);

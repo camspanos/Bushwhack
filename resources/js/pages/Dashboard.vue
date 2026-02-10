@@ -420,7 +420,6 @@ const props = defineProps<{
     timeBlocks: Record<string, number>;
     bestDayOfMonth: BestDayOfMonth | null;
     seasonalTrends: Record<string, SeasonalTrend>;
-    consecutiveDaysStreak: number | null;
     daysSinceSkunk: number | null;
     // Location stats
     locationVariety: number;
@@ -1009,10 +1008,103 @@ const sunPhasePieSlices = computed(() => {
     return slices;
 });
 
+// Moon position pie chart colors (Solunar Theory)
+const moonPositionColors: Record<string, string> = {
+    'Overhead': '#8b5cf6', // violet-500
+    'Underfoot': '#6366f1', // indigo-500
+    'Rising': '#a78bfa', // violet-400
+    'Setting': '#818cf8', // indigo-400
+    'Above Horizon': '#c4b5fd', // violet-300
+    'Below Horizon': '#a5b4fc', // indigo-300
+};
+
+const getMoonPositionColor = (position: string) => {
+    return moonPositionColors[position] || '#8b5cf6';
+};
+
+// Moon position pie chart slices
+const moonPositionPieSlices = computed(() => {
+    const total = props.catchesByMoonPosition.reduce((sum, pos) => sum + Number(pos.total_caught), 0);
+    if (total === 0) return [];
+
+    const slices: { path: string; color: string; percentage: number; position: string; total: number }[] = [];
+    let currentAngle = -90;
+
+    props.catchesByMoonPosition.forEach((pos) => {
+        const caught = Number(pos.total_caught);
+        const percentage = caught / total;
+        // For a single item (100%), use 359.99 degrees to avoid full circle rendering issue
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getMoonPositionColor(pos.position),
+            percentage: Math.round(percentage * 100),
+            position: pos.position,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
+// Style pie chart colors
+const styleColors: Record<string, string> = {
+    'Dry Fly': '#f43f5e', // rose-500
+    'Nymph': '#10b981', // emerald-500
+    'Streamer': '#3b82f6', // blue-500
+    'Euro Nymph': '#8b5cf6', // violet-500
+    'Wet Fly': '#f59e0b', // amber-500
+    'Indicator': '#06b6d4', // cyan-500
+    'Hopper Dropper': '#84cc16', // lime-500
+    'Tenkara': '#ec4899', // pink-500
+    'Spey': '#6366f1', // indigo-500
+    'Switch': '#14b8a6', // teal-500
+};
+
+const getStyleColor = (style: string, index: number) => {
+    if (styleColors[style]) return styleColors[style];
+    // Fallback colors for unknown styles
+    const fallbackColors = ['#f43f5e', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16', '#ec4899'];
+    return fallbackColors[index % fallbackColors.length];
+};
+
+// Style pie chart slices
+const stylePieSlices = computed(() => {
+    const total = props.catchesByStyle.reduce((sum, s) => sum + Number(s.total_caught), 0);
+    if (total === 0) return [];
+
+    const slices: { path: string; color: string; percentage: number; style: string; total: number }[] = [];
+    let currentAngle = -90;
+
+    props.catchesByStyle.forEach((styleData, index) => {
+        const caught = Number(styleData.total_caught);
+        const percentage = caught / total;
+        // For a single item (100%), use 359.99 degrees to avoid full circle rendering issue
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getStyleColor(styleData.style, index),
+            percentage: Math.round(percentage * 100),
+            style: styleData.style,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
 // Hover state for pie charts
 const hoveredMonthSlice = ref<number | null>(null);
 const hoveredMoonSlice = ref<number | null>(null);
 const hoveredSunSlice = ref<number | null>(null);
+const hoveredMoonPositionSlice = ref<number | null>(null);
+const hoveredStyleSlice = ref<number | null>(null);
 </script>
 
 <template>
@@ -1618,7 +1710,7 @@ const hoveredSunSlice = ref<number | null>(null);
                     class="bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20"
                 >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Longest Streak</CardTitle>
+                        <CardTitle class="text-sm font-medium">Consecutive Days Streak</CardTitle>
                         <div class="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
                             <Flame class="h-4 w-4 text-orange-600 dark:text-orange-400" />
                         </div>
@@ -2956,13 +3048,80 @@ const hoveredSunSlice = ref<number | null>(null);
                             </div>
                             Catches by Moon Position
                         </CardTitle>
-                        <CardDescription>Solunar theory analysis</CardDescription>
                     </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="catchesByMoonPosition.length > 0" class="space-y-2">
-                            <div v-for="item in catchesByMoonPosition" :key="item.position" class="flex items-center justify-between">
-                                <span class="text-sm font-medium">{{ item.position }}</span>
-                                <span class="text-sm font-bold text-violet-700 dark:text-violet-300">{{ item.total_caught }}</span>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesByMoonPosition.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in moonPositionPieSlices" :key="`moon-pos-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredMoonPositionSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-violet-200 dark:stroke-violet-800"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredMoonPositionSlice = index"
+                                            @mouseleave="hoveredMoonPositionSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesByMoonPosition.reduce((sum, p) => sum + Number(p.total_caught), 0) }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Total
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(pos, index) in catchesByMoonPosition"
+                                    :key="pos.position"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredMoonPositionSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredMoonPositionSlice = index"
+                                    @mouseleave="hoveredMoonPositionSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getMoonPositionColor(pos.position) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ pos.position }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ pos.total_caught }}</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ moonPositionPieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No moon position data yet</p>
@@ -3451,19 +3610,86 @@ const hoveredSunSlice = ref<number | null>(null);
                     class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10"
                 >
                     <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-rose-100 p-1.5 dark:bg-rose-900/30">
                                 <span class="text-lg">🎨</span>
                             </div>
                             Catches by Style
                         </CardTitle>
-                        <CardDescription>Fish caught per technique</CardDescription>
                     </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="catchesByStyle.length > 0" class="space-y-2">
-                            <div v-for="item in catchesByStyle" :key="item.style" class="flex items-center justify-between">
-                                <span class="text-sm font-medium">{{ item.style }}</span>
-                                <span class="text-sm font-bold text-rose-700 dark:text-rose-300">{{ item.total_caught }}</span>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesByStyle.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in stylePieSlices" :key="`style-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredStyleSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-rose-200 dark:stroke-rose-800"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredStyleSlice = index"
+                                            @mouseleave="hoveredStyleSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesByStyle.reduce((sum, s) => sum + Number(s.total_caught), 0) }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Total
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(styleData, index) in catchesByStyle"
+                                    :key="styleData.style"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredStyleSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredStyleSlice = index"
+                                    @mouseleave="hoveredStyleSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getStyleColor(styleData.style, index) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ styleData.style }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ styleData.total_caught }}</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ stylePieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No style data yet</p>
@@ -3779,44 +4005,6 @@ const hoveredSunSlice = ref<number | null>(null);
                                 <div class="text-lg font-semibold text-green-600 dark:text-green-400">{{ data.total }}</div>
                                 <div class="text-xs text-muted-foreground">{{ data.avg }}/trip avg</div>
                             </div>
-                        </div>
-                        <p v-else class="text-muted-foreground">Not enough data yet</p>
-                    </CardContent>
-                </DashboardCard>
-
-                <!-- Consecutive Days Streak -->
-                <DashboardCard
-                    v-if="isCardVisible('consecutive_days_streak')"
-                    card-id="consecutive_days_streak"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('consecutive_days_streak')"
-                    :order="getCardOrder('consecutive_days_streak')"
-                    :size="getCardSize('consecutive_days_streak')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('consecutive_days_streak')"
-                    :is-last="isCardLast('consecutive_days_streak')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('consecutive_days_streak')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-orange-50/30 to-red-50/30 dark:from-orange-950/10 dark:to-red-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-orange-100 to-red-100 p-1.5 dark:from-orange-900/30 dark:to-red-900/30">
-                                <Flame class="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            Consecutive Days Streak
-                        </CardTitle>
-                        <CardDescription>Longest streak with fish</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="consecutiveDaysStreak" class="space-y-2">
-                            <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ consecutiveDaysStreak }} days</div>
-                            <div class="text-sm text-muted-foreground">Catching fish every day!</div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
                     </CardContent>

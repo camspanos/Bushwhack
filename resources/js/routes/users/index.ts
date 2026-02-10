@@ -252,7 +252,7 @@ search.form = searchForm
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 export const dashboard = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -267,7 +267,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 dashboard.url = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -300,7 +300,7 @@ dashboard.url = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 dashboard.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -310,7 +310,7 @@ dashboard.get = (args: { user: number | { id: number } } | [user: number | { id:
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 dashboard.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -320,7 +320,7 @@ dashboard.head = (args: { user: number | { id: number } } | [user: number | { id
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 const dashboardForm = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -330,7 +330,7 @@ const dashboardForm = (args: { user: number | { id: number } } | [user: number |
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 dashboardForm.get = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -340,7 +340,7 @@ dashboardForm.get = (args: { user: number | { id: number } } | [user: number | {
 
 /**
 * @see \App\Http\Controllers\PublicDashboardController::dashboard
-* @see app/Http/Controllers/PublicDashboardController.php:22
+* @see app/Http/Controllers/PublicDashboardController.php:23
 * @route '/users/{user}/dashboard'
 */
 dashboardForm.head = (args: { user: number | { id: number } } | [user: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

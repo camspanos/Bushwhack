@@ -114,6 +114,26 @@ interface FlyColorPerformer {
     days: number;
 }
 
+interface BadgeData {
+    id: number;
+    name: string;
+    icon: string;
+    description: string;
+    rarity: string;
+    rarity_colors: {
+        bg: string;
+        text: string;
+        border: string;
+    };
+    earned_at: string;
+}
+
+interface BadgesInfo {
+    earned: BadgeData[];
+    totalEarned: number;
+    totalAvailable: number;
+}
+
 const props = defineProps<{
     user: UserInfo;
     stats: Stats;
@@ -133,6 +153,7 @@ const props = defineProps<{
     favoriteWeekday: FavoriteWeekday | null;
     availableYears: string[];
     selectedYear: string;
+    badges: BadgesInfo;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -1050,6 +1071,38 @@ const sunPhasePieSlices = computed(() => {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Badges Section -->
+            <Card v-if="badges && badges.earned.length > 0" class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10">
+                <CardHeader class="pb-2">
+                    <CardTitle class="flex items-center gap-2">
+                        <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
+                            <Award class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        Achievement Badges
+                    </CardTitle>
+                    <CardDescription>{{ badges.totalEarned }} of {{ badges.totalAvailable }} badges earned</CardDescription>
+                </CardHeader>
+                <CardContent class="pt-0 pb-4">
+                    <div class="flex flex-wrap gap-2">
+                        <div
+                            v-for="badge in badges.earned"
+                            :key="badge.id"
+                            :class="[
+                                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:scale-105',
+                                badge.rarity_colors.bg,
+                                badge.rarity_colors.text,
+                                badge.rarity === 'legendary' && 'ring-2 ring-amber-400 ring-offset-1',
+                                badge.rarity === 'epic' && 'ring-1 ring-purple-400',
+                            ]"
+                            :title="badge.description"
+                        >
+                            <span class="text-base">{{ badge.icon }}</span>
+                            <span>{{ badge.name }}</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <!-- Top Performers -->
             <div class="grid gap-4 md:grid-cols-4">

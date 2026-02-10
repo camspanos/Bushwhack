@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -174,5 +175,31 @@ class User extends Authenticatable
     public function canFilterByYear(): bool
     {
         return $this->isPremium();
+    }
+
+    /**
+     * Get the badges earned by this user.
+     */
+    public function badges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot(['earned_at', 'earned_data', 'is_notified'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has earned a specific badge.
+     */
+    public function hasBadge(Badge $badge): bool
+    {
+        return $this->badges()->where('badge_id', $badge->id)->exists();
+    }
+
+    /**
+     * Check if user has earned a badge by slug.
+     */
+    public function hasBadgeBySlug(string $slug): bool
+    {
+        return $this->badges()->where('slug', $slug)->exists();
     }
 }

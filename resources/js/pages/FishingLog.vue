@@ -11,10 +11,11 @@ import type { FishingLogInitialData, FishingLogFormData } from '@/components/fis
 import { type BreadcrumbItem, type FishingLog } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
-import { Fish, Pencil, Trash2, X, FileText, CheckCircle2, Trophy, Plus } from 'lucide-vue-next';
+import { Fish, Pencil, Trash2, X, FileText, CheckCircle2, Plus } from 'lucide-vue-next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import axios from '@/lib/axios';
 import confetti from 'canvas-confetti';
+import { useBadgeNotifications } from '@/composables/useBadgeNotifications';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -50,6 +51,9 @@ const showPersonalBestNotification = ref(false);
 const personalBestSpecies = ref('');
 const personalBestSize = ref(0);
 const previousBestSize = ref(0);
+
+// Badge notification - use global composable
+const { checkForUnnotifiedBadges } = useBadgeNotifications();
 
 // Fishing logs data
 const fishingLogs = ref<FishingLog[]>([]);
@@ -150,6 +154,8 @@ const handlePerPageChange = () => {
 onMounted(() => {
     fetchFishingLogs();
     checkForNewSpecies();
+    // Check for any unnotified badges (from async badge checking)
+    checkForUnnotifiedBadges();
 });
 
 // Open edit dialog with log data
@@ -259,6 +265,12 @@ const handleFormSubmit = async (submitData: FishingLogFormData) => {
                 }, NOTIFICATION_TIMEOUT_MS);
             }
         }
+
+        // Poll for async badge notifications after a short delay
+        // to give the background job time to process
+        setTimeout(() => {
+            checkForUnnotifiedBadges();
+        }, 2000);
 
         // Reset form and close dialog
         if (fishingLogFormRef.value) {

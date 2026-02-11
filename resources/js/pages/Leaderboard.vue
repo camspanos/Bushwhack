@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { Trophy, Award, Fish, TrendingUp, Crown } from 'lucide-vue-next';
+import { Trophy, Award, Fish, TrendingUp, Crown, Scale } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface LeaderboardEntry {
@@ -15,6 +15,12 @@ interface LeaderboardEntry {
         user_name: string;
         user_id: number;
         size: number | string;
+        date: string;
+    } | null;
+    heaviest_fish: {
+        user_name: string;
+        user_id: number;
+        weight: number | string;
         date: string;
     } | null;
     most_caught: {
@@ -57,6 +63,11 @@ watch([selectedMonth, selectedWaterType], () => {
 const formatSize = (size: number | string): string => {
     const numSize = typeof size === 'string' ? parseFloat(size) : size;
     return numSize % 1 === 0 ? numSize.toString() : numSize.toFixed(1);
+};
+
+const formatWeight = (weight: number | string): string => {
+    const numWeight = typeof weight === 'string' ? parseFloat(weight) : weight;
+    return numWeight % 1 === 0 ? numWeight.toString() : numWeight.toFixed(2);
 };
 </script>
 
@@ -173,12 +184,12 @@ const formatSize = (size: number | string): string => {
                             </p>
                         </div>
                         <div>
-                        <!-- Biggest Fish -->
+                        <!-- Biggest Fish (by size) -->
                         <div v-if="entry.biggest_fish" class="flex items-start gap-2 py-1">
                             <Award class="h-3 w-3 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-baseline justify-between gap-2">
-                                    <span class="text-xs font-medium text-muted-foreground">Biggest Fish</span>
+                                    <span class="text-xs font-medium text-muted-foreground">Longest</span>
                                     <span class="text-xs font-semibold">{{ formatSize(entry.biggest_fish.size) }}"</span>
                                 </div>
                                 <div class="font-semibold text-sm truncate">{{ entry.biggest_fish.user_name }}</div>
@@ -186,7 +197,22 @@ const formatSize = (size: number | string): string => {
                         </div>
 
                         <!-- Separator -->
-                        <hr v-if="entry.biggest_fish && entry.most_caught" class="border-border my-1" />
+                        <hr v-if="entry.biggest_fish && (entry.heaviest_fish || entry.most_caught)" class="border-border my-1" />
+
+                        <!-- Heaviest Fish (by weight) -->
+                        <div v-if="entry.heaviest_fish" class="flex items-start gap-2 py-1">
+                            <Scale class="h-3 w-3 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-baseline justify-between gap-2">
+                                    <span class="text-xs font-medium text-muted-foreground">Heaviest</span>
+                                    <span class="text-xs font-semibold">{{ formatWeight(entry.heaviest_fish.weight) }} lb</span>
+                                </div>
+                                <div class="font-semibold text-sm truncate">{{ entry.heaviest_fish.user_name }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Separator -->
+                        <hr v-if="entry.heaviest_fish && entry.most_caught" class="border-border my-1" />
 
                         <!-- Most Caught -->
                         <div v-if="entry.most_caught" class="flex items-start gap-2 py-1">

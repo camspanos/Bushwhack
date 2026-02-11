@@ -8,7 +8,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw } from 'lucide-vue-next';
+import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw, Ruler } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface CardPreference {
@@ -294,6 +294,13 @@ interface SizeImprovementItem {
     name: string;
     improvement: number;
     current_avg: number;
+    previous_avg: number;
+}
+
+interface SizeImprovement {
+    items: SizeImprovementItem[];
+    currentYear: number;
+    previousYear: number;
 }
 
 // Fly pattern interfaces
@@ -322,9 +329,11 @@ interface BestFlyBySpecies {
 
 // Progress interfaces
 interface YoyComparison {
-    thisYear: { catches: number; days: number; biggest: number | null };
-    lastYear: { catches: number; days: number; biggest: number | null };
+    thisYear: { catches: number; days: number; biggest: number | null; year: number };
+    lastYearToDate: { catches: number; days: number; biggest: number | null; year: number; asOfDate: string };
+    lastYearFull: { catches: number; days: number; biggest: number | null; year: number };
     catchChange: number | null;
+    isFullYearComparison: boolean;
 }
 
 interface PersonalBest {
@@ -432,7 +441,7 @@ const props = defineProps<{
     rarestCatches: RarestCatch[];
     speciesStreak: SpeciesStreak | null;
     newSpeciesThisYear: number;
-    sizeImprovement: SizeImprovementItem[];
+    sizeImprovement: SizeImprovement;
     // Fly pattern stats
     flyRotation: number;
     oneHitWonders: OneHitWonder[];
@@ -442,8 +451,17 @@ const props = defineProps<{
     // Progress stats
     yoyComparison: YoyComparison;
     personalBests: PersonalBest[];
-    improvementRate: number | null;
+    improvementRate: {
+        monthlyData: { month: string; monthNum: number; avg: number; total: number; days: number }[];
+        percent: number | null;
+        maxAvg: number;
+    } | null;
     fishingFrequency: Record<string, number>;
+    avgSizeTrend: {
+        monthlyData: { month: string; monthNum: number; avg: number; count: number }[];
+        percent: number | null;
+        maxAvg: number;
+    } | null;
     // Environmental combo stats
     windCloudCombo: WindCloudCombo | null;
     moonTimeCombo: MoonTimeCombo | null;
@@ -869,9 +887,9 @@ const speciesStats = computed(() => {
     };
 });
 
-// Top 7 species for the list display
+// Top 5 species for the list display
 const topSpecies = computed(() => {
-    return props.allSpecies.slice(0, 7);
+    return props.allSpecies.slice(0, 5);
 });
 
 // Month pie chart colors
@@ -1050,24 +1068,24 @@ const moonPositionPieSlices = computed(() => {
     return slices;
 });
 
-// Style pie chart colors
+// Style pie chart colors - using maximally distinct colors that alternate warm/cool
 const styleColors: Record<string, string> = {
-    'Dry Fly': '#f43f5e', // rose-500
-    'Nymph': '#10b981', // emerald-500
-    'Streamer': '#3b82f6', // blue-500
+    'Dry Fly': '#ef4444', // red-500
+    'Nymph': '#3b82f6', // blue-500
+    'Streamer': '#f59e0b', // amber-500
     'Euro Nymph': '#8b5cf6', // violet-500
-    'Wet Fly': '#f59e0b', // amber-500
-    'Indicator': '#06b6d4', // cyan-500
-    'Hopper Dropper': '#84cc16', // lime-500
+    'Wet Fly': '#10b981', // emerald-500
+    'Indicator': '#f97316', // orange-500
+    'Hopper Dropper': '#06b6d4', // cyan-500
     'Tenkara': '#ec4899', // pink-500
-    'Spey': '#6366f1', // indigo-500
-    'Switch': '#14b8a6', // teal-500
+    'Spey': '#22c55e', // green-500
+    'Switch': '#6366f1', // indigo-500
 };
 
 const getStyleColor = (style: string, index: number) => {
     if (styleColors[style]) return styleColors[style];
-    // Fallback colors for unknown styles
-    const fallbackColors = ['#f43f5e', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16', '#ec4899'];
+    // Fallback colors - alternating warm/cool for maximum distinction
+    const fallbackColors = ['#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#10b981', '#f97316', '#06b6d4', '#ec4899', '#22c55e', '#6366f1'];
     return fallbackColors[index % fallbackColors.length];
 };
 
@@ -4151,11 +4169,14 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Underexplored Spots
                         </CardTitle>
-                        <CardDescription>Not visited in 30+ days</CardDescription>
+                        <CardDescription>Visited only 1-3 times</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ underexploredSpots }}</div>
-                        <div class="text-sm text-muted-foreground">spots waiting for you</div>
+                        <div v-if="underexploredSpots > 0">
+                            <div class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ underexploredSpots }}</div>
+                            <div class="text-sm text-muted-foreground">spots to revisit</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No underexplored spots</p>
                     </CardContent>
                 </DashboardCard>
 
@@ -4302,7 +4323,7 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Rarest Catches
                         </CardTitle>
-                        <CardDescription>Species caught only 1-2 times</CardDescription>
+                        <CardDescription>Least caught species</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
                         <div v-if="rarestCatches.length > 0" class="space-y-2">
@@ -4354,7 +4375,7 @@ const hoveredStyleSlice = ref<number | null>(null);
                     </CardContent>
                 </DashboardCard>
 
-                <!-- New Species This Year -->
+                <!-- New Species This Year / Total Species -->
                 <DashboardCard
                     v-if="isCardVisible('new_species_this_year')"
                     card-id="new_species_this_year"
@@ -4377,15 +4398,15 @@ const hoveredStyleSlice = ref<number | null>(null);
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-gradient-to-br from-green-100 to-lime-100 p-1.5 dark:from-green-900/30 dark:to-lime-900/30">
-                                <span class="text-lg">🆕</span>
+                                <span class="text-lg">{{ selectedYearFilter === 'lifetime' ? '🐟' : '🆕' }}</span>
                             </div>
-                            New Species This Year
+                            {{ selectedYearFilter === 'lifetime' ? 'Species Caught' : 'New Species This Year' }}
                         </CardTitle>
-                        <CardDescription>First-time catches</CardDescription>
+                        <CardDescription>{{ selectedYearFilter === 'lifetime' ? 'Unique species' : 'First-time catches' }}</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
                         <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ newSpeciesThisYear }}</div>
-                        <div class="text-sm text-muted-foreground">new species caught</div>
+                        <div class="text-sm text-muted-foreground">{{ selectedYearFilter === 'lifetime' ? 'species caught' : 'new species caught' }}</div>
                     </CardContent>
                 </DashboardCard>
 
@@ -4416,13 +4437,18 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Size Improvement
                         </CardTitle>
-                        <CardDescription>Species getting bigger</CardDescription>
+                        <CardDescription>{{ sizeImprovement.currentYear }} vs {{ sizeImprovement.previousYear }} avg size</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="sizeImprovement.length > 0" class="space-y-2">
-                            <div v-for="item in sizeImprovement" :key="item.name" class="flex justify-between items-center">
+                        <div v-if="sizeImprovement.items.length > 0" class="space-y-2">
+                            <div v-for="item in sizeImprovement.items" :key="item.name" class="flex justify-between items-center">
                                 <span class="text-sm truncate">{{ item.name }}</span>
-                                <span class="text-sm font-semibold text-green-600 dark:text-green-400">+{{ item.improvement }}%</span>
+                                <span
+                                    class="text-sm font-semibold"
+                                    :class="item.improvement >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                                >
+                                    {{ item.improvement >= 0 ? '+' : '' }}{{ item.improvement }}%
+                                </span>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
@@ -4661,19 +4687,19 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Year-over-Year
                         </CardTitle>
-                        <CardDescription>This year vs last year</CardDescription>
+                        <CardDescription>{{ yoyComparison.thisYear.year }} vs {{ yoyComparison.lastYearToDate.year }}{{ yoyComparison.isFullYearComparison ? '' : ` (as of ${yoyComparison.lastYearToDate.asOfDate})` }}</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div class="grid grid-cols-3 gap-3">
+                        <div class="grid grid-cols-3 gap-3 mb-3">
                             <div class="space-y-1">
                                 <div class="text-xs text-muted-foreground">Catches</div>
                                 <div class="text-lg font-semibold">{{ yoyComparison.thisYear.catches }}</div>
-                                <div class="text-xs text-muted-foreground">vs {{ yoyComparison.lastYear.catches }}</div>
+                                <div class="text-xs text-muted-foreground">vs {{ yoyComparison.lastYearToDate.catches }}</div>
                             </div>
                             <div class="space-y-1">
                                 <div class="text-xs text-muted-foreground">Days</div>
                                 <div class="text-lg font-semibold">{{ yoyComparison.thisYear.days }}</div>
-                                <div class="text-xs text-muted-foreground">vs {{ yoyComparison.lastYear.days }}</div>
+                                <div class="text-xs text-muted-foreground">vs {{ yoyComparison.lastYearToDate.days }}</div>
                             </div>
                             <div class="space-y-1">
                                 <div class="text-xs text-muted-foreground">Change</div>
@@ -4681,6 +4707,13 @@ const hoveredStyleSlice = ref<number | null>(null);
                                     {{ yoyComparison.catchChange >= 0 ? '+' : '' }}{{ yoyComparison.catchChange }}%
                                 </div>
                                 <div v-else class="text-lg font-semibold text-muted-foreground">—</div>
+                            </div>
+                        </div>
+                        <div v-if="!yoyComparison.isFullYearComparison" class="border-t pt-2">
+                            <div class="text-xs text-muted-foreground mb-1">{{ yoyComparison.lastYearFull.year }} Full Year</div>
+                            <div class="flex gap-4 text-sm">
+                                <span><span class="font-medium">{{ yoyComparison.lastYearFull.catches }}</span> catches</span>
+                                <span><span class="font-medium">{{ yoyComparison.lastYearFull.days }}</span> days</span>
                             </div>
                         </div>
                     </CardContent>
@@ -4759,11 +4792,97 @@ const hoveredStyleSlice = ref<number | null>(null);
                         <CardDescription>Catches per trip trend</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="improvementRate !== null" class="space-y-2">
-                            <div :class="['text-3xl font-bold', improvementRate >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
-                                {{ improvementRate >= 0 ? '+' : '' }}{{ improvementRate }}%
+                        <div v-if="improvementRate && improvementRate.monthlyData.length > 0" class="space-y-3">
+                            <!-- Bar chart -->
+                            <div class="flex items-end gap-2 h-28">
+                                <div
+                                    v-for="item in improvementRate.monthlyData"
+                                    :key="item.monthNum"
+                                    class="flex-1 flex flex-col items-center h-full"
+                                >
+                                    <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                                        {{ item.avg }}
+                                    </div>
+                                    <div class="flex-1 w-full flex items-end">
+                                        <div
+                                            class="w-full bg-gradient-to-t from-green-500 to-emerald-400 dark:from-green-600 dark:to-emerald-500 rounded-t transition-all"
+                                            :style="{ height: improvementRate.maxAvg > 0 ? `${Math.max((item.avg / improvementRate.maxAvg) * 100, item.avg > 0 ? 10 : 0)}%` : '0%' }"
+                                        ></div>
+                                    </div>
+                                    <div class="text-xs text-muted-foreground mt-1">{{ item.month }}</div>
+                                </div>
                             </div>
-                            <div class="text-sm text-muted-foreground">since start of year</div>
+                            <!-- Summary -->
+                            <div class="flex items-center justify-between pt-2 border-t">
+                                <div class="text-sm text-muted-foreground">Overall trend</div>
+                                <div v-if="improvementRate.percent !== null" :class="['text-lg font-bold', improvementRate.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
+                                    {{ improvementRate.percent >= 0 ? '+' : '' }}{{ improvementRate.percent }}%
+                                </div>
+                                <div v-else class="text-sm text-muted-foreground">—</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Average Size Trend -->
+                <DashboardCard
+                    v-if="isCardVisible('avg_size_trend')"
+                    card-id="avg_size_trend"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('avg_size_trend')"
+                    :order="getCardOrder('avg_size_trend')"
+                    :size="getCardSize('avg_size_trend')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('avg_size_trend')"
+                    :is-last="isCardLast('avg_size_trend')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('avg_size_trend')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-purple-50/30 to-violet-50/30 dark:from-purple-950/10 dark:to-violet-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-purple-100 to-violet-100 p-1.5 dark:from-purple-900/30 dark:to-violet-900/30">
+                                <Ruler class="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            Avg Size Trend
+                        </CardTitle>
+                        <CardDescription>Average fish length by month</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="avgSizeTrend && avgSizeTrend.monthlyData.length > 0" class="space-y-3">
+                            <!-- Bar chart -->
+                            <div class="flex items-end gap-2 h-28">
+                                <div
+                                    v-for="item in avgSizeTrend.monthlyData"
+                                    :key="item.monthNum"
+                                    class="flex-1 flex flex-col items-center h-full"
+                                >
+                                    <div class="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">
+                                        {{ item.avg }}"
+                                    </div>
+                                    <div class="flex-1 w-full flex items-end">
+                                        <div
+                                            class="w-full bg-gradient-to-t from-purple-500 to-violet-400 dark:from-purple-600 dark:to-violet-500 rounded-t transition-all"
+                                            :style="{ height: avgSizeTrend.maxAvg > 0 ? `${Math.max((item.avg / avgSizeTrend.maxAvg) * 100, item.avg > 0 ? 10 : 0)}%` : '0%' }"
+                                        ></div>
+                                    </div>
+                                    <div class="text-xs text-muted-foreground mt-1">{{ item.month }}</div>
+                                </div>
+                            </div>
+                            <!-- Summary -->
+                            <div class="flex items-center justify-between pt-2 border-t">
+                                <div class="text-sm text-muted-foreground">Overall trend</div>
+                                <div v-if="avgSizeTrend.percent !== null" :class="['text-lg font-bold', avgSizeTrend.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
+                                    {{ avgSizeTrend.percent >= 0 ? '+' : '' }}{{ avgSizeTrend.percent }}%
+                                </div>
+                                <div v-else class="text-sm text-muted-foreground">—</div>
+                            </div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
                     </CardContent>
@@ -4799,7 +4918,7 @@ const hoveredStyleSlice = ref<number | null>(null);
                         <CardDescription>Days fished per month</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="Object.keys(fishingFrequency).length > 0" class="flex flex-wrap gap-2">
+                        <div v-if="Object.keys(fishingFrequency).length > 0" class="grid grid-cols-6 gap-2">
                             <div v-for="(days, month) in fishingFrequency" :key="month" class="text-center px-2 py-1 bg-sky-100/50 dark:bg-sky-900/20 rounded">
                                 <div class="text-xs text-muted-foreground">{{ month }}</div>
                                 <div class="text-sm font-semibold text-sky-600 dark:text-sky-400">{{ days }}</div>

@@ -132,21 +132,22 @@ class UserDashboardPreference extends Model
             ['card_id' => 'reliable_producers', 'order' => 68, 'is_visible' => true, 'size' => 3],
             ['card_id' => 'best_fly_by_location', 'order' => 69, 'is_visible' => true, 'size' => 3],
             ['card_id' => 'improvement_rate', 'order' => 70, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'avg_size_trend', 'order' => 71, 'is_visible' => true, 'size' => 3],
             // Row 21: More fly + gamification
-            ['card_id' => 'lucky_number', 'order' => 71, 'is_visible' => true, 'size' => 3],
-            ['card_id' => 'best_fly_by_species', 'order' => 72, 'is_visible' => true, 'size' => 4],
-            ['card_id' => 'yoy_comparison', 'order' => 73, 'is_visible' => true, 'size' => 4],
+            ['card_id' => 'lucky_number', 'order' => 72, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'best_fly_by_species', 'order' => 73, 'is_visible' => true, 'size' => 4],
+            ['card_id' => 'yoy_comparison', 'order' => 74, 'is_visible' => true, 'size' => 4],
             // Row 22: Progress & Goals cards
-            ['card_id' => 'personal_bests', 'order' => 74, 'is_visible' => true, 'size' => 4],
-            ['card_id' => 'fishing_frequency', 'order' => 75, 'is_visible' => true, 'size' => 3],
-            ['card_id' => 'wind_cloud_combo', 'order' => 76, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'personal_bests', 'order' => 75, 'is_visible' => true, 'size' => 4],
+            ['card_id' => 'fishing_frequency', 'order' => 76, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'wind_cloud_combo', 'order' => 77, 'is_visible' => true, 'size' => 3],
             // Row 23: Environmental Combo cards
-            ['card_id' => 'moon_time_combo', 'order' => 77, 'is_visible' => true, 'size' => 3],
-            ['card_id' => 'water_weather_combo', 'order' => 78, 'is_visible' => true, 'size' => 3],
-            ['card_id' => 'fishing_score', 'order' => 79, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'moon_time_combo', 'order' => 78, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'water_weather_combo', 'order' => 79, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'fishing_score', 'order' => 80, 'is_visible' => true, 'size' => 3],
             // Row 24: Gamification cards
-            ['card_id' => 'badges', 'order' => 80, 'is_visible' => true, 'size' => 6],
-            ['card_id' => 'hot_streak', 'order' => 81, 'is_visible' => true, 'size' => 3],
+            ['card_id' => 'badges', 'order' => 81, 'is_visible' => true, 'size' => 6],
+            ['card_id' => 'hot_streak', 'order' => 82, 'is_visible' => true, 'size' => 3],
         ];
     }
 
@@ -250,6 +251,7 @@ class UserDashboardPreference extends Model
             'yoy_comparison' => 4,
             'personal_bests' => 4,
             'improvement_rate' => 3,
+            'avg_size_trend' => 3,
             'fishing_frequency' => 3,
             // Environmental Combo cards (all size 3)
             'wind_cloud_combo' => 3,
@@ -353,6 +355,7 @@ class UserDashboardPreference extends Model
             'yoy_comparison' => 'Year-over-Year Comparison',
             'personal_bests' => 'Personal Bests',
             'improvement_rate' => 'Improvement Rate',
+            'avg_size_trend' => 'Avg Size Trend',
             'fishing_frequency' => 'Fishing Frequency',
             // Environmental Combo cards
             'wind_cloud_combo' => 'Wind + Cloud Combo',

@@ -133,7 +133,7 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Top 7 species by biggest fish size (filtered by year)
+        // Top 5 species by biggest fish size (filtered by year)
         $topSpeciesBySize = (clone $baseQuery)
             ->select('user_fish_id', DB::raw('MAX(max_size) as biggest_size'), DB::raw('SUM(quantity) as total_caught'))
             ->whereNotNull('user_fish_id')
@@ -142,7 +142,7 @@ class DashboardController extends Controller
             ->groupBy('user_fish_id')
             ->orderByDesc('biggest_size')
             ->with('fish')
-            ->limit(7)
+            ->limit(5)
             ->get()
             ->map(function ($item) {
                 return [
@@ -178,14 +178,14 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Top 7 locations by catches (filtered by year)
+        // Top 5 locations by catches (filtered by year)
         $topLocations = (clone $baseQuery)
             ->select('user_location_id', DB::raw('SUM(quantity) as total_caught'))
             ->whereNotNull('user_location_id')
             ->groupBy('user_location_id')
             ->orderByDesc('total_caught')
             ->with('location.country')
-            ->limit(7)
+            ->limit(5)
             ->get()
             ->map(function ($item) {
                 return [
@@ -197,7 +197,7 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Top 7 locations by biggest fish size (filtered by year)
+        // Top 5 locations by biggest fish size (filtered by year)
         $topLocationsBySize = (clone $baseQuery)
             ->select('user_location_id', DB::raw('MAX(max_size) as biggest_size'))
             ->whereNotNull('user_location_id')
@@ -206,7 +206,7 @@ class DashboardController extends Controller
             ->groupBy('user_location_id')
             ->orderByDesc('biggest_size')
             ->with('location.country')
-            ->limit(7)
+            ->limit(5)
             ->get()
             ->map(function ($item) {
                 return [
@@ -483,6 +483,7 @@ class DashboardController extends Controller
             'personalBests' => $progressStats['personalBests'],
             'improvementRate' => $progressStats['improvementRate'],
             'fishingFrequency' => $progressStats['fishingFrequency'],
+            'avgSizeTrend' => $progressStats['avgSizeTrend'],
             // Environmental combo stats
             'windCloudCombo' => $environmentalComboStats['windCloudCombo'],
             'moonTimeCombo' => $environmentalComboStats['moonTimeCombo'],

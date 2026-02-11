@@ -975,11 +975,14 @@ class DashboardDataService
         $maxStreak = max($maxStreak, $currentStreak);
 
         // Days since last skunk - respects year filter
-        $lastSkunkQuery = (clone $baseQuery)
-            ->where('fishing_logs.quantity', 0)
-            ->orderByDesc('fishing_logs.date');
-        $lastSkunkDate = $lastSkunkQuery->value('fishing_logs.date');
-        $daysSinceSkunk = $lastSkunkDate ? \Carbon\Carbon::parse($lastSkunkDate)->diffInDays(now()) : null;
+        // A skunk day is a day where total catches = 0 (including NULL quantities)
+        $lastSkunkDay = (clone $baseQuery)
+            ->select('fishing_logs.date', DB::raw('COALESCE(SUM(fishing_logs.quantity), 0) as daily_total'))
+            ->groupBy('fishing_logs.date')
+            ->having('daily_total', '=', 0)
+            ->orderByDesc('fishing_logs.date')
+            ->first();
+        $daysSinceSkunk = $lastSkunkDay ? (int) \Carbon\Carbon::parse($lastSkunkDay->date)->diffInDays(now()) : null;
 
         return [
             'bestHour' => $bestHour ? [
@@ -1042,13 +1045,13 @@ class DashboardDataService
             ];
         }
 
-        // Underexplored spots (not visited in 30+ days)
-        $thirtyDaysAgo = now()->subDays(30)->toDateString();
-        $underexplored = \App\Models\UserLocation::where('user_id', $userId)
-            ->whereHas('fishingLogs')
-            ->whereDoesntHave('fishingLogs', function ($q) use ($thirtyDaysAgo) {
-                $q->where('date', '>=', $thirtyDaysAgo);
-            })
+        // Underexplored spots (visited only 1-3 times in the selected period)
+        $underexplored = (clone $baseQuery)
+            ->whereNotNull('fishing_logs.user_location_id')
+            ->select('fishing_logs.user_location_id', DB::raw('COUNT(DISTINCT fishing_logs.date) as visit_count'))
+            ->groupBy('fishing_logs.user_location_id')
+            ->havingRaw('COUNT(DISTINCT fishing_logs.date) BETWEEN 1 AND 3')
+            ->get()
             ->count();
 
         // Best location by season
@@ -1114,14 +1117,13 @@ class DashboardDataService
             ->distinct()
             ->count('fishing_logs.user_fish_id');
 
-        // Rarest catch (species caught only 1-2 times)
+        // Rarest catch (species with lowest total quantity caught)
         $rarestCatches = (clone $baseQuery)
             ->whereNotNull('fishing_logs.user_fish_id')
             ->where('fishing_logs.quantity', '>', 0)
-            ->select('fishing_logs.user_fish_id', DB::raw('COUNT(*) as catch_count'))
+            ->select('fishing_logs.user_fish_id', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
             ->groupBy('fishing_logs.user_fish_id')
-            ->having('catch_count', '<=', 2)
-            ->orderBy('catch_count')
+            ->orderBy('total_caught')
             ->limit(3)
             ->get();
 
@@ -1129,7 +1131,7 @@ class DashboardDataService
             $fish = \App\Models\UserFish::find($item->user_fish_id);
             return [
                 'name' => $fish?->species ?? 'Unknown',
-                'count' => $item->catch_count,
+                'count' => (int) $item->total_caught,
             ];
         });
 
@@ -1154,31 +1156,44 @@ class DashboardDataService
 
         // New species in selected period - respects year filter
         // For a specific year, compare species caught that year vs before that year
-        // For lifetime, compare current year vs all previous years
+        // For lifetime, show total unique species count
         $selectedYear = $yearFilter !== 'lifetime' ? (int)$yearFilter : now()->year;
 
-        $speciesInPeriod = (clone $baseQuery)
-            ->whereNotNull('fishing_logs.user_fish_id')
-            ->where('fishing_logs.quantity', '>', 0)
-            ->distinct()
-            ->pluck('fishing_logs.user_fish_id');
+        if ($yearFilter === 'lifetime') {
+            // For lifetime, just show total unique species count
+            $newSpeciesInPeriod = FishingLog::where('fishing_logs.user_id', $userId)
+                ->whereNotNull('fishing_logs.user_fish_id')
+                ->where('fishing_logs.quantity', '>', 0)
+                ->distinct('fishing_logs.user_fish_id')
+                ->count('fishing_logs.user_fish_id');
+        } else {
+            // For a specific year, compare species caught that year vs before that year
 
-        $speciesBefore = FishingLog::where('fishing_logs.user_id', $userId)
-            ->whereYear('fishing_logs.date', '<', $selectedYear)
-            ->whereNotNull('fishing_logs.user_fish_id')
-            ->where('fishing_logs.quantity', '>', 0)
-            ->distinct()
-            ->pluck('fishing_logs.user_fish_id');
+            $speciesInPeriod = (clone $baseQuery)
+                ->whereNotNull('fishing_logs.user_fish_id')
+                ->where('fishing_logs.quantity', '>', 0)
+                ->distinct()
+                ->pluck('fishing_logs.user_fish_id');
 
-        $newSpeciesInPeriod = $speciesInPeriod->diff($speciesBefore)->count();
+            $speciesBefore = FishingLog::where('fishing_logs.user_id', $userId)
+                ->whereYear('fishing_logs.date', '<', $selectedYear)
+                ->whereNotNull('fishing_logs.user_fish_id')
+                ->where('fishing_logs.quantity', '>', 0)
+                ->distinct()
+                ->pluck('fishing_logs.user_fish_id');
 
-        // Size improvement (species where avg size is increasing) - respects year filter
-        // Compare selected period to previous period
-        $sizeImprovement = [];
-        $previousYear = $selectedYear - 1;
+            $newSpeciesInPeriod = $speciesInPeriod->diff($speciesBefore)->count();
+        }
 
-        // Get sizes for the selected period
-        $periodSizes = (clone $baseQuery)
+        // Size improvement - respects year filter
+        // Compares selected year vs previous year (or current vs last year for lifetime)
+        $sizeImprovementItems = [];
+        $comparisonYear = $yearFilter !== 'lifetime' ? (int)$yearFilter : now()->year;
+        $previousComparisonYear = $comparisonYear - 1;
+
+        // Get sizes for the comparison year
+        $comparisonYearSizes = FishingLog::where('fishing_logs.user_id', $userId)
+            ->whereYear('fishing_logs.date', $comparisonYear)
             ->whereNotNull('fishing_logs.user_fish_id')
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
@@ -1186,40 +1201,39 @@ class DashboardDataService
             ->groupBy('fishing_logs.user_fish_id')
             ->get();
 
-        // Get sizes for the previous period (year before selected, or all time before for lifetime)
-        $previousSizesQuery = FishingLog::where('fishing_logs.user_id', $userId)
+        // Get sizes for the previous year
+        $previousYearSizes = FishingLog::where('fishing_logs.user_id', $userId)
+            ->whereYear('fishing_logs.date', $previousComparisonYear)
             ->whereNotNull('fishing_logs.user_fish_id')
             ->whereNotNull('fishing_logs.max_size')
-            ->where('fishing_logs.max_size', '>', 0);
-
-        if ($yearFilter !== 'lifetime') {
-            // For specific year, compare to the year before
-            $previousSizesQuery->whereYear('fishing_logs.date', $previousYear);
-        } else {
-            // For lifetime, compare current year to all previous years
-            $previousSizesQuery->whereYear('fishing_logs.date', '<', now()->year);
-        }
-
-        $previousSizes = $previousSizesQuery
+            ->where('fishing_logs.max_size', '>', 0)
             ->select('fishing_logs.user_fish_id', DB::raw('AVG(fishing_logs.max_size) as avg_size'))
             ->groupBy('fishing_logs.user_fish_id')
             ->get()
             ->keyBy('user_fish_id');
 
-        foreach ($periodSizes as $current) {
-            $previous = $previousSizes->get($current->user_fish_id);
-            if ($previous && $current->avg_size > $previous->avg_size) {
+        foreach ($comparisonYearSizes as $current) {
+            $previous = $previousYearSizes->get($current->user_fish_id);
+            if ($previous) {
                 $fish = \App\Models\UserFish::find($current->user_fish_id);
                 $improvement = round((($current->avg_size - $previous->avg_size) / $previous->avg_size) * 100, 1);
-                $sizeImprovement[] = [
+                $sizeImprovementItems[] = [
                     'name' => $fish?->species ?? 'Unknown',
                     'improvement' => $improvement,
                     'current_avg' => round($current->avg_size, 1),
+                    'previous_avg' => round($previous->avg_size, 1),
                 ];
             }
         }
-        usort($sizeImprovement, fn($a, $b) => $b['improvement'] <=> $a['improvement']);
-        $sizeImprovement = array_slice($sizeImprovement, 0, 3);
+        // Sort by improvement (highest first)
+        usort($sizeImprovementItems, fn($a, $b) => $b['improvement'] <=> $a['improvement']);
+        $sizeImprovementItems = array_slice($sizeImprovementItems, 0, 3);
+
+        $sizeImprovement = [
+            'items' => $sizeImprovementItems,
+            'currentYear' => $comparisonYear,
+            'previousYear' => $previousComparisonYear,
+        ];
 
         return [
             'speciesDiversity' => $speciesDiversity,
@@ -1355,7 +1369,15 @@ class DashboardDataService
         $selectedYear = $yearFilter !== 'lifetime' ? (int)$yearFilter : now()->year;
         $previousYear = $selectedYear - 1;
 
-        // Year-over-year comparison (selected year vs previous year)
+        // Get today's month and day for year-to-date comparison
+        $today = now();
+        $currentMonth = $today->month;
+        $currentDay = $today->day;
+
+        // Determine if we're viewing a past year (compare full years) or current year (compare year-to-date)
+        $isViewingPastYear = $selectedYear < now()->year;
+
+        // This year stats - FULL YEAR for past years, or all data so far for current year
         $thisYearStats = FishingLog::where('fishing_logs.user_id', $userId)
             ->whereYear('fishing_logs.date', $selectedYear)
             ->select(
@@ -1365,7 +1387,38 @@ class DashboardDataService
             )
             ->first();
 
-        $lastYearStats = FishingLog::where('fishing_logs.user_id', $userId)
+        // Last year stats - depends on whether we're viewing a past year or current year
+        if ($isViewingPastYear) {
+            // Viewing a past year: compare full year vs full previous year
+            $lastYearComparisonStats = FishingLog::where('fishing_logs.user_id', $userId)
+                ->whereYear('fishing_logs.date', $previousYear)
+                ->select(
+                    DB::raw('SUM(fishing_logs.quantity) as total_caught'),
+                    DB::raw('COUNT(DISTINCT fishing_logs.date) as days_fished'),
+                    DB::raw('MAX(fishing_logs.max_size) as biggest_fish')
+                )
+                ->first();
+        } else {
+            // Viewing current year: compare year-to-date (same date range for apples-to-apples)
+            $lastYearComparisonStats = FishingLog::where('fishing_logs.user_id', $userId)
+                ->whereYear('fishing_logs.date', $previousYear)
+                ->where(function($query) use ($currentMonth, $currentDay) {
+                    $query->whereMonth('fishing_logs.date', '<', $currentMonth)
+                          ->orWhere(function($q) use ($currentMonth, $currentDay) {
+                              $q->whereMonth('fishing_logs.date', '=', $currentMonth)
+                                ->whereDay('fishing_logs.date', '<=', $currentDay);
+                          });
+                })
+                ->select(
+                    DB::raw('SUM(fishing_logs.quantity) as total_caught'),
+                    DB::raw('COUNT(DISTINCT fishing_logs.date) as days_fished'),
+                    DB::raw('MAX(fishing_logs.max_size) as biggest_fish')
+                )
+                ->first();
+        }
+
+        // Last year stats - FULL YEAR (for context, only shown when viewing current year)
+        $lastYearFullStats = FishingLog::where('fishing_logs.user_id', $userId)
             ->whereYear('fishing_logs.date', $previousYear)
             ->select(
                 DB::raw('SUM(fishing_logs.quantity) as total_caught'),
@@ -1381,15 +1434,23 @@ class DashboardDataService
                 'biggest' => $thisYearStats->biggest_fish,
                 'year' => $selectedYear,
             ],
-            'lastYear' => [
-                'catches' => $lastYearStats->total_caught ?? 0,
-                'days' => $lastYearStats->days_fished ?? 0,
-                'biggest' => $lastYearStats->biggest_fish,
+            'lastYearToDate' => [
+                'catches' => $lastYearComparisonStats->total_caught ?? 0,
+                'days' => $lastYearComparisonStats->days_fished ?? 0,
+                'biggest' => $lastYearComparisonStats->biggest_fish,
+                'year' => $previousYear,
+                'asOfDate' => $isViewingPastYear ? 'Full Year' : $today->format('M j'),
+            ],
+            'lastYearFull' => [
+                'catches' => $lastYearFullStats->total_caught ?? 0,
+                'days' => $lastYearFullStats->days_fished ?? 0,
+                'biggest' => $lastYearFullStats->biggest_fish,
                 'year' => $previousYear,
             ],
-            'catchChange' => $lastYearStats->total_caught > 0
-                ? round((($thisYearStats->total_caught - $lastYearStats->total_caught) / $lastYearStats->total_caught) * 100, 1)
+            'catchChange' => $lastYearComparisonStats->total_caught > 0
+                ? round((($thisYearStats->total_caught - $lastYearComparisonStats->total_caught) / $lastYearComparisonStats->total_caught) * 100, 1)
                 : null,
+            'isFullYearComparison' => $isViewingPastYear,
         ];
 
         // Personal bests timeline - respects year filter
@@ -1409,6 +1470,7 @@ class DashboardDataService
             ]);
 
         // Improvement rate (catches per trip trend) - respects year filter
+        // Returns monthly data for bar chart display
         $monthlyAvgQuery = (clone $baseQuery)
             ->select(
                 DB::raw('MONTH(fishing_logs.date) as month'),
@@ -1420,18 +1482,29 @@ class DashboardDataService
 
         $monthlyAvg = $monthlyAvgQuery->get()
             ->map(fn($item) => [
-                'month' => $item->month,
+                'month' => \Carbon\Carbon::create()->month($item->month)->format('M'),
+                'monthNum' => $item->month,
                 'avg' => $item->days > 0 ? round($item->total / $item->days, 1) : 0,
+                'total' => $item->total,
+                'days' => $item->days,
             ]);
 
         $improvementRate = null;
+        $improvementPercent = null;
         if ($monthlyAvg->count() >= 2) {
             $first = $monthlyAvg->first()['avg'];
             $last = $monthlyAvg->last()['avg'];
             if ($first > 0) {
-                $improvementRate = round((($last - $first) / $first) * 100, 1);
+                $improvementPercent = round((($last - $first) / $first) * 100, 1);
             }
         }
+
+        // Return both the monthly data and the overall percentage
+        $improvementRate = [
+            'monthlyData' => $monthlyAvg->values()->toArray(),
+            'percent' => $improvementPercent,
+            'maxAvg' => $monthlyAvg->max('avg') ?? 0,
+        ];
 
         // Fishing frequency (days per month) - respects year filter
         $fishingFrequency = (clone $baseQuery)
@@ -1444,11 +1517,47 @@ class DashboardDataService
             ->get()
             ->mapWithKeys(fn($item) => [\Carbon\Carbon::create()->month($item->month)->format('M') => $item->days]);
 
+        // Average size trend (average fish length per month) - respects year filter
+        $monthlySizeQuery = (clone $baseQuery)
+            ->whereNotNull('fishing_logs.max_size')
+            ->where('fishing_logs.max_size', '>', 0)
+            ->select(
+                DB::raw('MONTH(fishing_logs.date) as month'),
+                DB::raw('AVG(fishing_logs.max_size) as avg_size'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy(DB::raw('MONTH(fishing_logs.date)'))
+            ->orderBy('month');
+
+        $monthlySizeData = $monthlySizeQuery->get()
+            ->map(fn($item) => [
+                'month' => \Carbon\Carbon::create()->month($item->month)->format('M'),
+                'monthNum' => $item->month,
+                'avg' => round($item->avg_size, 1),
+                'count' => $item->count,
+            ]);
+
+        $sizeTrendPercent = null;
+        if ($monthlySizeData->count() >= 2) {
+            $first = $monthlySizeData->first()['avg'];
+            $last = $monthlySizeData->last()['avg'];
+            if ($first > 0) {
+                $sizeTrendPercent = round((($last - $first) / $first) * 100, 1);
+            }
+        }
+
+        $avgSizeTrend = [
+            'monthlyData' => $monthlySizeData->values()->toArray(),
+            'percent' => $sizeTrendPercent,
+            'maxAvg' => $monthlySizeData->max('avg') ?? 0,
+        ];
+
         return [
             'yoyComparison' => $yoyComparison,
             'personalBests' => $personalBests,
             'improvementRate' => $improvementRate,
             'fishingFrequency' => $fishingFrequency,
+            'avgSizeTrend' => $avgSizeTrend,
         ];
     }
 
@@ -1585,11 +1694,17 @@ class DashboardDataService
             }
         }
 
-        // Lucky number (most common catch quantity)
-        $luckyNumber = (clone $baseQuery)
-            ->where('fishing_logs.quantity', '>', 0)
-            ->select('fishing_logs.quantity', DB::raw('COUNT(*) as occurrences'))
-            ->groupBy('fishing_logs.quantity')
+        // Lucky number (most common daily catch total)
+        $luckyNumber = DB::table(DB::raw("(
+            SELECT fishing_logs.date, SUM(fishing_logs.quantity) as daily_total
+            FROM fishing_logs
+            WHERE fishing_logs.user_id = {$userId}
+            AND fishing_logs.quantity > 0
+            " . ($yearFilter !== 'lifetime' ? "AND YEAR(fishing_logs.date) = {$yearFilter}" : "") . "
+            GROUP BY fishing_logs.date
+        ) as daily_totals"))
+            ->select('daily_total', DB::raw('COUNT(*) as occurrences'))
+            ->groupBy('daily_total')
             ->orderByDesc('occurrences')
             ->first();
 
@@ -1598,7 +1713,7 @@ class DashboardDataService
             'badges' => $badges,
             'hotStreak' => $hotStreak > 0 ? $hotStreak : null,
             'luckyNumber' => $luckyNumber ? [
-                'number' => $luckyNumber->quantity,
+                'number' => $luckyNumber->daily_total,
                 'occurrences' => $luckyNumber->occurrences,
             ] : null,
         ];

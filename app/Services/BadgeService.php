@@ -118,6 +118,35 @@ class BadgeService
         $maxSize = (clone $baseQuery)->max('max_size') ?? 0;
         $maxWeight = (clone $baseQuery)->max('max_weight') ?? 0;
 
+        // === FRESHWATER STATS ===
+        $freshwaterQuery = (clone $baseQuery)
+            ->whereHas('fish', fn($q) => $q->whereRaw('LOWER(water_type) = ?', ['freshwater']));
+        $freshwaterMaxSize = (clone $freshwaterQuery)->max('max_size') ?? 0;
+        $freshwaterTrophyCount = (clone $freshwaterQuery)->where('max_size', '>=', 20)->count();
+        $freshwaterOver30Count = (clone $freshwaterQuery)->where('max_size', '>=', 30)->count();
+        $freshwaterOver40Count = (clone $freshwaterQuery)->where('max_size', '>=', 40)->count();
+        $freshwaterMaxDailyTrophies = (clone $freshwaterQuery)
+            ->where('max_size', '>=', 20)
+            ->selectRaw('date, COUNT(*) as trophy_count')
+            ->groupBy('date')
+            ->orderByDesc('trophy_count')
+            ->first();
+
+        // === SALTWATER STATS ===
+        $saltwaterQuery = (clone $baseQuery)
+            ->whereHas('fish', fn($q) => $q->whereRaw('LOWER(water_type) = ?', ['saltwater']));
+        $saltwaterMaxSize = (clone $saltwaterQuery)->max('max_size') ?? 0;
+        $saltwaterTrophyCount = (clone $saltwaterQuery)->where('max_size', '>=', 30)->count(); // Saltwater trophies are 30"+
+        $saltwaterOver40Count = (clone $saltwaterQuery)->where('max_size', '>=', 40)->count();
+        $saltwaterOver50Count = (clone $saltwaterQuery)->where('max_size', '>=', 50)->count();
+        $saltwaterOver60Count = (clone $saltwaterQuery)->where('max_size', '>=', 60)->count();
+        $saltwaterMaxDailyTrophies = (clone $saltwaterQuery)
+            ->where('max_size', '>=', 30)
+            ->selectRaw('date, COUNT(*) as trophy_count')
+            ->groupBy('date')
+            ->orderByDesc('trophy_count')
+            ->first();
+
         // Species count
         $speciesCount = (clone $baseQuery)
             ->whereNotNull('user_fish_id')
@@ -272,6 +301,14 @@ class BadgeService
         // Trophy count (fish over 20 inches)
         $trophyCount = (clone $baseQuery)->where('max_size', '>=', 20)->count();
 
+        // Max daily trophies (most trophies caught in a single day)
+        $maxDailyTrophies = (clone $baseQuery)
+            ->where('max_size', '>=', 20)
+            ->selectRaw('date, COUNT(*) as trophy_count')
+            ->groupBy('date')
+            ->orderByDesc('trophy_count')
+            ->first();
+
         // Size categories
         $over30Count = (clone $baseQuery)->where('max_size', '>=', 30)->count();
         $over40Count = (clone $baseQuery)->where('max_size', '>=', 40)->count();
@@ -335,8 +372,24 @@ class BadgeService
             'skunk_count' => $skunkCount,
             'weight_logged_count' => $weightLoggedCount,
             'trophy_count' => $trophyCount,
+            'max_daily_trophies' => $maxDailyTrophies?->trophy_count ?? 0,
             'over_30_count' => $over30Count,
             'over_40_count' => $over40Count,
+
+            // Freshwater stats
+            'freshwater_max_size' => $freshwaterMaxSize,
+            'freshwater_trophy_count' => $freshwaterTrophyCount,
+            'freshwater_over_30_count' => $freshwaterOver30Count,
+            'freshwater_over_40_count' => $freshwaterOver40Count,
+            'freshwater_max_daily_trophies' => $freshwaterMaxDailyTrophies?->trophy_count ?? 0,
+
+            // Saltwater stats
+            'saltwater_max_size' => $saltwaterMaxSize,
+            'saltwater_trophy_count' => $saltwaterTrophyCount,
+            'saltwater_over_40_count' => $saltwaterOver40Count,
+            'saltwater_over_50_count' => $saltwaterOver50Count,
+            'saltwater_over_60_count' => $saltwaterOver60Count,
+            'saltwater_max_daily_trophies' => $saltwaterMaxDailyTrophies?->trophy_count ?? 0,
         ];
     }
 
@@ -415,7 +468,22 @@ class BadgeService
             'skunk_count' => 'skunk_count',
             'weight_logged' => 'weight_logged_count',
             'trophy_count' => 'trophy_count',
-            'daily_trophies' => 'trophy_count',
+            'daily_trophies' => 'max_daily_trophies',
+
+            // Freshwater
+            'freshwater_max_size' => 'freshwater_max_size',
+            'freshwater_trophy_count' => 'freshwater_trophy_count',
+            'freshwater_over_30_count' => 'freshwater_over_30_count',
+            'freshwater_over_40_count' => 'freshwater_over_40_count',
+            'freshwater_daily_trophies' => 'freshwater_max_daily_trophies',
+
+            // Saltwater
+            'saltwater_max_size' => 'saltwater_max_size',
+            'saltwater_trophy_count' => 'saltwater_trophy_count',
+            'saltwater_over_40_count' => 'saltwater_over_40_count',
+            'saltwater_over_50_count' => 'saltwater_over_50_count',
+            'saltwater_over_60_count' => 'saltwater_over_60_count',
+            'saltwater_daily_trophies' => 'saltwater_max_daily_trophies',
         ];
 
         if (isset($mapping[$field])) {

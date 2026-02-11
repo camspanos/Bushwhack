@@ -24,6 +24,8 @@ class FishingLog extends Model
         'quantity',
         'max_size',
         'max_weight',
+        'avg_size',
+        'avg_weight',
         'style',
         'moon_phase',
         'moon_altitude',
@@ -35,6 +37,8 @@ class FishingLog extends Model
         'date' => 'date',
         'max_size' => 'decimal:2',
         'max_weight' => 'decimal:2',
+        'avg_size' => 'decimal:2',
+        'avg_weight' => 'decimal:2',
         'moon_altitude' => 'decimal:2',
     ];
 

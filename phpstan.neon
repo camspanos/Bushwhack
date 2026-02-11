@@ -1,0 +1,22 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+
+    # Level 5 is a good starting point for Laravel projects
+    # Levels: 0 (loose) to 9 (strict)
+    level: 5
+
+    # Ignore specific errors if needed
+    ignoreErrors:
+        # Example: - '#Call to an undefined method [a-zA-Z0-9\\_]+::factory\(\)#'
+
+    # Exclude paths from analysis (if needed)
+    # excludePaths:
+    #     - app/SomeFile.php
+
+    # Report unused parameters
+    reportUnmatchedIgnoredErrors: false
+

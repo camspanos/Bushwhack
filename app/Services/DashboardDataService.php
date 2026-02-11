@@ -98,6 +98,42 @@ class DashboardDataService
     }
 
     /**
+     * Get SQL expression for weighted average size.
+     * When avg_size is provided: (max_size * 1 + avg_size * (quantity - 1)) / quantity
+     * When avg_size is NULL: count as 1 fish with max_size only
+     *
+     * @param string $prefix Table prefix (e.g., 'fishing_logs.')
+     * @return array{sum: string, count: string} SQL expressions for sum and count
+     */
+    protected function weightedSizeExpressions(string $prefix = ''): array
+    {
+        $maxSize = $prefix . 'max_size';
+        $avgSize = $prefix . 'avg_size';
+        $quantity = $prefix . 'quantity';
+
+        // Sum of all fish sizes (weighted)
+        $sumExpr = "SUM(CASE WHEN {$avgSize} IS NOT NULL AND {$quantity} > 1 THEN {$maxSize} + {$avgSize} * ({$quantity} - 1) ELSE {$maxSize} END)";
+
+        // Count of fish with known sizes
+        $countExpr = "SUM(CASE WHEN {$avgSize} IS NOT NULL AND {$quantity} > 1 THEN {$quantity} ELSE 1 END)";
+
+        return ['sum' => $sumExpr, 'count' => $countExpr];
+    }
+
+    /**
+     * Get SQL expression for weighted average size as a single expression.
+     *
+     * @param string $prefix Table prefix (e.g., 'fishing_logs.')
+     * @param string $alias Column alias for the result
+     * @return string SQL expression
+     */
+    protected function weightedAvgSizeExpression(string $prefix = '', string $alias = 'weighted_avg_size'): string
+    {
+        $exprs = $this->weightedSizeExpressions($prefix);
+        return "({$exprs['sum']}) / NULLIF({$exprs['count']}, 0) as {$alias}";
+    }
+
+    /**
      * Get year statistics (days fished, days with fish, etc.)
      */
     public function getYearStats(Builder $baseQuery): array
@@ -551,11 +587,12 @@ class DashboardDataService
             ->sum('quantity') ?? 0;
 
         // Best moon position for big fish
+        $weightedAvgExpr = $this->weightedAvgSizeExpression('', 'weighted_avg_size');
         $bestMoonForBigFish = (clone $baseQuery)
             ->whereNotNull('moon_position')
             ->whereNotNull('max_size')
             ->where('max_size', '>', 0)
-            ->select('moon_position', DB::raw('MAX(max_size) as biggest_size'), DB::raw('AVG(max_size) as avg_size'))
+            ->select('moon_position', DB::raw('MAX(max_size) as biggest_size'), DB::raw($weightedAvgExpr))
             ->groupBy('moon_position')
             ->orderByDesc('biggest_size')
             ->first();
@@ -569,7 +606,7 @@ class DashboardDataService
             'bestMoonForBigFish' => $bestMoonForBigFish ? [
                 'position' => $bestMoonForBigFish->moon_position,
                 'biggest_size' => $bestMoonForBigFish->biggest_size ?? 0,
-                'avg_size' => round($bestMoonForBigFish->avg_size ?? 0, 2),
+                'avg_size' => round($bestMoonForBigFish->weighted_avg_size ?? 0, 2),
             ] : null,
         ];
     }
@@ -693,8 +730,9 @@ class DashboardDataService
             $luckyCharmFriend->whereYear('fishing_logs.date', $yearFilter);
         }
 
+        $weightedAvgExpr = $this->weightedAvgSizeExpression('fishing_logs.', 'weighted_avg_size');
         $luckyCharmFriend = $luckyCharmFriend
-            ->select('user_friends.name', DB::raw('MAX(fishing_logs.max_size) as biggest_fish'), DB::raw('AVG(fishing_logs.max_size) as avg_size'))
+            ->select('user_friends.name', DB::raw('MAX(fishing_logs.max_size) as biggest_fish'), DB::raw($weightedAvgExpr))
             ->groupBy('user_friends.id', 'user_friends.name')
             ->orderByDesc('biggest_fish')
             ->first();
@@ -720,7 +758,7 @@ class DashboardDataService
             'luckyCharmFriend' => $luckyCharmFriend ? [
                 'name' => $luckyCharmFriend->name,
                 'biggest_fish' => $luckyCharmFriend->biggest_fish ?? 0,
-                'avg_size' => round($luckyCharmFriend->avg_size ?? 0, 2),
+                'avg_size' => round($luckyCharmFriend->weighted_avg_size ?? 0, 2),
             ] : null,
         ];
     }
@@ -743,11 +781,12 @@ class DashboardDataService
             ->first();
 
         // Best rod for trophies
+        $weightedAvgExpr = $this->weightedAvgSizeExpression('', 'weighted_avg_size');
         $bestRodForTrophies = (clone $baseQuery)
             ->whereNotNull('user_rod_id')
             ->whereNotNull('max_size')
             ->where('max_size', '>', 0)
-            ->select('user_rod_id', DB::raw('MAX(max_size) as biggest_size'), DB::raw('AVG(max_size) as avg_size'))
+            ->select('user_rod_id', DB::raw('MAX(max_size) as biggest_size'), DB::raw($weightedAvgExpr))
             ->groupBy('user_rod_id')
             ->orderByDesc('biggest_size')
             ->with('rod')
@@ -784,7 +823,7 @@ class DashboardDataService
             'bestRodForTrophies' => $bestRodForTrophies ? [
                 'name' => $bestRodForTrophies->rod?->rod_name,
                 'biggest_size' => $bestRodForTrophies->biggest_size ?? 0,
-                'avg_size' => round($bestRodForTrophies->avg_size ?? 0, 2),
+                'avg_size' => round($bestRodForTrophies->weighted_avg_size ?? 0, 2),
             ] : null,
             'catchesByStyle' => $catchesByStyle,
             'mostSuccessfulStyle' => $mostSuccessfulStyle ? [
@@ -1191,37 +1230,38 @@ class DashboardDataService
         $comparisonYear = $yearFilter !== 'lifetime' ? (int)$yearFilter : now()->year;
         $previousComparisonYear = $comparisonYear - 1;
 
-        // Get sizes for the comparison year
+        // Get weighted average sizes for the comparison year
+        $weightedAvgExpr = $this->weightedAvgSizeExpression('fishing_logs.', 'weighted_avg_size');
         $comparisonYearSizes = FishingLog::where('fishing_logs.user_id', $userId)
             ->whereYear('fishing_logs.date', $comparisonYear)
             ->whereNotNull('fishing_logs.user_fish_id')
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
-            ->select('fishing_logs.user_fish_id', DB::raw('AVG(fishing_logs.max_size) as avg_size'))
+            ->select('fishing_logs.user_fish_id', DB::raw($weightedAvgExpr))
             ->groupBy('fishing_logs.user_fish_id')
             ->get();
 
-        // Get sizes for the previous year
+        // Get weighted average sizes for the previous year
         $previousYearSizes = FishingLog::where('fishing_logs.user_id', $userId)
             ->whereYear('fishing_logs.date', $previousComparisonYear)
             ->whereNotNull('fishing_logs.user_fish_id')
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
-            ->select('fishing_logs.user_fish_id', DB::raw('AVG(fishing_logs.max_size) as avg_size'))
+            ->select('fishing_logs.user_fish_id', DB::raw($weightedAvgExpr))
             ->groupBy('fishing_logs.user_fish_id')
             ->get()
             ->keyBy('user_fish_id');
 
         foreach ($comparisonYearSizes as $current) {
             $previous = $previousYearSizes->get($current->user_fish_id);
-            if ($previous) {
+            if ($previous && $previous->weighted_avg_size > 0) {
                 $fish = \App\Models\UserFish::find($current->user_fish_id);
-                $improvement = round((($current->avg_size - $previous->avg_size) / $previous->avg_size) * 100, 1);
+                $improvement = round((($current->weighted_avg_size - $previous->weighted_avg_size) / $previous->weighted_avg_size) * 100, 1);
                 $sizeImprovementItems[] = [
                     'name' => $fish?->species ?? 'Unknown',
                     'improvement' => $improvement,
-                    'current_avg' => round($current->avg_size, 1),
-                    'previous_avg' => round($previous->avg_size, 1),
+                    'current_avg' => round($current->weighted_avg_size, 1),
+                    'previous_avg' => round($previous->weighted_avg_size, 1),
                 ];
             }
         }
@@ -1517,14 +1557,16 @@ class DashboardDataService
             ->get()
             ->mapWithKeys(fn($item) => [\Carbon\Carbon::create()->month($item->month)->format('M') => $item->days]);
 
-        // Average size trend (average fish length per month) - respects year filter
+        // Average size trend (weighted average fish length per month) - respects year filter
+        $weightedExprs = $this->weightedSizeExpressions('fishing_logs.');
         $monthlySizeQuery = (clone $baseQuery)
             ->whereNotNull('fishing_logs.max_size')
             ->where('fishing_logs.max_size', '>', 0)
             ->select(
                 DB::raw('MONTH(fishing_logs.date) as month'),
-                DB::raw('AVG(fishing_logs.max_size) as avg_size'),
-                DB::raw('COUNT(*) as count')
+                DB::raw("{$weightedExprs['sum']} as size_sum"),
+                DB::raw("{$weightedExprs['count']} as fish_count"),
+                DB::raw('COUNT(*) as log_count')
             )
             ->groupBy(DB::raw('MONTH(fishing_logs.date)'))
             ->orderBy('month');
@@ -1533,8 +1575,8 @@ class DashboardDataService
             ->map(fn($item) => [
                 'month' => \Carbon\Carbon::create()->month($item->month)->format('M'),
                 'monthNum' => $item->month,
-                'avg' => round($item->avg_size, 1),
-                'count' => $item->count,
+                'avg' => $item->fish_count > 0 ? round($item->size_sum / $item->fish_count, 1) : 0,
+                'count' => $item->log_count,
             ]);
 
         $sizeTrendPercent = null;
@@ -1641,7 +1683,15 @@ class DashboardDataService
 
         // Fishing score (weighted: quantity + size bonus + variety bonus)
         $totalCaught = (clone $baseQuery)->sum('fishing_logs.quantity') ?? 0;
-        $avgSize = (clone $baseQuery)->whereNotNull('fishing_logs.max_size')->avg('fishing_logs.max_size') ?? 0;
+
+        // Calculate weighted average size
+        $weightedExprs = $this->weightedSizeExpressions('fishing_logs.');
+        $sizeStats = (clone $baseQuery)
+            ->whereNotNull('fishing_logs.max_size')
+            ->selectRaw("{$weightedExprs['sum']} as size_sum, {$weightedExprs['count']} as fish_count")
+            ->first();
+        $avgSize = ($sizeStats && $sizeStats->fish_count > 0) ? ($sizeStats->size_sum / $sizeStats->fish_count) : 0;
+
         $speciesCount = (clone $baseQuery)->whereNotNull('fishing_logs.user_fish_id')->distinct()->count('fishing_logs.user_fish_id');
         $locationCount = (clone $baseQuery)->whereNotNull('fishing_logs.user_location_id')->distinct()->count('fishing_logs.user_location_id');
 

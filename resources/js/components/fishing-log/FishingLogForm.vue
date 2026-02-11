@@ -102,6 +102,8 @@ export interface FishingLogFormData {
     quantity: string;
     maxSize: string;
     maxWeight: string;
+    avgSize: string;
+    avgWeight: string;
     user_fly_id: string;
     user_rod_id: string;
     fishingStyle: string;
@@ -123,6 +125,8 @@ export interface FishingLogInitialData {
     quantity?: number;
     max_size?: number;
     max_weight?: number;
+    avg_size?: number;
+    avg_weight?: number;
     user_fly_id?: number;
     user_rod_id?: number;
     style?: string;
@@ -197,6 +201,8 @@ const formData = ref<FishingLogFormData>({
     quantity: '',
     maxSize: '',
     maxWeight: '',
+    avgSize: '',
+    avgWeight: '',
     user_fly_id: '',
     user_rod_id: '',
     fishingStyle: '',
@@ -541,6 +547,8 @@ const populateForm = (data: FishingLogInitialData) => {
         quantity: data.quantity?.toString() || '',
         maxSize: data.max_size?.toString() || '',
         maxWeight: data.max_weight?.toString() || '',
+        avgSize: data.avg_size?.toString() || '',
+        avgWeight: data.avg_weight?.toString() || '',
         user_fly_id: data.user_fly_id?.toString() || '',
         user_rod_id: data.user_rod_id?.toString() || '',
         fishingStyle: data.style || '',
@@ -586,6 +594,8 @@ const resetForm = () => {
         quantity: '',
         maxSize: '',
         maxWeight: '',
+        avgSize: '',
+        avgWeight: '',
         user_fly_id: '',
         user_rod_id: '',
         fishingStyle: '',
@@ -749,6 +759,8 @@ const handleSubmit = () => {
         quantity: formData.value.quantity ? parseInt(formData.value.quantity) : null,
         max_size: formData.value.maxSize ? parseFloat(formData.value.maxSize) : null,
         max_weight: formData.value.maxWeight ? parseFloat(formData.value.maxWeight) : null,
+        avg_size: formData.value.avgSize ? parseFloat(formData.value.avgSize) : null,
+        avg_weight: formData.value.avgWeight ? parseFloat(formData.value.avgWeight) : null,
         user_fly_id: formData.value.user_fly_id ? parseInt(formData.value.user_fly_id) : null,
         user_rod_id: formData.value.user_rod_id ? parseInt(formData.value.user_rod_id) : null,
         style: formData.value.fishingStyle || null,
@@ -1101,6 +1113,34 @@ defineExpose({
                         min="0"
                         step="0.01"
                     />
+                </div>
+            </div>
+
+            <!-- Avg Size and Avg Weight (only shown when quantity > 1) -->
+            <div v-if="parseInt(formData.quantity) > 1" class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <Label for="avgSize">Avg Size (inches)</Label>
+                    <Input
+                        id="avgSize"
+                        type="number"
+                        v-model="formData.avgSize"
+                        placeholder="e.g., 12"
+                        min="0"
+                        step="0.1"
+                    />
+                    <p class="text-xs text-muted-foreground">Average size of {{ parseInt(formData.quantity) - 1 }} other fish</p>
+                </div>
+                <div class="grid gap-2">
+                    <Label for="avgWeight">Avg Weight (lbs)</Label>
+                    <Input
+                        id="avgWeight"
+                        type="number"
+                        v-model="formData.avgWeight"
+                        placeholder="e.g., 1.5"
+                        min="0"
+                        step="0.01"
+                    />
+                    <p class="text-xs text-muted-foreground">Average weight of {{ parseInt(formData.quantity) - 1 }} other fish</p>
                 </div>
             </div>
 

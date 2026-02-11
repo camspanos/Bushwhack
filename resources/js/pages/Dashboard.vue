@@ -8,7 +8,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw, Ruler } from 'lucide-vue-next';
+import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw, Ruler, Scale } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface CardPreference {
@@ -458,6 +458,11 @@ const props = defineProps<{
     } | null;
     fishingFrequency: Record<string, number>;
     avgSizeTrend: {
+        monthlyData: { month: string; monthNum: number; avg: number; count: number }[];
+        percent: number | null;
+        maxAvg: number;
+    } | null;
+    avgWeightTrend: {
         monthlyData: { month: string; monthNum: number; avg: number; count: number }[];
         percent: number | null;
         maxAvg: number;
@@ -4880,6 +4885,69 @@ const hoveredStyleSlice = ref<number | null>(null);
                                 <div class="text-sm text-muted-foreground">Overall trend</div>
                                 <div v-if="avgSizeTrend.percent !== null" :class="['text-lg font-bold', avgSizeTrend.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
                                     {{ avgSizeTrend.percent >= 0 ? '+' : '' }}{{ avgSizeTrend.percent }}%
+                                </div>
+                                <div v-else class="text-sm text-muted-foreground">—</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Average Weight Trend -->
+                <DashboardCard
+                    v-if="isCardVisible('avg_weight_trend')"
+                    card-id="avg_weight_trend"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('avg_weight_trend')"
+                    :order="getCardOrder('avg_weight_trend')"
+                    :size="getCardSize('avg_weight_trend')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('avg_weight_trend')"
+                    :is-last="isCardLast('avg_weight_trend')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('avg_weight_trend')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-orange-50/30 dark:from-amber-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1.5 dark:from-amber-900/30 dark:to-orange-900/30">
+                                <Scale class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            Avg Weight Trend
+                        </CardTitle>
+                        <CardDescription>Average fish weight by month</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="avgWeightTrend && avgWeightTrend.monthlyData.length > 0" class="space-y-3">
+                            <!-- Bar chart -->
+                            <div class="flex items-end gap-2 h-28">
+                                <div
+                                    v-for="item in avgWeightTrend.monthlyData"
+                                    :key="item.monthNum"
+                                    class="flex-1 flex flex-col items-center h-full"
+                                >
+                                    <div class="text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">
+                                        {{ item.avg }}lb
+                                    </div>
+                                    <div class="flex-1 w-full flex items-end">
+                                        <div
+                                            class="w-full bg-gradient-to-t from-amber-500 to-orange-400 dark:from-amber-600 dark:to-orange-500 rounded-t transition-all"
+                                            :style="{ height: avgWeightTrend.maxAvg > 0 ? `${Math.max((item.avg / avgWeightTrend.maxAvg) * 100, item.avg > 0 ? 10 : 0)}%` : '0%' }"
+                                        ></div>
+                                    </div>
+                                    <div class="text-xs text-muted-foreground mt-1">{{ item.month }}</div>
+                                </div>
+                            </div>
+                            <!-- Summary -->
+                            <div class="flex items-center justify-between pt-2 border-t">
+                                <div class="text-sm text-muted-foreground">Overall trend</div>
+                                <div v-if="avgWeightTrend.percent !== null" :class="['text-lg font-bold', avgWeightTrend.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400']">
+                                    {{ avgWeightTrend.percent >= 0 ? '+' : '' }}{{ avgWeightTrend.percent }}%
                                 </div>
                                 <div v-else class="text-sm text-muted-foreground">—</div>
                             </div>

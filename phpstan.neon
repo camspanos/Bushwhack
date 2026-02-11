@@ -9,9 +9,10 @@ parameters:
     # Levels: 0 (loose) to 9 (strict)
     level: 5
 
-    # Ignore specific errors if needed
+    # Ignore specific errors
     ignoreErrors:
-        # Example: - '#Call to an undefined method [a-zA-Z0-9\\_]+::factory\(\)#'
+        - identifier: nullsafe.neverNull
+        - identifier: nullCoalesce.expr
 
     # Exclude paths from analysis (if needed)
     # excludePaths:

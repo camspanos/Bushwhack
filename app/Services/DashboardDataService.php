@@ -134,6 +134,42 @@ class DashboardDataService
     }
 
     /**
+     * Get SQL expression for weighted average weight.
+     * When avg_weight is provided: (max_weight * 1 + avg_weight * (quantity - 1)) / quantity
+     * When avg_weight is NULL: count as 1 fish with max_weight only
+     *
+     * @param string $prefix Table prefix (e.g., 'fishing_logs.')
+     * @return array{sum: string, count: string} SQL expressions for sum and count
+     */
+    protected function weightedWeightExpressions(string $prefix = ''): array
+    {
+        $maxWeight = $prefix . 'max_weight';
+        $avgWeight = $prefix . 'avg_weight';
+        $quantity = $prefix . 'quantity';
+
+        // Sum of all fish weights (weighted)
+        $sumExpr = "SUM(CASE WHEN {$avgWeight} IS NOT NULL AND {$quantity} > 1 THEN {$maxWeight} + {$avgWeight} * ({$quantity} - 1) ELSE {$maxWeight} END)";
+
+        // Count of fish with known weights
+        $countExpr = "SUM(CASE WHEN {$avgWeight} IS NOT NULL AND {$quantity} > 1 THEN {$quantity} ELSE 1 END)";
+
+        return ['sum' => $sumExpr, 'count' => $countExpr];
+    }
+
+    /**
+     * Get SQL expression for weighted average weight as a single expression.
+     *
+     * @param string $prefix Table prefix (e.g., 'fishing_logs.')
+     * @param string $alias Column alias for the result
+     * @return string SQL expression
+     */
+    protected function weightedAvgWeightExpression(string $prefix = '', string $alias = 'weighted_avg_weight'): string
+    {
+        $exprs = $this->weightedWeightExpressions($prefix);
+        return "({$exprs['sum']}) / NULLIF({$exprs['count']}, 0) as {$alias}";
+    }
+
+    /**
      * Get year statistics (days fished, days with fish, etc.)
      */
     public function getYearStats(Builder $baseQuery): array
@@ -1594,12 +1630,50 @@ class DashboardDataService
             'maxAvg' => $monthlySizeData->max('avg') ?? 0,
         ];
 
+        // Average weight trend (weighted average fish weight per month) - respects year filter
+        $weightedWeightExprs = $this->weightedWeightExpressions('fishing_logs.');
+        $monthlyWeightQuery = (clone $baseQuery)
+            ->whereNotNull('fishing_logs.max_weight')
+            ->where('fishing_logs.max_weight', '>', 0)
+            ->select(
+                DB::raw('MONTH(fishing_logs.date) as month'),
+                DB::raw("{$weightedWeightExprs['sum']} as weight_sum"),
+                DB::raw("{$weightedWeightExprs['count']} as fish_count"),
+                DB::raw('COUNT(*) as log_count')
+            )
+            ->groupBy(DB::raw('MONTH(fishing_logs.date)'))
+            ->orderBy('month');
+
+        $monthlyWeightData = $monthlyWeightQuery->get()
+            ->map(fn($item) => [
+                'month' => \Carbon\Carbon::create()->month($item->month)->format('M'),
+                'monthNum' => $item->month,
+                'avg' => $item->fish_count > 0 ? round($item->weight_sum / $item->fish_count, 2) : 0,
+                'count' => $item->log_count,
+            ]);
+
+        $weightTrendPercent = null;
+        if ($monthlyWeightData->count() >= 2) {
+            $first = $monthlyWeightData->first()['avg'];
+            $last = $monthlyWeightData->last()['avg'];
+            if ($first > 0) {
+                $weightTrendPercent = round((($last - $first) / $first) * 100, 1);
+            }
+        }
+
+        $avgWeightTrend = [
+            'monthlyData' => $monthlyWeightData->values()->toArray(),
+            'percent' => $weightTrendPercent,
+            'maxAvg' => $monthlyWeightData->max('avg') ?? 0,
+        ];
+
         return [
             'yoyComparison' => $yoyComparison,
             'personalBests' => $personalBests,
             'improvementRate' => $improvementRate,
             'fishingFrequency' => $fishingFrequency,
             'avgSizeTrend' => $avgSizeTrend,
+            'avgWeightTrend' => $avgWeightTrend,
         ];
     }
 

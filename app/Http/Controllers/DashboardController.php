@@ -484,6 +484,7 @@ class DashboardController extends Controller
             'improvementRate' => $progressStats['improvementRate'],
             'fishingFrequency' => $progressStats['fishingFrequency'],
             'avgSizeTrend' => $progressStats['avgSizeTrend'],
+            'avgWeightTrend' => $progressStats['avgWeightTrend'],
             // Environmental combo stats
             'windCloudCombo' => $environmentalComboStats['windCloudCombo'],
             'moonTimeCombo' => $environmentalComboStats['moonTimeCombo'],

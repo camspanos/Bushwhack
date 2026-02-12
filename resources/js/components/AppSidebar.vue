@@ -22,42 +22,43 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid,
+        emoji: '🎛️',
     },
     {
         title: 'Fishing Log',
         href: fishingLog(),
-        icon: Fish,
+        emoji: '📓',
     },
     {
         title: 'Locations',
         href: locationsPage(),
-        icon: MapPin,
+        emoji: '🌎',
     },
     {
         title: 'Rods',
         href: rodsPage(),
-        icon: Wrench,
+        emoji: '🎣',
     },
     {
         title: 'Fish',
         href: fishPage(),
-        icon: Fish,
+        emoji: '🐟',
     },
     {
         title: 'Flies',
         href: fliesPage(),
-        icon: Bug,
+        emoji: '🪝',
     },
     {
         title: 'Friends',
         href: friendsPage(),
         icon: Users,
+        iconClass: 'text-teal-600 dark:text-teal-400',
     },
     {
         title: 'Badges',
         href: badgesPage(),
-        icon: Award,
+        emoji: '🏅',
     },
 ];
 
@@ -65,17 +66,17 @@ const footerNavItems: NavItem[] = [
     {
         title: 'Leaderboard',
         href: leaderboard(),
-        icon: Trophy,
+        emoji: '🏆',
     },
     {
         title: 'Following',
         href: following(),
-        icon: UserPlus,
+        emoji: '👤',
     },
     {
         title: 'About Us',
         href: about(),
-        icon: Info,
+        emoji: 'ℹ️',
     },
 ];
 </script>

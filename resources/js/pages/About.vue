@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { about, dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Fish, Heart, Users, Target, Sparkles, MapPin, BarChart3, Waves } from 'lucide-vue-next';
+import { Heart, Users, Target, Sparkles, MapPin, BarChart3, Waves } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -27,7 +27,7 @@ const page = usePage();
                 <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
                 <div class="relative z-10 text-center space-y-4">
                     <div class="inline-flex items-center justify-center p-3 bg-white/20 rounded-full backdrop-blur-sm mb-4">
-                        <Fish class="h-10 w-10" />
+                        <span class="text-4xl">🐟</span>
                     </div>
                     <h1 class="text-4xl md:text-5xl font-bold tracking-tight">About Bushwhack</h1>
                     <p class="text-xl text-white/90 max-w-2xl mx-auto">
@@ -65,7 +65,7 @@ const page = usePage();
                 <Card class="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-teal-50/50 to-transparent dark:from-teal-950/20 border-teal-200/50 dark:border-teal-800/30">
                     <CardHeader>
                         <div class="p-3 rounded-xl bg-teal-100 dark:bg-teal-900/50 w-fit mb-2 group-hover:scale-110 transition-transform">
-                            <Fish class="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                            <span class="text-2xl">🐠</span>
                         </div>
                         <CardTitle class="text-teal-900 dark:text-teal-100">Track Your Catches</CardTitle>
                     </CardHeader>

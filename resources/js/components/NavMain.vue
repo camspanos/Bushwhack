@@ -29,7 +29,8 @@ const { urlIsActive } = useActiveUrl();
                     :tooltip="item.title"
                 >
                     <Link :href="toUrl(item.href)">
-                        <component :is="item.icon" />
+                        <span v-if="item.emoji" class="text-base leading-none">{{ item.emoji }}</span>
+                        <component v-else-if="item.icon" :is="item.icon" :class="item.iconClass" />
                         <span>{{ item.title }}</span>
                     </Link>
                 </SidebarMenuButton>

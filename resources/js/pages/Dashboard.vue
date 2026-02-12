@@ -1625,7 +1625,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20"
                 >
-                    <DashboardCardHeader title="Favorite Location" :icon="MapPin" color="emerald" />
+                    <DashboardCardHeader title="Favorite Location" emoji="🌎" color="emerald" />
                     <CardContent class="pb-3">
                         <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ stats.favoriteLocation || 'N/A' }}</div>
                         <p class="text-xs text-muted-foreground">Most visited spot</p>
@@ -1651,7 +1651,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20"
                 >
-                    <DashboardCardHeader title="Fishing Buddies" :icon="Users" color="purple" />
+                    <DashboardCardHeader title="Fishing Buddies" emoji="👥" color="purple" />
                     <CardContent class="pb-3">
                         <div class="text-2xl font-bold text-purple-700 dark:text-purple-300">{{ stats.totalFriends }}</div>
                         <p class="text-xs text-muted-foreground">Friends fished with</p>
@@ -1677,7 +1677,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10"
                 >
-                    <DashboardCardHeader title="Biggest Catch" subtitle="Largest fish caught" :icon="Award" color="yellow" />
+                    <DashboardCardHeader title="Biggest Catch" subtitle="Largest fish caught" emoji="🏆" color="yellow" />
                     <CardContent class="pt-0 pb-3">
                         <div class="space-y-2">
                             <div class="space-y-1">
@@ -1726,7 +1726,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10"
                 >
-                    <DashboardCardHeader title="Biggest Catch" subtitle="Largest fish caught" :icon="Award" color="gray" />
+                    <DashboardCardHeader title="Biggest Catch" subtitle="Largest fish caught" emoji="🏆" color="gray" />
                     <CardContent class="pt-0 pb-3">
                         <p class="text-muted-foreground">No catches recorded yet</p>
                     </CardContent>
@@ -1752,7 +1752,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10"
                 >
-                    <DashboardCardHeader title="Runner Up" subtitle="Second largest catch" :icon="Award" color="orange" />
+                    <DashboardCardHeader title="Runner Up" subtitle="Second largest catch" emoji="🥈" color="orange" />
                     <CardContent class="pt-0 pb-3">
                         <div class="space-y-2">
                             <div class="space-y-1">
@@ -1801,7 +1801,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10"
                 >
-                    <DashboardCardHeader title="Runner Up" subtitle="Second largest catch" :icon="Award" color="gray" />
+                    <DashboardCardHeader title="Runner Up" subtitle="Second largest catch" emoji="🥈" color="gray" />
                     <CardContent class="pt-0 pb-3">
                         <p class="text-muted-foreground">No second catch yet</p>
                     </CardContent>
@@ -2086,7 +2086,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20"
                 >
-                    <DashboardCardHeader title="Days Skunked" subtitle="Days without a catch" :icon="X" color="red" />
+                    <DashboardCardHeader title="Days Skunked" subtitle="Days without a catch" emoji="🦨" color="red" />
                     <CardContent class="pb-3">
                         <div class="text-2xl font-bold text-red-700 dark:text-red-300">{{ yearStats.daysSkunked }}</div>
                         <p class="text-xs text-muted-foreground">
@@ -2115,7 +2115,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20"
                 >
-                    <DashboardCardHeader title="Most in a Day" subtitle="Personal best day" :icon="Award" color="violet" />
+                    <DashboardCardHeader title="Most in a Day" subtitle="Personal best day" emoji="🎉" color="violet" />
                     <CardContent class="pb-3">
                         <div class="text-2xl font-bold text-violet-700 dark:text-violet-300">{{ yearStats.mostInDay }}</div>
                         <p class="text-xs text-muted-foreground">
@@ -2487,7 +2487,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10"
                 >
-                    <DashboardCardHeader title="Most Successful Fly" subtitle="Your top producing fly" :icon="Award" color="rose" />
+                    <DashboardCardHeader title="Most Successful Fly" subtitle="Your top producing fly" emoji="🪝" color="rose" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="mostSuccessfulFly" class="space-y-2">
                             <div class="text-xl font-bold text-rose-700 dark:text-rose-300">{{ mostSuccessfulFly.name }}</div>
@@ -2527,7 +2527,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10"
                 >
-                    <DashboardCardHeader title="Biggest Fish Fly" subtitle="Fly for trophy catches" :icon="Award" color="teal" />
+                    <DashboardCardHeader title="Biggest Fish Fly" subtitle="Fly for trophy catches" emoji="🏆" color="teal" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="biggestFishFly" class="space-y-2">
                             <div class="text-xl font-bold text-teal-700 dark:text-teal-300">{{ biggestFishFly.name }}</div>
@@ -2567,7 +2567,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10"
                 >
-                    <DashboardCardHeader title="Most Successful Type" subtitle="Best fly type" :icon="Award" color="purple" />
+                    <DashboardCardHeader title="Most Successful Type" subtitle="Best fly type" emoji="⭐" color="purple" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="mostSuccessfulFlyType" class="space-y-2">
                             <div class="text-xl font-bold text-purple-700 dark:text-purple-300">{{ mostSuccessfulFlyType.type }}</div>
@@ -2607,7 +2607,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10"
                 >
-                    <DashboardCardHeader title="Most Successful Color" subtitle="Best fly color" :icon="Award" color="indigo" />
+                    <DashboardCardHeader title="Most Successful Color" subtitle="Best fly color" emoji="🎨" color="indigo" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="mostSuccessfulFlyColor" class="space-y-2">
                             <div class="text-xl font-bold text-indigo-700 dark:text-indigo-300">{{ mostSuccessfulFlyColor.color }}</div>
@@ -2693,7 +2693,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10"
                 >
-                    <DashboardCardHeader title="Top Species by Size" subtitle="Biggest fish per species" :icon="Award" color="orange" />
+                    <DashboardCardHeader title="Top Species by Size" subtitle="Biggest fish per species" emoji="📏" color="orange" />
                     <CardContent class="pt-0 pb-1">
                         <div v-if="topSpeciesBySize.length > 0" class="space-y-2">
                             <div v-for="(species, index) in topSpeciesBySize" :key="species.species" class="flex items-center gap-3 pb-2 border-b last:border-0">
@@ -2741,7 +2741,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-lime-50/30 to-transparent dark:from-lime-950/10"
                 >
-                    <DashboardCardHeader title="Top Locations by Count" subtitle="Your most productive spots" :icon="MapPin" color="lime" />
+                    <DashboardCardHeader title="Top Locations by Count" subtitle="Your most productive spots" emoji="🌎" color="lime" />
                     <CardContent class="pt-0 pb-1">
                         <div v-if="topLocations.length > 0" class="space-y-2">
                             <div v-for="(location, index) in topLocations" :key="location.name" class="flex items-center gap-3 pb-2 border-b last:border-0">
@@ -2787,7 +2787,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-emerald-50/30 to-transparent dark:from-emerald-950/10"
                 >
-                    <DashboardCardHeader title="Top Locations by Size" subtitle="Biggest fish per location" :icon="Award" color="emerald" />
+                    <DashboardCardHeader title="Top Locations by Size" subtitle="Biggest fish per location" emoji="📍" color="emerald" />
                     <CardContent class="pt-0 pb-1">
                         <div v-if="topLocationsBySize.length > 0" class="space-y-2">
                             <div v-for="(location, index) in topLocationsBySize" :key="location.name" class="flex items-center gap-3 pb-2 border-b last:border-0">
@@ -3995,7 +3995,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10"
                 >
-                    <DashboardCardHeader title="Location Variety" subtitle="Different spots fished" :icon="MapPin" color="blue" gradientTo="indigo" />
+                    <DashboardCardHeader title="Location Variety" subtitle="Different spots fished" emoji="🌎" color="blue" gradientTo="indigo" />
                     <CardContent class="pt-0 pb-4">
                         <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ locationVariety }}</div>
                         <div class="text-sm text-muted-foreground">unique locations</div>
@@ -4022,7 +4022,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-emerald-50/30 to-green-50/30 dark:from-emerald-950/10 dark:to-green-950/10"
                 >
-                    <DashboardCardHeader title="Most Consistent Spot" subtitle="Highest success rate" :icon="Target" color="emerald" gradientTo="green" />
+                    <DashboardCardHeader title="Most Consistent Spot" subtitle="Highest success rate" emoji="🎯" color="emerald" gradientTo="green" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="mostConsistentSpot" class="space-y-2">
                             <div class="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{{ mostConsistentSpot.name }}</div>
@@ -4280,7 +4280,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-blue-50/30 to-cyan-50/30 dark:from-blue-950/10 dark:to-cyan-950/10"
                 >
-                    <DashboardCardHeader title="Best Fly by Location" subtitle="Top fly for each spot" :icon="MapPin" color="blue" gradientTo="cyan" />
+                    <DashboardCardHeader title="Best Fly by Location" subtitle="Top fly for each spot" emoji="🌎" color="blue" gradientTo="cyan" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="bestFlyByLocation.length > 0" class="space-y-2">
                             <div v-for="item in bestFlyByLocation.slice(0, 5)" :key="item.location" class="flex justify-between items-center">
@@ -4696,7 +4696,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-purple-50/30 to-pink-50/30 dark:from-purple-950/10 dark:to-pink-950/10"
                 >
-                    <DashboardCardHeader title="Achievement Badges" subtitle="Your earned achievements" :icon="Award" color="purple" gradientTo="pink" />
+                    <DashboardCardHeader title="Achievement Badges" subtitle="Your earned achievements" emoji="🏅" color="purple" gradientTo="pink" />
                     <CardContent class="pt-0 pb-2">
                         <div v-if="badges.length > 0" class="flex flex-wrap gap-1">
                             <div v-for="badge in badges" :key="badge.name" class="flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100/50 dark:bg-purple-900/20 rounded-full" :title="badge.description">
@@ -4728,7 +4728,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-red-50/30 to-orange-50/30 dark:from-red-950/10 dark:to-orange-950/10"
                 >
-                    <DashboardCardHeader title="Hot Streak" subtitle="Current success streak" :icon="Flame" color="red" gradientTo="orange" />
+                    <DashboardCardHeader title="Hot Streak" subtitle="Current success streak" emoji="🔥" color="red" gradientTo="orange" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="hotStreak" class="space-y-2">
                             <div class="text-3xl font-bold text-red-600 dark:text-red-400">🔥 {{ hotStreak }} days</div>
@@ -4825,7 +4825,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-red-50/30 to-orange-50/30 dark:from-red-950/10 dark:to-orange-950/10"
                 >
-                    <DashboardCardHeader title="Big Fish Temperature" subtitle="Air temp for trophy fish" :icon="Crown" color="red" gradientTo="orange" />
+                    <DashboardCardHeader title="Big Fish Temperature" subtitle="Air temp for trophy fish" emoji="👑" color="red" gradientTo="orange" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="bigFishAirTemp" class="space-y-2">
                             <div class="text-3xl font-bold text-red-600 dark:text-red-400">{{ bigFishAirTemp.temperature }}</div>
@@ -5019,7 +5019,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-sky-50/30 to-blue-50/30 dark:from-sky-950/10 dark:to-blue-950/10"
                 >
-                    <DashboardCardHeader title="Fishing Radius" subtitle="Max distance between spots" :icon="Globe" color="sky" gradientTo="blue" />
+                    <DashboardCardHeader title="Fishing Radius" subtitle="Max distance between spots" emoji="🌍" color="sky" gradientTo="blue" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="fishingRadius" class="space-y-2">
                             <div class="text-3xl font-bold text-sky-600 dark:text-sky-400">{{ fishingRadius }} mi</div>
@@ -5049,7 +5049,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-cyan-50/30 to-teal-50/30 dark:from-cyan-950/10 dark:to-teal-950/10"
                 >
-                    <DashboardCardHeader title="Freshwater vs Saltwater" subtitle="Catches by water type" :icon="Waves" color="cyan" gradientTo="teal" />
+                    <DashboardCardHeader title="Freshwater vs Saltwater" subtitle="Catches by water type" emoji="🌊" color="cyan" gradientTo="teal" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="freshwaterVsSaltwater.freshwater > 0 || freshwaterVsSaltwater.saltwater > 0" class="space-y-2">
                             <div class="flex items-center justify-between">
@@ -5121,7 +5121,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
                 >
-                    <DashboardCardHeader title="Species by State" subtitle="Geographic species diversity" :icon="Map" color="emerald" gradientTo="teal" />
+                    <DashboardCardHeader title="Species by State" subtitle="Geographic species diversity" emoji="🗺️" color="emerald" gradientTo="teal" />
                     <CardContent class="pt-0 pb-3">
                         <div v-if="speciesByState.length > 0 && statePieSlices.length > 0" class="flex items-center gap-4">
                             <!-- SVG Pie Chart -->
@@ -5558,7 +5558,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-amber-50/30 to-yellow-50/30 dark:from-amber-950/10 dark:to-yellow-950/10"
                 >
-                    <DashboardCardHeader title="Monthly Personal Bests" subtitle="Biggest fish each month" :icon="Award" color="amber" gradientTo="yellow" />
+                    <DashboardCardHeader title="Monthly Personal Bests" subtitle="Biggest fish each month" emoji="🥇" color="amber" gradientTo="yellow" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="monthlyPersonalBests.length > 0" class="space-y-2">
                             <div v-for="item in [...monthlyPersonalBests.slice(-6)].reverse()" :key="item.month" class="flex items-center justify-between">
@@ -5622,7 +5622,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-blue-50/30 to-sky-50/30 dark:from-blue-950/10 dark:to-sky-950/10"
                 >
-                    <DashboardCardHeader title="Species by Location" subtitle="Top species at each spot" :icon="MapPin" color="blue" gradientTo="sky" />
+                    <DashboardCardHeader title="Species by Location" subtitle="Top species at each spot" emoji="🌎" color="blue" gradientTo="sky" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="speciesByLocation.length > 0" class="space-y-2">
                             <div v-for="item in speciesByLocation" :key="item.location" class="flex items-center justify-between">
@@ -5654,7 +5654,7 @@ const countryPieSlices = computed(() => {
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-pink-50/30 to-rose-50/30 dark:from-pink-950/10 dark:to-rose-950/10"
                 >
-                    <DashboardCardHeader title="Fly Color by Conditions" subtitle="Best fly color for each weather" :icon="Palette" color="pink" gradientTo="rose" />
+                    <DashboardCardHeader title="Fly Color by Conditions" subtitle="Best fly color for each weather" emoji="🎨" color="pink" gradientTo="rose" />
                     <CardContent class="pt-0 pb-4">
                         <div v-if="flyColorByConditions.length > 0" class="space-y-2">
                             <div v-for="item in flyColorByConditions" :key="item.cloud" class="flex items-center justify-between">

@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { following, usersDashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { UserPlus, UserMinus, Search, Eye, AlertCircle } from 'lucide-vue-next';
+import { UserPlus, UserMinus, Search, Eye, AlertCircle, Users } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 
@@ -145,13 +145,13 @@ function viewDashboard(userId: number) {
             <!-- Search Section -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="flex items-center gap-2">
-                        <Search class="h-5 w-5" />
+                    <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                        <span class="text-2xl">🔍</span>
                         Find Users to Follow
-                    </CardTitle>
-                    <CardDescription>
+                    </h3>
+                    <p class="text-muted-foreground">
                         Search for other anglers to follow and view their fishing stats
-                    </CardDescription>
+                    </p>
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="flex gap-2">
@@ -207,13 +207,13 @@ function viewDashboard(userId: number) {
             <!-- Following List -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="flex items-center gap-2">
-                        <UserPlus class="h-5 w-5" />
+                    <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                        <Users class="h-6 w-6" />
                         Users You're Following ({{ followingList.length }})
-                    </CardTitle>
-                    <CardDescription>
+                    </h3>
+                    <p class="text-muted-foreground">
                         Click on a user to view their public dashboard
-                    </CardDescription>
+                    </p>
                 </CardHeader>
                 <CardContent>
                     <div v-if="followingList.length > 0" class="space-y-3">
@@ -251,7 +251,7 @@ function viewDashboard(userId: number) {
                         </div>
                     </div>
                     <div v-else class="text-center py-12">
-                        <UserPlus class="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <Users class="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                         <h3 class="text-lg font-semibold mb-2">Not following anyone yet</h3>
                         <p class="text-muted-foreground">
                             Search for users above to start following other anglers

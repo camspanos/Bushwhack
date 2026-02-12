@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardCardHeader from '@/components/dashboard/DashboardCardHeader.vue';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
@@ -35,9 +36,9 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Following', href: '/following' },
-    { label: props.user.name, href: `/users/${props.user.id}/dashboard` },
-    { label: 'Fish' },
+    { title: 'Following', href: '/following' },
+    { title: props.user.name, href: `/users/${props.user.id}/dashboard` },
+    { title: 'Fish', href: `/users/${props.user.id}/fish` },
 ];
 
 const selectedYearFilter = ref(props.selectedYear);
@@ -122,7 +123,7 @@ const formatSize = (size: number) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
-                        <Fish class="h-6 w-6" />
+                        <span class="text-2xl">🐟</span>
                         {{ user.name }}'s Fish Species
                     </h3>
                     <p class="text-muted-foreground">
@@ -209,21 +210,16 @@ const formatSize = (size: number) => {
             <!-- Fish Species Grid -->
             <div v-if="fishSpecies.length > 0" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card v-for="fish in fishSpecies" :key="fish.id" class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
-                    <CardHeader>
-                        <CardTitle class="text-lg flex items-center gap-2">
-                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
-                                <Fish class="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                            </div>
-                            {{ fish.species }}
-                        </CardTitle>
-                        <CardDescription>
-                            {{ fish.water_type || 'No water type specified' }}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="space-y-3">
+                    <DashboardCardHeader
+                        :title="fish.species"
+                        :subtitle="fish.water_type || 'No water type'"
+                        emoji="🐟"
+                        color="teal"
+                    />
+                    <CardContent class="pt-0 -mt-2 space-y-3">
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                <Fish class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                <span class="text-sm">🐠</span>
                                 Total Caught
                             </span>
                             <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ fish.totalCaught }}</span>
@@ -237,7 +233,7 @@ const formatSize = (size: number) => {
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                <Award class="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                                <span class="text-sm">🏆</span>
                                 Biggest Catch
                             </span>
                             <span class="font-bold text-blue-700 dark:text-blue-300">{{ formatSize(fish.biggestFish) }}"</span>
@@ -256,7 +252,7 @@ const formatSize = (size: number) => {
             <!-- Empty State -->
             <Card v-else class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10">
                 <CardContent class="flex flex-col items-center justify-center py-12">
-                    <Fish class="h-12 w-12 text-muted-foreground mb-4" />
+                    <span class="text-5xl mb-4">🐟</span>
                     <p class="text-lg font-medium text-muted-foreground">No fish species caught yet</p>
                     <p class="text-sm text-muted-foreground">Fish species will appear here once catches are logged</p>
                 </CardContent>

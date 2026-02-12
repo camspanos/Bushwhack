@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardCardHeader from '@/components/dashboard/DashboardCardHeader.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
@@ -235,15 +236,11 @@ onMounted(async () => {
                             <CardHeader>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <CardTitle class="flex items-center gap-2">
-                                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
-                                                <FishIcon class="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                                            </div>
+                                        <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                                            <span class="text-2xl">🐟</span>
                                             Your Fish Species
-                                        </CardTitle>
-                                        <CardDescription>
-                                            View and manage your fish species
-                                        </CardDescription>
+                                        </h3>
+                                        <p class="text-muted-foreground">View and manage your fish species</p>
                                     </div>
                                     <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
@@ -359,7 +356,7 @@ onMounted(async () => {
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
-                                        <FishIcon class="h-6 w-6" />
+                                        <span class="text-2xl">🐟</span>
                                         Fish Species Performance
                                     </h3>
                                     <p class="text-muted-foreground">Statistics {{ yearLabel === 'Lifetime' ? 'across all time' : 'for ' + yearLabel }}</p>
@@ -443,21 +440,16 @@ onMounted(async () => {
                             <!-- Fish Stats Grid -->
                             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 <Card v-for="fishSpecies in fishStats" :key="fishSpecies.id" class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
-                                    <CardHeader>
-                                        <CardTitle class="text-lg flex items-center gap-2">
-                                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
-                                                <FishIcon class="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                            </div>
-                                            {{ fishSpecies.species }}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            {{ fishSpecies.water_type || 'No water type specified' }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent class="space-y-3">
+                                    <DashboardCardHeader
+                                        :title="fishSpecies.species"
+                                        :subtitle="fishSpecies.water_type || 'No water type'"
+                                        emoji="🐟"
+                                        color="teal"
+                                    />
+                                    <CardContent class="pt-0 -mt-2 space-y-3">
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <FishIcon class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                                <span class="text-sm">🐠</span>
                                                 Total Caught
                                             </span>
                                             <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ fishSpecies.totalCaught }}</span>
@@ -471,7 +463,7 @@ onMounted(async () => {
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Award class="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                                                <span class="text-sm">🏆</span>
                                                 Biggest Catch
                                             </span>
                                             <span class="font-bold text-blue-700 dark:text-blue-300">{{ formatSize(fishSpecies.biggestFish) }}"</span>

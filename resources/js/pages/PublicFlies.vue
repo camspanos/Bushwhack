@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardCardHeader from '@/components/dashboard/DashboardCardHeader.vue';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { type BreadcrumbItem } from '@/types';
@@ -36,9 +37,9 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Following', href: '/following' },
-    { label: props.user.name, href: `/users/${props.user.id}/dashboard` },
-    { label: 'Flies' },
+    { title: 'Following', href: '/following' },
+    { title: props.user.name, href: `/users/${props.user.id}/dashboard` },
+    { title: 'Flies', href: `/users/${props.user.id}/flies` },
 ];
 
 const selectedYearFilter = ref(props.selectedYear);
@@ -123,7 +124,7 @@ const formatSize = (size: number) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
-                        <Bug class="h-6 w-6" />
+                        <span class="text-2xl">🪝</span>
                         {{ user.name }}'s Flies
                     </h3>
                     <p class="text-muted-foreground">
@@ -210,21 +211,16 @@ const formatSize = (size: number) => {
             <!-- Flies Grid -->
             <div v-if="flies.length > 0" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card v-for="fly in flies" :key="fly.id" class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10">
-                    <CardHeader>
-                        <CardTitle class="text-lg flex items-center gap-2">
-                            <div class="rounded-full bg-purple-100 p-1.5 dark:bg-purple-900/30">
-                                <Bug class="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            {{ fly.name }}
-                        </CardTitle>
-                        <CardDescription>
-                            {{ fly.type || 'No type specified' }}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="space-y-3">
+                    <DashboardCardHeader
+                        :title="fly.name"
+                        :subtitle="fly.type || 'No type'"
+                        emoji="🪝"
+                        color="purple"
+                    />
+                    <CardContent class="pt-0 -mt-2 space-y-3">
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                <Fish class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                <span class="text-sm">🐡</span>
                                 Total Caught
                             </span>
                             <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ fly.totalCaught }}</span>
@@ -238,14 +234,14 @@ const formatSize = (size: number) => {
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                <Award class="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                                <span class="text-sm">🏆</span>
                                 Biggest Fish
                             </span>
                             <span class="font-bold text-amber-700 dark:text-amber-300">{{ formatSize(fly.biggestFish) }}"</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                <Palette class="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                                <span class="text-sm">🎨</span>
                                 Favorite Color
                             </span>
                             <span class="font-bold text-purple-700 dark:text-purple-300">{{ fly.favoriteColor }}</span>
@@ -257,7 +253,7 @@ const formatSize = (size: number) => {
             <!-- Empty State -->
             <Card v-else class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10">
                 <CardContent class="flex flex-col items-center justify-center py-12">
-                    <Fish class="h-12 w-12 text-muted-foreground mb-4" />
+                    <span class="text-5xl mb-4">🪝</span>
                     <p class="text-lg font-medium text-muted-foreground">No flies with catches yet</p>
                     <p class="text-sm text-muted-foreground">Flies will appear here once they've been used to catch fish</p>
                 </CardContent>

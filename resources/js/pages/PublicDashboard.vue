@@ -588,7 +588,7 @@ const sunPhasePieSlices = computed(() => {
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Total Catches</CardTitle>
                         <div class="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
-                            <Fish class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            <span class="text-base">🐟</span>
                         </div>
                     </CardHeader>
                     <CardContent class="pb-3">
@@ -618,7 +618,7 @@ const sunPhasePieSlices = computed(() => {
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
-                                <Award class="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                <span class="text-lg">🏆</span>
                             </div>
                             Biggest Catch
                         </CardTitle>
@@ -652,7 +652,7 @@ const sunPhasePieSlices = computed(() => {
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">
-                                <Award class="h-5 w-5 text-gray-400" />
+                                <span class="text-lg">🏆</span>
                             </div>
                             Biggest Catch
                         </CardTitle>
@@ -701,7 +701,7 @@ const sunPhasePieSlices = computed(() => {
                     <CardHeader class="pb-1">
                         <CardTitle class="flex items-center gap-2 text-base">
                             <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
-                                <Fish class="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                                <span class="text-lg">🐠</span>
                             </div>
                             Species Caught
                         </CardTitle>
@@ -1038,7 +1038,7 @@ const sunPhasePieSlices = computed(() => {
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
                         <CardTitle class="text-sm font-medium">Successful Days</CardTitle>
                         <div class="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
-                            <Fish class="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <span class="text-base">🐡</span>
                         </div>
                     </CardHeader>
                     <CardContent class="pb-3">
@@ -1270,7 +1270,7 @@ const sunPhasePieSlices = computed(() => {
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
                             <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
-                                <Fish class="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                <span class="text-lg">🐟</span>
                             </div>
                             Top Species Caught
                         </CardTitle>

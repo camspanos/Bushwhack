@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
-import { Fish, MapPin, TrendingUp, Award, Calendar, Users } from 'lucide-vue-next';
+import { TrendingUp, Calendar, Users } from 'lucide-vue-next';
 
 withDefaults(
     defineProps<{
@@ -22,7 +22,7 @@ withDefaults(
                 <div class="flex h-16 items-center justify-between">
                     <div class="flex items-center gap-2">
                         <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-                            <Fish class="h-6 w-6 text-white" />
+                            <span class="text-xl">🐟</span>
                         </div>
                         <span class="text-xl font-bold text-gray-900 dark:text-white">Bushwhack</span>
                     </div>
@@ -88,7 +88,7 @@ withDefaults(
                 <!-- Feature 1 -->
                 <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
                     <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
-                        <Fish class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        <span class="text-2xl">🐟</span>
                     </div>
                     <h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
                         Log Your Catches
@@ -102,7 +102,7 @@ withDefaults(
                 <!-- Feature 2 -->
                 <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
                     <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
-                        <MapPin class="h-6 w-6 text-green-600 dark:text-green-400" />
+                        <span class="text-2xl">🌎</span>
                     </div>
                     <h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
                         Track Locations
@@ -130,7 +130,7 @@ withDefaults(
                 <!-- Feature 4 -->
                 <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
                     <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900">
-                        <Award class="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                        <span class="text-2xl">🎣</span>
                     </div>
                     <h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
                         Manage Your Gear
@@ -201,7 +201,7 @@ withDefaults(
                 <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
                     <div class="flex items-center gap-2">
                         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                            <Fish class="h-5 w-5 text-white" />
+                            <span class="text-lg">🐟</span>
                         </div>
                         <span class="text-lg font-bold text-gray-900 dark:text-white">Bushwhack</span>
                     </div>

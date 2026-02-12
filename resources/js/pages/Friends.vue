@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardCardHeader from '@/components/dashboard/DashboardCardHeader.vue';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
@@ -229,19 +230,17 @@ onMounted(async () => {
 
                     <!-- Table View -->
                     <TabsContent value="table" class="mt-0">
-                        <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
+                        <Card class="bg-gradient-to-br from-cyan-50/30 to-transparent dark:from-cyan-950/10">
                             <CardHeader>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <CardTitle class="flex items-center gap-2">
-                                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
-                                                <Users class="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                                            </div>
+                                        <h3 class="text-2xl font-bold tracking-tight flex items-center gap-2">
+                                            <Users class="h-6 w-6" />
                                             Your Fishing Friends
-                                        </CardTitle>
-                                        <CardDescription>
+                                        </h3>
+                                        <p class="text-muted-foreground">
                                             View and manage your fishing friends
-                                        </CardDescription>
+                                        </p>
                                     </div>
                                     <Button @click="resetForm(); showAddForm = true;" class="flex items-center gap-2">
                                         <Plus class="h-4 w-4" />
@@ -432,19 +431,14 @@ onMounted(async () => {
 
                             <!-- Friend Stats Grid -->
                             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                <Card v-for="friend in friendStats" :key="friend.id" class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
-                                    <CardHeader>
-                                        <CardTitle class="text-lg flex items-center gap-2">
-                                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
-                                                <Users class="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                            </div>
-                                            {{ friend.name }}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Fishing companion
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent class="space-y-3">
+                                <Card v-for="friend in friendStats" :key="friend.id" class="bg-gradient-to-br from-cyan-50/30 to-transparent dark:from-cyan-950/10">
+                                    <DashboardCardHeader
+                                        :title="friend.name"
+                                        subtitle="Fishing companion"
+                                        :icon="Users"
+                                        color="cyan"
+                                    />
+                                    <CardContent class="pt-0 -mt-2 space-y-3">
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
                                                 <CalendarIcon class="h-4 w-4 text-blue-500 dark:text-blue-400" />
@@ -454,14 +448,14 @@ onMounted(async () => {
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Fish class="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                                                <span class="text-sm">🐟</span>
                                                 Total Fish
                                             </span>
                                             <span class="font-bold text-amber-700 dark:text-amber-300">{{ friend.totalFish }}</span>
                                         </div>
                                         <div class="flex items-center justify-between">
                                             <span class="text-sm text-muted-foreground flex items-center gap-2">
-                                                <Award class="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                                                <span class="text-sm">🏆</span>
                                                 Biggest Fish
                                             </span>
                                             <span class="font-bold text-emerald-700 dark:text-emerald-300">{{ formatSize(friend.biggestFish) }}"</span>

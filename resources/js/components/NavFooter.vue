@@ -43,12 +43,14 @@ const isExternalLink = (href: any): boolean => {
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            <component :is="item.icon" />
+                            <span v-if="item.emoji" class="text-base leading-none">{{ item.emoji }}</span>
+                            <component v-else-if="item.icon" :is="item.icon" />
                             <span>{{ item.title }}</span>
                         </a>
                         <!-- Internal Link -->
                         <Link v-else :href="item.href">
-                            <component :is="item.icon" />
+                            <span v-if="item.emoji" class="text-base leading-none">{{ item.emoji }}</span>
+                            <component v-else-if="item.icon" :is="item.icon" />
                             <span>{{ item.title }}</span>
                         </Link>
                     </SidebarMenuButton>

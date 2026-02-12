@@ -2204,6 +2204,44 @@ const countryPieSlices = computed(() => {
                     </CardContent>
                 </DashboardCard>
 
+                <!-- Most Species in a Day -->
+                <DashboardCard
+                    v-if="isCardVisible('most_species_in_day')"
+                    card-id="most_species_in_day"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('most_species_in_day')"
+                    :order="getCardOrder('most_species_in_day')"
+                    :size="getCardSize('most_species_in_day')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('most_species_in_day')"
+                    :is-last="isCardLast('most_species_in_day')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('most_species_in_day')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 p-1.5 dark:from-emerald-900/30 dark:to-teal-900/30">
+                                <Fish class="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            Most Species in a Day
+                        </CardTitle>
+                        <CardDescription>Best single-day variety</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="yearStats.mostSpeciesInDay" class="space-y-2">
+                            <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ yearStats.mostSpeciesInDay.count }}</div>
+                            <div class="text-sm text-muted-foreground">species on {{ formatDate(yearStats.mostSpeciesInDay.date) }}</div>
+                        </div>
+                        <p v-else class="text-muted-foreground text-sm">No data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
                 <!-- Fish Caught per Month -->
                 <DashboardCard
                     v-if="isCardVisible('catches_by_month')"

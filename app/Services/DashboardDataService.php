@@ -194,6 +194,16 @@ class DashboardDataService
             ->limit(1)
             ->value('daily_total') ?? 0;
 
+        // Most species caught in a day - count distinct species per day
+        $mostSpeciesInDay = (clone $baseQuery)
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('fishing_logs.date', DB::raw('COUNT(DISTINCT user_fish.id) as species_count'))
+            ->groupBy('fishing_logs.date')
+            ->orderByDesc('species_count')
+            ->limit(1)
+            ->first();
+
         // Success rate
         $successRate = $daysFished > 0 ? round(($daysWithFish / $daysFished) * 100, 1) : 0;
 
@@ -202,6 +212,10 @@ class DashboardDataService
             'daysWithFish' => $daysWithFish,
             'daysSkunked' => $daysSkunked,
             'mostInDay' => $mostInDay,
+            'mostSpeciesInDay' => $mostSpeciesInDay ? [
+                'count' => $mostSpeciesInDay->species_count,
+                'date' => $mostSpeciesInDay->date,
+            ] : null,
             'successRate' => $successRate,
         ];
     }

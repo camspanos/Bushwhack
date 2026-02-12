@@ -826,12 +826,16 @@ const jumpCardToPosition = (cardId: string, newPosition: number) => {
 const savePreferences = async () => {
     isSaving.value = true;
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         await fetch('/api/dashboard-preferences', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
             },
+            credentials: 'same-origin',
             body: JSON.stringify({ preferences: cardPreferences.value }),
         });
     } catch (error) {
@@ -845,13 +849,20 @@ const savePreferences = async () => {
 const resetPreferences = async () => {
     isSaving.value = true;
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         const response = await fetch('/api/dashboard-preferences/reset', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
             },
+            credentials: 'same-origin',
         });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         cardPreferences.value = data.preferences;
         isEditMode.value = false;

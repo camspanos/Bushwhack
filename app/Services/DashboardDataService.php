@@ -699,10 +699,16 @@ class DashboardDataService
             ->with(['fish', 'location'])
             ->first();
 
-        // Total weight caught
-        $totalWeight = (clone $baseQuery)
+        // Total weight caught and count of fish with weight data
+        $weightStats = (clone $baseQuery)
             ->whereNotNull('max_weight')
-            ->sum('max_weight') ?? 0;
+            ->where('max_weight', '>', 0)
+            ->selectRaw('SUM(max_weight) as total_weight, COUNT(*) as fish_count')
+            ->first();
+
+        $totalWeight = $weightStats->total_weight ?? 0;
+        $fishWithWeightCount = $weightStats->fish_count ?? 0;
+        $avgWeightPerFish = $fishWithWeightCount > 0 ? round($totalWeight / $fishWithWeightCount, 2) : 0;
 
         // Average weight by species
         $avgWeightBySpecies = (clone $baseQuery)
@@ -724,6 +730,8 @@ class DashboardDataService
                 'date' => $heaviestCatch->date,
             ] : null,
             'totalWeight' => round($totalWeight, 2),
+            'fishWithWeightCount' => $fishWithWeightCount,
+            'avgWeightPerFish' => $avgWeightPerFish,
             'avgWeightBySpecies' => $avgWeightBySpecies ? [
                 'species' => $avgWeightBySpecies->fish?->species,
                 'avg_weight' => round($avgWeightBySpecies->avg_weight ?? 0, 2),
@@ -936,23 +944,35 @@ class DashboardDataService
             return $counts->isNotEmpty() ? $counts->keys()->first() : null;
         };
 
+        // Helper function to get season from date
+        $getSeason = function ($date) {
+            $month = $date->month;
+            if ($month >= 3 && $month <= 5) return 'Spring';
+            if ($month >= 6 && $month <= 8) return 'Summer';
+            if ($month >= 9 && $month <= 11) return 'Fall';
+            return 'Winter';
+        };
+
         // Build golden conditions array with all available data points
         $goldenConditions = [
             // Moon & Time
             'moon_position' => $getMostCommon($topDayConditions->pluck('moon_position')),
             'moon_phase' => $getMostCommon($topDayConditions->pluck('moon_phase')),
             'time_of_day' => $getMostCommon($topDayConditions->pluck('time_of_day')),
-            'sun_phase' => $getMostCommon($topDayConditions->pluck('sun_phase')),
+            'season' => $getMostCommon($topDayConditions->pluck('date')->map($getSeason)),
             // Weather
             'cloud' => $getMostCommon($topDayConditions->pluck('weather.cloud')),
             'wind' => $getMostCommon($topDayConditions->pluck('weather.wind')),
             'precipitation' => $getMostCommon($topDayConditions->pluck('weather.precipitation')),
             'barometric_pressure' => $getMostCommon($topDayConditions->pluck('weather.barometric_pressure')),
+            'air_temperature' => $getMostCommon($topDayConditions->pluck('weather.temperature')),
             // Water
             'clarity' => $getMostCommon($topDayConditions->pluck('waterCondition.clarity')),
-            'water_level' => $getMostCommon($topDayConditions->pluck('waterCondition.water_level')),
-            'water_speed' => $getMostCommon($topDayConditions->pluck('waterCondition.water_speed')),
+            'water_level' => $getMostCommon($topDayConditions->pluck('waterCondition.level')),
+            'water_speed' => $getMostCommon($topDayConditions->pluck('waterCondition.speed')),
             'surface_condition' => $getMostCommon($topDayConditions->pluck('waterCondition.surface_condition')),
+            'tide' => $getMostCommon($topDayConditions->pluck('waterCondition.tide')),
+            'water_temperature' => $getMostCommon($topDayConditions->pluck('waterCondition.temperature')),
         ];
 
         // Golden conditions for biggest fish - analyze top 10 catches by size
@@ -972,17 +992,20 @@ class DashboardDataService
                 'moon_position' => $getMostCommon($topBigFishLogs->pluck('moon_position')),
                 'moon_phase' => $getMostCommon($topBigFishLogs->pluck('moon_phase')),
                 'time_of_day' => $getMostCommon($topBigFishLogs->pluck('time_of_day')),
-                'sun_phase' => $getMostCommon($topBigFishLogs->pluck('sun_phase')),
+                'season' => $getMostCommon($topBigFishLogs->pluck('date')->map($getSeason)),
                 // Weather
                 'cloud' => $getMostCommon($topBigFishLogs->pluck('weather.cloud')),
                 'wind' => $getMostCommon($topBigFishLogs->pluck('weather.wind')),
                 'precipitation' => $getMostCommon($topBigFishLogs->pluck('weather.precipitation')),
                 'barometric_pressure' => $getMostCommon($topBigFishLogs->pluck('weather.barometric_pressure')),
+                'air_temperature' => $getMostCommon($topBigFishLogs->pluck('weather.temperature')),
                 // Water
                 'clarity' => $getMostCommon($topBigFishLogs->pluck('waterCondition.clarity')),
-                'water_level' => $getMostCommon($topBigFishLogs->pluck('waterCondition.water_level')),
-                'water_speed' => $getMostCommon($topBigFishLogs->pluck('waterCondition.water_speed')),
+                'water_level' => $getMostCommon($topBigFishLogs->pluck('waterCondition.level')),
+                'water_speed' => $getMostCommon($topBigFishLogs->pluck('waterCondition.speed')),
                 'surface_condition' => $getMostCommon($topBigFishLogs->pluck('waterCondition.surface_condition')),
+                'tide' => $getMostCommon($topBigFishLogs->pluck('waterCondition.tide')),
+                'water_temperature' => $getMostCommon($topBigFishLogs->pluck('waterCondition.temperature')),
             ];
         }
 
@@ -2239,6 +2262,7 @@ class DashboardDataService
             ->count('fishing_logs.date');
 
         // Monthly personal bests
+        // Order descending to get most recent 12 months, then reverse to chronological order
         $monthExpr = $this->dateFormatExpression('fishing_logs.date', '%Y-%m');
         $monthlyPersonalBests = (clone $baseQuery)
             ->whereNotNull('fishing_logs.max_size')
@@ -2248,15 +2272,18 @@ class DashboardDataService
                 DB::raw('MAX(fishing_logs.max_size) as biggest_size')
             )
             ->groupBy('month')
-            ->orderBy('month')
+            ->orderByDesc('month')
             ->limit(12)
             ->get()
+            ->reverse()
+            ->values()
             ->map(fn($item) => [
                 'month' => $item->month,
                 'biggest_size' => $item->biggest_size,
             ]);
 
         // Catch rate trend (fish per trip over time)
+        // Order descending to get most recent 12 months, then reverse to chronological order
         $catchRateTrend = (clone $baseQuery)
             ->select(
                 DB::raw("$monthExpr as month"),
@@ -2264,9 +2291,11 @@ class DashboardDataService
                 DB::raw('COUNT(DISTINCT fishing_logs.date) as days_fished')
             )
             ->groupBy('month')
-            ->orderBy('month')
+            ->orderByDesc('month')
             ->limit(12)
             ->get()
+            ->reverse()
+            ->values()
             ->map(fn($item) => [
                 'month' => $item->month,
                 'catch_rate' => $item->days_fished > 0 ? round($item->total_caught / $item->days_fished, 2) : 0,
@@ -2287,7 +2316,7 @@ class DashboardDataService
             ->get()
             ->groupBy('location')
             ->map(fn($group) => $group->first())
-            ->take(5)
+            ->take(6)
             ->values()
             ->map(fn($item) => [
                 'location' => $item->location,

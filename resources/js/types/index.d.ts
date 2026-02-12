@@ -96,8 +96,10 @@ export interface FishingLog {
     user_location_id?: number;
     user_fish_id?: number;
     max_weight?: number;
+    avg_weight?: number;
     quantity: number;
     max_size?: number;
+    avg_size?: number;
     user_fly_id?: number;
     user_rod_id?: number;
     style?: string;

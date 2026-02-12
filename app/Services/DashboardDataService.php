@@ -622,9 +622,18 @@ class DashboardDataService
             ->where('quantity', '>', 0)
             ->sum('quantity') ?? 0;
 
+        // Other catches (no moon position or unknown)
+        $otherFeeding = (clone $baseQuery)
+            ->where('quantity', '>', 0)
+            ->where(function ($query) use ($majorPositions, $minorPositions) {
+                $query->whereNull('moon_position')
+                    ->orWhereNotIn('moon_position', array_merge($majorPositions, $minorPositions));
+            })
+            ->sum('quantity') ?? 0;
+
         // Best moon position for big fish
         $weightedAvgExpr = $this->weightedAvgSizeExpression('', 'weighted_avg_size');
-        $bestMoonForBigFish = (clone $baseQuery)
+        $bestMoonPositionForBigFish = (clone $baseQuery)
             ->whereNotNull('moon_position')
             ->whereNotNull('max_size')
             ->where('max_size', '>', 0)
@@ -633,17 +642,31 @@ class DashboardDataService
             ->orderByDesc('biggest_size')
             ->first();
 
+        // Best moon phase for big fish
+        $bestMoonPhaseForBigFish = (clone $baseQuery)
+            ->whereNotNull('moon_phase')
+            ->whereNotNull('max_size')
+            ->where('max_size', '>', 0)
+            ->select('moon_phase', DB::raw('MAX(max_size) as biggest_size'), DB::raw($weightedAvgExpr))
+            ->groupBy('moon_phase')
+            ->orderByDesc('biggest_size')
+            ->first();
+
         return [
             'catchesByMoonPosition' => $catchesByMoonPosition,
             'majorVsMinorFeeding' => [
                 'major' => $majorFeeding,
                 'minor' => $minorFeeding,
+                'other' => $otherFeeding,
             ],
-            'bestMoonForBigFish' => $bestMoonForBigFish ? [
-                'position' => $bestMoonForBigFish->moon_position,
-                'biggest_size' => $bestMoonForBigFish->biggest_size ?? 0,
-                'avg_size' => round($bestMoonForBigFish->weighted_avg_size ?? 0, 2),
-            ] : null,
+            'bestMoonForBigFish' => [
+                'position' => $bestMoonPositionForBigFish?->moon_position,
+                'position_biggest_size' => $bestMoonPositionForBigFish?->biggest_size ?? 0,
+                'position_avg_size' => round($bestMoonPositionForBigFish?->weighted_avg_size ?? 0, 2),
+                'phase' => $bestMoonPhaseForBigFish?->moon_phase,
+                'phase_biggest_size' => $bestMoonPhaseForBigFish?->biggest_size ?? 0,
+                'phase_avg_size' => round($bestMoonPhaseForBigFish?->weighted_avg_size ?? 0, 2),
+            ],
         ];
     }
 
@@ -893,75 +916,65 @@ class DashboardDataService
             ->with(['weather', 'waterCondition'])
             ->get();
 
-        // Find most common conditions on best days
-        $moonPositions = $topDayConditions->pluck('moon_position')->filter()->countBy()->sortDesc()->first();
-        $moonPhases = $topDayConditions->pluck('moon_phase')->filter()->countBy()->sortDesc()->first();
-        $timesOfDay = $topDayConditions->pluck('time_of_day')->filter()->countBy()->sortDesc()->first();
-        $cloudCovers = $topDayConditions->pluck('weather.cloud')->filter()->countBy()->sortDesc()->first();
-        $waterClarities = $topDayConditions->pluck('waterCondition.clarity')->filter()->countBy()->sortDesc()->first();
+        // Helper function to get most common value from collection
+        $getMostCommon = function ($collection) {
+            $counts = $collection->filter()->countBy()->sortDesc();
+            return $counts->isNotEmpty() ? $counts->keys()->first() : null;
+        };
 
-        // Best conditions summary - get the single best for each category
-        $bestConditions = [];
+        // Build golden conditions array with all available data points
+        $goldenConditions = [
+            // Moon & Time
+            'moon_position' => $getMostCommon($topDayConditions->pluck('moon_position')),
+            'moon_phase' => $getMostCommon($topDayConditions->pluck('moon_phase')),
+            'time_of_day' => $getMostCommon($topDayConditions->pluck('time_of_day')),
+            'sun_phase' => $getMostCommon($topDayConditions->pluck('sun_phase')),
+            // Weather
+            'cloud' => $getMostCommon($topDayConditions->pluck('weather.cloud')),
+            'wind' => $getMostCommon($topDayConditions->pluck('weather.wind')),
+            'precipitation' => $getMostCommon($topDayConditions->pluck('weather.precipitation')),
+            'barometric_pressure' => $getMostCommon($topDayConditions->pluck('weather.barometric_pressure')),
+            // Water
+            'clarity' => $getMostCommon($topDayConditions->pluck('waterCondition.clarity')),
+            'water_level' => $getMostCommon($topDayConditions->pluck('waterCondition.water_level')),
+            'water_speed' => $getMostCommon($topDayConditions->pluck('waterCondition.water_speed')),
+            'surface_condition' => $getMostCommon($topDayConditions->pluck('waterCondition.surface_condition')),
+        ];
 
-        // Best moon position
-        $bestMoonPosition = (clone $baseQuery)
-            ->whereNotNull('moon_position')
-            ->where('quantity', '>', 0)
-            ->select('moon_position', DB::raw('SUM(quantity) as total'))
-            ->groupBy('moon_position')
-            ->orderByDesc('total')
-            ->first();
-        if ($bestMoonPosition) {
-            $bestConditions['moon_position'] = $bestMoonPosition->moon_position;
-        }
+        // Golden conditions for biggest fish - analyze top 10 catches by size
+        $topBigFishLogs = (clone $baseQuery)
+            ->whereNotNull('avg_size')
+            ->where('avg_size', '>', 0)
+            ->with(['weather', 'waterCondition'])
+            ->orderByDesc('avg_size')
+            ->limit(10)
+            ->get();
 
-        // Best time of day
-        $bestTimeOfDay = (clone $baseQuery)
-            ->whereNotNull('time_of_day')
-            ->where('quantity', '>', 0)
-            ->select('time_of_day', DB::raw('SUM(quantity) as total'))
-            ->groupBy('time_of_day')
-            ->orderByDesc('total')
-            ->first();
-        if ($bestTimeOfDay) {
-            $bestConditions['time_of_day'] = $bestTimeOfDay->time_of_day;
-        }
-
-        // Best cloud cover
-        $bestCloud = (clone $baseQuery)
-            ->join('user_weather', 'fishing_logs.user_weather_id', '=', 'user_weather.id')
-            ->whereNotNull('user_weather.cloud')
-            ->where('fishing_logs.quantity', '>', 0)
-            ->select('user_weather.cloud', DB::raw('SUM(fishing_logs.quantity) as total'))
-            ->groupBy('user_weather.cloud')
-            ->orderByDesc('total')
-            ->first();
-        if ($bestCloud) {
-            $bestConditions['cloud'] = $bestCloud->cloud;
-        }
-
-        // Best water clarity
-        $bestClarity = (clone $baseQuery)
-            ->join('user_water_conditions', 'fishing_logs.user_water_condition_id', '=', 'user_water_conditions.id')
-            ->whereNotNull('user_water_conditions.clarity')
-            ->where('fishing_logs.quantity', '>', 0)
-            ->select('user_water_conditions.clarity', DB::raw('SUM(fishing_logs.quantity) as total'))
-            ->groupBy('user_water_conditions.clarity')
-            ->orderByDesc('total')
-            ->first();
-        if ($bestClarity) {
-            $bestConditions['clarity'] = $bestClarity->clarity;
+        // Build big fish conditions array with all available data points
+        $bigFishConditions = [];
+        if ($topBigFishLogs->isNotEmpty()) {
+            $bigFishConditions = [
+                // Moon & Time
+                'moon_position' => $getMostCommon($topBigFishLogs->pluck('moon_position')),
+                'moon_phase' => $getMostCommon($topBigFishLogs->pluck('moon_phase')),
+                'time_of_day' => $getMostCommon($topBigFishLogs->pluck('time_of_day')),
+                'sun_phase' => $getMostCommon($topBigFishLogs->pluck('sun_phase')),
+                // Weather
+                'cloud' => $getMostCommon($topBigFishLogs->pluck('weather.cloud')),
+                'wind' => $getMostCommon($topBigFishLogs->pluck('weather.wind')),
+                'precipitation' => $getMostCommon($topBigFishLogs->pluck('weather.precipitation')),
+                'barometric_pressure' => $getMostCommon($topBigFishLogs->pluck('weather.barometric_pressure')),
+                // Water
+                'clarity' => $getMostCommon($topBigFishLogs->pluck('waterCondition.clarity')),
+                'water_level' => $getMostCommon($topBigFishLogs->pluck('waterCondition.water_level')),
+                'water_speed' => $getMostCommon($topBigFishLogs->pluck('waterCondition.water_speed')),
+                'surface_condition' => $getMostCommon($topBigFishLogs->pluck('waterCondition.surface_condition')),
+            ];
         }
 
         return [
-            'goldenConditions' => [
-                'moon_position' => $moonPositions ? array_key_first($topDayConditions->pluck('moon_position')->filter()->countBy()->sortDesc()->toArray()) : null,
-                'moon_phase' => $moonPhases ? array_key_first($topDayConditions->pluck('moon_phase')->filter()->countBy()->sortDesc()->toArray()) : null,
-                'time_of_day' => $timesOfDay ? array_key_first($topDayConditions->pluck('time_of_day')->filter()->countBy()->sortDesc()->toArray()) : null,
-                'cloud' => $cloudCovers ? array_key_first($topDayConditions->pluck('weather.cloud')->filter()->countBy()->sortDesc()->toArray()) : null,
-                'clarity' => $waterClarities ? array_key_first($topDayConditions->pluck('waterCondition.clarity')->filter()->countBy()->sortDesc()->toArray()) : null,
-            ],
-            'bestConditions' => $bestConditions,
+            'goldenConditions' => $goldenConditions,
+            'bigFishConditions' => $bigFishConditions,
         ];
     }
 
@@ -1065,14 +1078,8 @@ class DashboardDataService
                 'formatted' => \Carbon\Carbon::createFromTime($bestHour->hour)->format('g A'),
                 'total' => $bestHour->total_caught,
             ] : null,
-            'timeBlocks' => $timeBlocks,
-            'bestDayOfMonth' => $bestDayOfMonth ? [
-                'day' => $bestDayOfMonth->day_of_month,
-                'total' => $bestDayOfMonth->total_caught,
-            ] : null,
             'seasonalTrends' => $seasonalTrends,
             'consecutiveDaysStreak' => $maxStreak > 0 ? $maxStreak : null,
-            'daysSinceSkunk' => $daysSinceSkunk,
         ];
     }
 
@@ -1312,10 +1319,7 @@ class DashboardDataService
         ];
 
         return [
-            'speciesDiversity' => $speciesDiversity,
             'rarestCatches' => $rarestCatchList,
-            'speciesStreak' => $speciesStreakData,
-            'newSpeciesThisYear' => $newSpeciesInPeriod,
             'sizeImprovement' => $sizeImprovement,
         ];
     }
@@ -1428,7 +1432,6 @@ class DashboardDataService
         return [
             'flyRotation' => $flyRotation,
             'oneHitWonders' => $oneHitWonders,
-            'reliableProducers' => $flyStats,
             'bestFlyByLocation' => $bestFlyByLocation,
             'bestFlyBySpecies' => $bestFlyBySpecies,
         ];
@@ -1669,7 +1672,6 @@ class DashboardDataService
 
         return [
             'yoyComparison' => $yoyComparison,
-            'personalBests' => $personalBests,
             'improvementRate' => $improvementRate,
             'fishingFrequency' => $fishingFrequency,
             'avgSizeTrend' => $avgSizeTrend,
@@ -1776,15 +1778,21 @@ class DashboardDataService
             ($locationCount * 25)
         );
 
-        // Achievement badges - use the new badge system
+        // Achievement badges - use the new badge system, filtered by year
         $user = User::find($userId);
         $earnedBadges = [];
 
         if ($user) {
-            // Get earned badges from the database
-            $earnedBadges = $user->badges()
-                ->orderBy('pivot_earned_at', 'desc')
-                ->get()
+            // Build the badges query
+            $badgesQuery = $user->badges()
+                ->orderBy('pivot_earned_at', 'desc');
+
+            // Apply year filter to badges earned_at date (skip for 'lifetime')
+            if ($yearFilter !== 'lifetime') {
+                $badgesQuery->whereYear('user_badges.earned_at', $yearFilter);
+            }
+
+            $earnedBadges = $badgesQuery->get()
                 ->map(function ($badge) {
                     return [
                         'name' => $badge->name,
@@ -1833,13 +1841,540 @@ class DashboardDataService
             ->first();
 
         return [
-            'fishingScore' => $fishingScore,
             'badges' => $badges,
             'hotStreak' => $hotStreak > 0 ? $hotStreak : null,
             'luckyNumber' => $luckyNumber ? [
                 'number' => $luckyNumber->daily_total,
                 'occurrences' => $luckyNumber->occurrences,
             ] : null,
+        ];
+    }
+
+    /**
+     * Get temperature-based statistics.
+     */
+    public function getTemperatureStats(int $userId, string $yearFilter): array
+    {
+        $baseQuery = $this->buildBaseQuery($userId, $yearFilter);
+
+        // Best air temperature (most catches)
+        $bestAirTemp = (clone $baseQuery)
+            ->join('user_weather', 'fishing_logs.user_weather_id', '=', 'user_weather.id')
+            ->whereNotNull('user_weather.temperature')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_weather.temperature', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('user_weather.temperature')
+            ->orderByDesc('total_caught')
+            ->first();
+
+        // Best water temperature (most catches)
+        $bestWaterTemp = (clone $baseQuery)
+            ->join('user_water_conditions', 'fishing_logs.user_water_condition_id', '=', 'user_water_conditions.id')
+            ->whereNotNull('user_water_conditions.temperature')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_water_conditions.temperature', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('user_water_conditions.temperature')
+            ->orderByDesc('total_caught')
+            ->first();
+
+        // Temperature sweet spot (air + water combo)
+        $tempSweetSpot = (clone $baseQuery)
+            ->join('user_weather', 'fishing_logs.user_weather_id', '=', 'user_weather.id')
+            ->join('user_water_conditions', 'fishing_logs.user_water_condition_id', '=', 'user_water_conditions.id')
+            ->whereNotNull('user_weather.temperature')
+            ->whereNotNull('user_water_conditions.temperature')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(
+                'user_weather.temperature as air_temp',
+                'user_water_conditions.temperature as water_temp',
+                DB::raw('SUM(fishing_logs.quantity) as total_caught')
+            )
+            ->groupBy('user_weather.temperature', 'user_water_conditions.temperature')
+            ->orderByDesc('total_caught')
+            ->first();
+
+        // Catches by air temperature (for chart)
+        $catchesByAirTemp = (clone $baseQuery)
+            ->join('user_weather', 'fishing_logs.user_weather_id', '=', 'user_weather.id')
+            ->whereNotNull('user_weather.temperature')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_weather.temperature', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('user_weather.temperature')
+            ->orderBy('user_weather.temperature')
+            ->get()
+            ->map(fn($item) => [
+                'temperature' => $item->temperature,
+                'total_caught' => $item->total_caught ?? 0,
+            ]);
+
+        // Catches by water temperature (for chart)
+        $catchesByWaterTemp = (clone $baseQuery)
+            ->join('user_water_conditions', 'fishing_logs.user_water_condition_id', '=', 'user_water_conditions.id')
+            ->whereNotNull('user_water_conditions.temperature')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_water_conditions.temperature', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('user_water_conditions.temperature')
+            ->orderBy('user_water_conditions.temperature')
+            ->get()
+            ->map(fn($item) => [
+                'temperature' => $item->temperature,
+                'total_caught' => $item->total_caught ?? 0,
+            ]);
+
+        // Big fish temperature (air temp that produces biggest fish)
+        $weightedExprs = $this->weightedSizeExpressions('fishing_logs.');
+        $bigFishAirTemp = (clone $baseQuery)
+            ->join('user_weather', 'fishing_logs.user_weather_id', '=', 'user_weather.id')
+            ->whereNotNull('user_weather.temperature')
+            ->whereNotNull('fishing_logs.max_size')
+            ->where('fishing_logs.max_size', '>', 0)
+            ->select(
+                'user_weather.temperature',
+                DB::raw("{$weightedExprs['sum']} as size_sum"),
+                DB::raw("{$weightedExprs['count']} as fish_count"),
+                DB::raw('MAX(fishing_logs.max_size) as biggest_size')
+            )
+            ->groupBy('user_weather.temperature')
+            ->orderByDesc('biggest_size')
+            ->first();
+
+        return [
+            'tempSweetSpot' => $tempSweetSpot ? [
+                'air_temp' => $tempSweetSpot->air_temp,
+                'water_temp' => $tempSweetSpot->water_temp,
+                'total' => $tempSweetSpot->total_caught,
+            ] : null,
+            'catchesByAirTemp' => $catchesByAirTemp->toArray(),
+            'catchesByWaterTemp' => $catchesByWaterTemp->toArray(),
+            'bigFishAirTemp' => $bigFishAirTemp ? [
+                'temperature' => $bigFishAirTemp->temperature,
+                'biggest_size' => $bigFishAirTemp->biggest_size,
+                'avg_size' => $bigFishAirTemp->fish_count > 0 ? round($bigFishAirTemp->size_sum / $bigFishAirTemp->fish_count, 2) : 0,
+            ] : null,
+        ];
+    }
+
+    /**
+     * Get fly size statistics.
+     */
+    public function getFlySizeStats(int $userId, string $yearFilter): array
+    {
+        $baseQuery = $this->buildBaseQuery($userId, $yearFilter);
+
+        // Best fly size (most catches)
+        $bestFlySize = (clone $baseQuery)
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
+            ->whereNotNull('user_flies.size')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_flies.size', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('user_flies.size')
+            ->orderByDesc('total_caught')
+            ->first();
+
+        // Fly size by species (best fly size for top 5 species)
+        $flySizeBySpecies = (clone $baseQuery)
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->whereNotNull('user_flies.size')
+            ->where('user_flies.size', '!=', '')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(
+                'user_fish.species',
+                'user_flies.size',
+                DB::raw('SUM(fishing_logs.quantity) as total_caught')
+            )
+            ->groupBy('user_fish.species', 'user_flies.size')
+            ->orderByDesc('total_caught')
+            ->get()
+            ->groupBy('species')
+            ->map(fn($group) => $group->first())
+            ->take(5)
+            ->values()
+            ->map(fn($item) => [
+                'species' => $item->species,
+                'size' => $item->size,
+                'total' => $item->total_caught,
+            ]);
+
+        // Fly size by season
+        $monthExpr = $this->isSqlite() ? "strftime('%m', fishing_logs.date)" : "MONTH(fishing_logs.date)";
+        $flySizeBySeason = (clone $baseQuery)
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
+            ->whereNotNull('user_flies.size')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(
+                DB::raw("CASE
+                    WHEN $monthExpr IN (12, 1, 2) THEN 'Winter'
+                    WHEN $monthExpr IN (3, 4, 5) THEN 'Spring'
+                    WHEN $monthExpr IN (6, 7, 8) THEN 'Summer'
+                    ELSE 'Fall'
+                END as season"),
+                'user_flies.size',
+                DB::raw('SUM(fishing_logs.quantity) as total_caught')
+            )
+            ->groupBy('season', 'user_flies.size')
+            ->orderByDesc('total_caught')
+            ->get()
+            ->groupBy('season')
+            ->map(fn($group) => $group->first())
+            ->map(fn($item) => [
+                'season' => $item->season,
+                'size' => $item->size,
+                'total' => $item->total_caught,
+            ]);
+
+        return [
+            'bestFlySize' => $bestFlySize ? [
+                'size' => $bestFlySize->size,
+                'total' => $bestFlySize->total_caught,
+            ] : null,
+            'flySizeBySpecies' => $flySizeBySpecies->toArray(),
+            'flySizeBySeason' => $flySizeBySeason->values()->toArray(),
+        ];
+    }
+
+    /**
+     * Get geographic statistics.
+     */
+    public function getGeographicStats(int $userId, string $yearFilter): array
+    {
+        $baseQuery = $this->buildBaseQuery($userId, $yearFilter);
+
+        // Fishing radius (max distance from user's most common location)
+        $locationsWithCoords = (clone $baseQuery)
+            ->join('user_locations', 'fishing_logs.user_location_id', '=', 'user_locations.id')
+            ->whereNotNull('user_locations.latitude')
+            ->whereNotNull('user_locations.longitude')
+            ->select('user_locations.latitude', 'user_locations.longitude', 'user_locations.name')
+            ->distinct()
+            ->get();
+
+        $fishingRadius = null;
+        if ($locationsWithCoords->count() > 1) {
+            // Calculate max distance between any two locations (simplified)
+            $maxDistance = 0;
+            $coords = $locationsWithCoords->toArray();
+            for ($i = 0; $i < count($coords); $i++) {
+                for ($j = $i + 1; $j < count($coords); $j++) {
+                    $distance = $this->haversineDistance(
+                        $coords[$i]['latitude'], $coords[$i]['longitude'],
+                        $coords[$j]['latitude'], $coords[$j]['longitude']
+                    );
+                    $maxDistance = max($maxDistance, $distance);
+                }
+            }
+            $fishingRadius = round($maxDistance, 1);
+        }
+
+        // Catches by state (total fish count)
+        $catchesByState = (clone $baseQuery)
+            ->join('user_locations', 'fishing_logs.user_location_id', '=', 'user_locations.id')
+            ->whereNotNull('user_locations.state')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_locations.state', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('user_locations.state')
+            ->orderByDesc('total_caught')
+            ->limit(10)
+            ->get()
+            ->map(fn($item) => [
+                'state' => $item->state,
+                'total' => $item->total_caught,
+            ]);
+
+        // Catches by country (total fish count)
+        $catchesByCountry = (clone $baseQuery)
+            ->join('user_locations', 'fishing_logs.user_location_id', '=', 'user_locations.id')
+            ->join('countries', 'user_locations.country_id', '=', 'countries.id')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('countries.name as country', DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy('countries.name')
+            ->orderByDesc('total_caught')
+            ->limit(10)
+            ->get()
+            ->map(fn($item) => [
+                'country' => $item->country,
+                'total' => $item->total_caught,
+            ]);
+
+        // Species by state (unique species count per state)
+        $speciesByState = (clone $baseQuery)
+            ->join('user_locations', 'fishing_logs.user_location_id', '=', 'user_locations.id')
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->whereNotNull('user_locations.state')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('user_locations.state', DB::raw('COUNT(DISTINCT user_fish.species) as species_count'))
+            ->groupBy('user_locations.state')
+            ->orderByDesc('species_count')
+            ->limit(10)
+            ->get()
+            ->map(fn($item) => [
+                'state' => $item->state,
+                'species_count' => $item->species_count,
+            ]);
+
+        // Species by country (unique species count per country)
+        $speciesByCountry = (clone $baseQuery)
+            ->join('user_locations', 'fishing_logs.user_location_id', '=', 'user_locations.id')
+            ->join('countries', 'user_locations.country_id', '=', 'countries.id')
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('countries.name as country', DB::raw('COUNT(DISTINCT user_fish.species) as species_count'))
+            ->groupBy('countries.name')
+            ->orderByDesc('species_count')
+            ->limit(10)
+            ->get()
+            ->map(fn($item) => [
+                'country' => $item->country,
+                'species_count' => $item->species_count,
+            ]);
+
+        // Freshwater vs Saltwater (catches) - uses fish water_type (freshwater/saltwater)
+        $freshwaterVsSaltwater = (clone $baseQuery)
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->whereNotNull('user_fish.water_type')
+            ->where('user_fish.water_type', '!=', '')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(DB::raw('LOWER(user_fish.water_type) as water_type'), DB::raw('SUM(fishing_logs.quantity) as total_caught'))
+            ->groupBy(DB::raw('LOWER(user_fish.water_type)'))
+            ->get()
+            ->mapWithKeys(fn($item) => [strtolower($item->water_type) => $item->total_caught]);
+
+        // Species by Water Type (unique species count) - uses fish water_type (freshwater/saltwater)
+        $speciesByWaterType = (clone $baseQuery)
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->whereNotNull('user_fish.water_type')
+            ->where('user_fish.water_type', '!=', '')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(DB::raw('LOWER(user_fish.water_type) as water_type'), DB::raw('COUNT(DISTINCT user_fish.species) as species_count'))
+            ->groupBy(DB::raw('LOWER(user_fish.water_type)'))
+            ->get()
+            ->mapWithKeys(fn($item) => [strtolower($item->water_type) => $item->species_count]);
+
+        return [
+            'fishingRadius' => $fishingRadius,
+            'catchesByState' => $catchesByState->toArray(),
+            'catchesByCountry' => $catchesByCountry->toArray(),
+            'speciesByState' => $speciesByState->toArray(),
+            'speciesByCountry' => $speciesByCountry->toArray(),
+            'freshwaterVsSaltwater' => [
+                'freshwater' => $freshwaterVsSaltwater['freshwater'] ?? 0,
+                'saltwater' => $freshwaterVsSaltwater['saltwater'] ?? 0,
+            ],
+            'speciesByWaterType' => [
+                'freshwater' => $speciesByWaterType['freshwater'] ?? 0,
+                'saltwater' => $speciesByWaterType['saltwater'] ?? 0,
+            ],
+        ];
+    }
+
+    /**
+     * Calculate distance between two coordinates using Haversine formula.
+     * Returns distance in miles.
+     */
+    private function haversineDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 3959; // miles
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
+    /**
+     * Get additional analysis statistics.
+     */
+    public function getAdditionalAnalysisStats(int $userId, string $yearFilter): array
+    {
+        $baseQuery = $this->buildBaseQuery($userId, $yearFilter);
+
+        // Weekend warrior (weekend vs weekday)
+        $dayOfWeekExpr = $this->dayOfWeekExpression('fishing_logs.date');
+        // MySQL: 1=Sunday, 7=Saturday; SQLite: 0=Sunday, 6=Saturday
+        $weekendCondition = $this->isSqlite()
+            ? "$dayOfWeekExpr IN (0, 6)"
+            : "$dayOfWeekExpr IN (1, 7)";
+        $weekdayCondition = $this->isSqlite()
+            ? "$dayOfWeekExpr NOT IN (0, 6)"
+            : "$dayOfWeekExpr NOT IN (1, 7)";
+
+        $weekendCatches = (clone $baseQuery)
+            ->whereRaw($weekendCondition)
+            ->where('fishing_logs.quantity', '>', 0)
+            ->sum('fishing_logs.quantity') ?? 0;
+
+        $weekdayCatches = (clone $baseQuery)
+            ->whereRaw($weekdayCondition)
+            ->where('fishing_logs.quantity', '>', 0)
+            ->sum('fishing_logs.quantity') ?? 0;
+
+        $weekendDays = (clone $baseQuery)
+            ->whereRaw($weekendCondition)
+            ->distinct()
+            ->count('fishing_logs.date');
+
+        $weekdayDays = (clone $baseQuery)
+            ->whereRaw($weekdayCondition)
+            ->distinct()
+            ->count('fishing_logs.date');
+
+        // Monthly personal bests
+        $monthExpr = $this->dateFormatExpression('fishing_logs.date', '%Y-%m');
+        $monthlyPersonalBests = (clone $baseQuery)
+            ->whereNotNull('fishing_logs.max_size')
+            ->where('fishing_logs.max_size', '>', 0)
+            ->select(
+                DB::raw("$monthExpr as month"),
+                DB::raw('MAX(fishing_logs.max_size) as biggest_size')
+            )
+            ->groupBy('month')
+            ->orderBy('month')
+            ->limit(12)
+            ->get()
+            ->map(fn($item) => [
+                'month' => $item->month,
+                'biggest_size' => $item->biggest_size,
+            ]);
+
+        // Catch rate trend (fish per trip over time)
+        $catchRateTrend = (clone $baseQuery)
+            ->select(
+                DB::raw("$monthExpr as month"),
+                DB::raw('SUM(fishing_logs.quantity) as total_caught'),
+                DB::raw('COUNT(DISTINCT fishing_logs.date) as days_fished')
+            )
+            ->groupBy('month')
+            ->orderBy('month')
+            ->limit(12)
+            ->get()
+            ->map(fn($item) => [
+                'month' => $item->month,
+                'catch_rate' => $item->days_fished > 0 ? round($item->total_caught / $item->days_fished, 2) : 0,
+            ]);
+
+        // Species by location (top species at each location)
+        $speciesByLocation = (clone $baseQuery)
+            ->join('user_locations', 'fishing_logs.user_location_id', '=', 'user_locations.id')
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(
+                'user_locations.name as location',
+                'user_fish.species',
+                DB::raw('SUM(fishing_logs.quantity) as total_caught')
+            )
+            ->groupBy('user_locations.name', 'user_fish.species')
+            ->orderByDesc('total_caught')
+            ->get()
+            ->groupBy('location')
+            ->map(fn($group) => $group->first())
+            ->take(5)
+            ->values()
+            ->map(fn($item) => [
+                'location' => $item->location,
+                'species' => $item->species,
+                'total' => $item->total_caught,
+            ]);
+
+        // Fly color by conditions (best fly color for each cloud condition)
+        $flyColorByConditions = (clone $baseQuery)
+            ->join('user_flies', 'fishing_logs.user_fly_id', '=', 'user_flies.id')
+            ->join('user_weather', 'fishing_logs.user_weather_id', '=', 'user_weather.id')
+            ->whereNotNull('user_flies.color')
+            ->whereNotNull('user_weather.cloud')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(
+                'user_weather.cloud',
+                'user_flies.color',
+                DB::raw('SUM(fishing_logs.quantity) as total_caught')
+            )
+            ->groupBy('user_weather.cloud', 'user_flies.color')
+            ->orderByDesc('total_caught')
+            ->get()
+            ->groupBy('cloud')
+            ->map(fn($group) => $group->first())
+            ->map(fn($item) => [
+                'cloud' => $item->cloud,
+                'color' => $item->color,
+                'total' => $item->total_caught,
+            ]);
+
+        // Multi-species days (days where multiple species were caught)
+        $multiSpeciesDays = (clone $baseQuery)
+            ->join('user_fish', 'fishing_logs.user_fish_id', '=', 'user_fish.id')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select('fishing_logs.date', DB::raw('COUNT(DISTINCT user_fish.id) as species_count'))
+            ->groupBy('fishing_logs.date')
+            ->having('species_count', '>', 1)
+            ->get()
+            ->count();
+
+        $totalDaysFished = (clone $baseQuery)->distinct()->count('fishing_logs.date');
+
+        // Quantity vs Quality correlation
+        // Compare days with high quantity vs days with big fish
+        // Calculate weighted average: max_size applies to 1 fish, avg_size applies to remaining (quantity - 1)
+        // Only count fish we have size data for
+        $quantityVsQuality = (clone $baseQuery)
+            ->whereNotNull('fishing_logs.max_size')
+            ->where('fishing_logs.quantity', '>', 0)
+            ->select(
+                'fishing_logs.date',
+                'fishing_logs.quantity',
+                'fishing_logs.max_size',
+                'fishing_logs.avg_size'
+            )
+            ->get()
+            ->groupBy('date')
+            ->map(function ($logs) {
+                $totalQuantity = $logs->sum('quantity');
+                $totalSize = 0;
+                $fishWithSizeData = 0;
+
+                foreach ($logs as $log) {
+                    // max_size counts for 1 fish
+                    $totalSize += $log->max_size;
+                    $fishWithSizeData += 1;
+
+                    // avg_size counts for remaining fish (quantity - 1) only if we have avg_size
+                    if ($log->quantity > 1 && $log->avg_size) {
+                        $totalSize += $log->avg_size * ($log->quantity - 1);
+                        $fishWithSizeData += ($log->quantity - 1);
+                    }
+                }
+
+                return [
+                    'daily_quantity' => $totalQuantity,
+                    'daily_avg_size' => $fishWithSizeData > 0 ? $totalSize / $fishWithSizeData : 0,
+                ];
+            });
+
+        $highQuantityDays = $quantityVsQuality->where('daily_quantity', '>=', 5)->avg('daily_avg_size');
+        $lowQuantityDays = $quantityVsQuality->where('daily_quantity', '<', 5)->avg('daily_avg_size');
+
+        return [
+            'weekendWarrior' => [
+                'weekend' => ['catches' => $weekendCatches, 'days' => $weekendDays, 'avg' => $weekendDays > 0 ? round($weekendCatches / $weekendDays, 2) : 0],
+                'weekday' => ['catches' => $weekdayCatches, 'days' => $weekdayDays, 'avg' => $weekdayDays > 0 ? round($weekdayCatches / $weekdayDays, 2) : 0],
+            ],
+            'monthlyPersonalBests' => $monthlyPersonalBests->toArray(),
+            'catchRateTrend' => $catchRateTrend->toArray(),
+            'speciesByLocation' => $speciesByLocation->toArray(),
+            'flyColorByConditions' => $flyColorByConditions->values()->toArray(),
+            'multiSpeciesDays' => [
+                'count' => $multiSpeciesDays,
+                'total_days' => $totalDaysFished,
+                'percentage' => $totalDaysFished > 0 ? round(($multiSpeciesDays / $totalDaysFished) * 100, 1) : 0,
+            ],
+            'quantityVsQuality' => [
+                'high_quantity_avg_size' => $highQuantityDays ? round($highQuantityDays, 2) : null,
+                'low_quantity_avg_size' => $lowQuantityDays ? round($lowQuantityDays, 2) : null,
+            ],
         ];
     }
 }

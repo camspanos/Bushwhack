@@ -8,7 +8,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { dashboard, fishingLog } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw, Ruler, Scale } from 'lucide-vue-next';
+import { Fish, MapPin, Users, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, Crown, Moon, Sun, Settings, Check, RotateCcw, Ruler, Scale, Thermometer, Droplets, Gauge, CircleDot, Mountain, Globe, Map, Waves, CalendarDays, LineChart, Palette, Layers, BarChart2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface CardPreference {
@@ -169,12 +169,16 @@ interface MoonPositionData {
 interface MajorMinorFeeding {
     major: number;
     minor: number;
+    other: number;
 }
 
 interface BestMoonForBigFish {
-    position: string;
-    biggest_size: number;
-    avg_size: number;
+    position: string | null;
+    position_biggest_size: number;
+    position_avg_size: number;
+    phase: string | null;
+    phase_biggest_size: number;
+    phase_avg_size: number;
 }
 
 // Weight interfaces
@@ -227,37 +231,47 @@ interface StyleData {
     total_caught: number;
 }
 
-interface MostSuccessfulStyle {
-    style: string;
-    total: number;
-    days: number;
-}
-
 // Golden conditions interfaces
 interface GoldenConditions {
+    // Moon & Time
     moon_position: string | null;
     moon_phase: string | null;
     time_of_day: string | null;
+    sun_phase: string | null;
+    // Weather
     cloud: string | null;
+    wind: string | null;
+    precipitation: string | null;
+    barometric_pressure: string | null;
+    // Water
     clarity: string | null;
+    water_level: string | null;
+    water_speed: string | null;
+    surface_condition: string | null;
 }
 
-interface BestConditions {
+interface BigFishConditions {
+    // Moon & Time
     moon_position?: string;
+    moon_phase?: string;
     time_of_day?: string;
+    sun_phase?: string;
+    // Weather
     cloud?: string;
+    wind?: string;
+    precipitation?: string;
+    barometric_pressure?: string;
+    // Water
     clarity?: string;
+    water_level?: string;
+    water_speed?: string;
+    surface_condition?: string;
 }
 
 // Time pattern interfaces
 interface BestHour {
     hour: number;
     formatted: string;
-    total: number;
-}
-
-interface BestDayOfMonth {
-    day: number;
     total: number;
 }
 
@@ -285,11 +299,6 @@ interface RarestCatch {
     count: number;
 }
 
-interface SpeciesStreak {
-    name: string;
-    count: number;
-}
-
 interface SizeImprovementItem {
     name: string;
     improvement: number;
@@ -307,12 +316,6 @@ interface SizeImprovement {
 interface OneHitWonder {
     name: string;
     caught: number;
-}
-
-interface ReliableProducer {
-    name: string;
-    success_rate: number;
-    total: number;
 }
 
 interface BestFlyByLocation {
@@ -334,13 +337,6 @@ interface YoyComparison {
     lastYearFull: { catches: number; days: number; biggest: number | null; year: number };
     catchChange: number | null;
     isFullYearComparison: boolean;
-}
-
-interface PersonalBest {
-    size: number;
-    species: string;
-    location: string;
-    date: string;
 }
 
 // Environmental combo interfaces
@@ -372,6 +368,117 @@ interface Badge {
 interface LuckyNumber {
     number: number;
     occurrences: number;
+}
+
+// Temperature interfaces
+interface TempData {
+    temperature: string;
+    total: number;
+}
+
+interface TempSweetSpot {
+    air_temp: string;
+    water_temp: string;
+    total: number;
+}
+
+interface TempChartData {
+    temperature: string;
+    total_caught: number;
+}
+
+interface BigFishAirTemp {
+    temperature: string;
+    biggest_size: number;
+    avg_size: number;
+}
+
+// Fly size interfaces
+interface BestFlySize {
+    size: string;
+    total: number;
+}
+
+interface FlySizeBySpecies {
+    species: string;
+    size: string;
+    total: number;
+}
+
+interface FlySizeBySeason {
+    season: string;
+    size: string;
+    total: number;
+}
+
+// Geographic interfaces
+interface CatchesByState {
+    state: string;
+    total: number;
+}
+
+interface CatchesByCountry {
+    country: string;
+    total: number;
+}
+
+interface SpeciesByState {
+    state: string;
+    species_count: number;
+}
+
+interface SpeciesByCountry {
+    country: string;
+    species_count: number;
+}
+
+interface FreshwaterVsSaltwater {
+    freshwater: number;
+    saltwater: number;
+}
+
+interface SpeciesByWaterType {
+    freshwater: number;
+    saltwater: number;
+}
+
+// Additional analysis interfaces
+interface WeekendWarrior {
+    weekend: { catches: number; days: number; avg: number };
+    weekday: { catches: number; days: number; avg: number };
+}
+
+interface MonthlyPersonalBest {
+    month: string;
+    biggest_size: number;
+}
+
+interface CatchRateTrend {
+    month: string;
+    catch_rate: number;
+}
+
+interface SpeciesByLocation {
+    location: string;
+    species: string;
+    total: number;
+}
+
+interface FlyColorByConditions {
+    cloud: string;
+    color: string;
+    total: number;
+}
+
+interface MultiSpeciesDays {
+    count: number;
+    total_days: number;
+    percentage: number;
+}
+
+interface QuantityVsQuality {
+    high_quantity_avg_size: number | null;
+    low_quantity_avg_size: number | null;
 }
 
 const props = defineProps<{
@@ -420,16 +527,12 @@ const props = defineProps<{
     mostSuccessfulRod: RodStats | null;
     bestRodForTrophies: BestRodForTrophies | null;
     catchesByStyle: StyleData[];
-    mostSuccessfulStyle: MostSuccessfulStyle | null;
     // Golden conditions
     goldenConditions: GoldenConditions;
-    bestConditions: BestConditions;
+    bigFishConditions: BigFishConditions;
     // Time pattern stats
     bestHour: BestHour | null;
-    timeBlocks: Record<string, number>;
-    bestDayOfMonth: BestDayOfMonth | null;
     seasonalTrends: Record<string, SeasonalTrend>;
-    daysSinceSkunk: number | null;
     // Location stats
     locationVariety: number;
     mostConsistentSpot: MostConsistentSpot | null;
@@ -437,20 +540,15 @@ const props = defineProps<{
     bestLocationBySeason: Record<string, BestLocationBySeason>;
     newSpotSuccessRate: number | null;
     // Species stats
-    speciesDiversity: number;
     rarestCatches: RarestCatch[];
-    speciesStreak: SpeciesStreak | null;
-    newSpeciesThisYear: number;
     sizeImprovement: SizeImprovement;
     // Fly pattern stats
     flyRotation: number;
     oneHitWonders: OneHitWonder[];
-    reliableProducers: ReliableProducer[];
     bestFlyByLocation: BestFlyByLocation[];
     bestFlyBySpecies: BestFlyBySpecies[];
     // Progress stats
     yoyComparison: YoyComparison;
-    personalBests: PersonalBest[];
     improvementRate: {
         monthlyData: { month: string; monthNum: number; avg: number; total: number; days: number }[];
         percent: number | null;
@@ -472,10 +570,34 @@ const props = defineProps<{
     moonTimeCombo: MoonTimeCombo | null;
     waterWeatherCombo: WaterWeatherCombo | null;
     // Gamification stats
-    fishingScore: number;
     badges: Badge[];
     hotStreak: number | null;
     luckyNumber: LuckyNumber | null;
+    // Temperature stats
+    tempSweetSpot: TempSweetSpot | null;
+    catchesByAirTemp: TempChartData[];
+    catchesByWaterTemp: TempChartData[];
+    bigFishAirTemp: BigFishAirTemp | null;
+    // Fly size stats
+    bestFlySize: BestFlySize | null;
+    flySizeBySpecies: FlySizeBySpecies[];
+    flySizeBySeason: FlySizeBySeason[];
+    // Geographic stats
+    fishingRadius: number | null;
+    catchesByState: CatchesByState[];
+    catchesByCountry: CatchesByCountry[];
+    speciesByState: SpeciesByState[];
+    speciesByCountry: SpeciesByCountry[];
+    freshwaterVsSaltwater: FreshwaterVsSaltwater;
+    speciesByWaterType: SpeciesByWaterType;
+    // Additional analysis stats
+    weekendWarrior: WeekendWarrior;
+    monthlyPersonalBests: MonthlyPersonalBest[];
+    catchRateTrend: CatchRateTrend[];
+    speciesByLocation: SpeciesByLocation[];
+    flyColorByConditions: FlyColorByConditions[];
+    multiSpeciesDays: MultiSpeciesDays;
+    quantityVsQuality: QuantityVsQuality;
     availableYears: string[];
     selectedYear: string;
     dashboardPreferences: CardPreference[];
@@ -1128,6 +1250,190 @@ const hoveredMoonSlice = ref<number | null>(null);
 const hoveredSunSlice = ref<number | null>(null);
 const hoveredMoonPositionSlice = ref<number | null>(null);
 const hoveredStyleSlice = ref<number | null>(null);
+const hoveredStateSlice = ref<number | null>(null);
+const hoveredCountrySlice = ref<number | null>(null);
+const hoveredCatchesStateSlice = ref<number | null>(null);
+const hoveredCatchesCountrySlice = ref<number | null>(null);
+
+// State pie chart colors - using distinct colors for geographic regions
+const stateColors = [
+    '#10b981', // emerald-500
+    '#14b8a6', // teal-500
+    '#06b6d4', // cyan-500
+    '#0ea5e9', // sky-500
+    '#3b82f6', // blue-500
+    '#6366f1', // indigo-500
+    '#8b5cf6', // violet-500
+    '#a855f7', // purple-500
+    '#d946ef', // fuchsia-500
+    '#ec4899', // pink-500
+];
+
+const getStateColor = (index: number) => {
+    return stateColors[index % stateColors.length];
+};
+
+// Country pie chart colors - using distinct colors for countries
+const countryColors = [
+    '#3b82f6', // blue-500
+    '#6366f1', // indigo-500
+    '#8b5cf6', // violet-500
+    '#a855f7', // purple-500
+    '#ec4899', // pink-500
+    '#f43f5e', // rose-500
+    '#ef4444', // red-500
+    '#f97316', // orange-500
+    '#f59e0b', // amber-500
+    '#eab308', // yellow-500
+];
+
+const getCountryColor = (index: number) => {
+    return countryColors[index % countryColors.length];
+};
+
+// Catches by state pie chart colors
+const catchesStateColors = [
+    '#22c55e', // green-500
+    '#16a34a', // green-600
+    '#15803d', // green-700
+    '#84cc16', // lime-500
+    '#65a30d', // lime-600
+    '#4d7c0f', // lime-700
+    '#a3e635', // lime-400
+    '#bef264', // lime-300
+    '#86efac', // green-300
+    '#4ade80', // green-400
+];
+
+const getCatchesStateColor = (index: number) => {
+    return catchesStateColors[index % catchesStateColors.length];
+};
+
+// Catches by country pie chart colors
+const catchesCountryColors = [
+    '#0ea5e9', // sky-500
+    '#0284c7', // sky-600
+    '#0369a1', // sky-700
+    '#06b6d4', // cyan-500
+    '#0891b2', // cyan-600
+    '#0e7490', // cyan-700
+    '#22d3ee', // cyan-400
+    '#67e8f9', // cyan-300
+    '#7dd3fc', // sky-300
+    '#38bdf8', // sky-400
+];
+
+const getCatchesCountryColor = (index: number) => {
+    return catchesCountryColors[index % catchesCountryColors.length];
+};
+
+// Catches by state pie chart slices
+const catchesStatePieSlices = computed(() => {
+    const total = props.catchesByState.reduce((sum, s) => sum + Number(s.total), 0);
+    if (total === 0) return [];
+
+    const slices: { path: string; color: string; percentage: number; state: string; total: number }[] = [];
+    let currentAngle = -90;
+
+    props.catchesByState.forEach((stateData, index) => {
+        const caught = Number(stateData.total);
+        const percentage = caught / total;
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getCatchesStateColor(index),
+            percentage: Math.round(percentage * 100),
+            state: stateData.state,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
+// Catches by country pie chart slices
+const catchesCountryPieSlices = computed(() => {
+    const total = props.catchesByCountry.reduce((sum, c) => sum + Number(c.total), 0);
+    if (total === 0) return [];
+
+    const slices: { path: string; color: string; percentage: number; country: string; total: number }[] = [];
+    let currentAngle = -90;
+
+    props.catchesByCountry.forEach((countryData, index) => {
+        const caught = Number(countryData.total);
+        const percentage = caught / total;
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getCatchesCountryColor(index),
+            percentage: Math.round(percentage * 100),
+            country: countryData.country,
+            total: caught,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
+// State pie chart slices (species count)
+const statePieSlices = computed(() => {
+    const total = props.speciesByState.reduce((sum, s) => sum + Number(s.species_count), 0);
+    if (total === 0) return [];
+
+    const slices: { path: string; color: string; percentage: number; state: string; speciesCount: number }[] = [];
+    let currentAngle = -90;
+
+    props.speciesByState.forEach((stateData, index) => {
+        const speciesCount = Number(stateData.species_count);
+        const percentage = speciesCount / total;
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getStateColor(index),
+            percentage: Math.round(percentage * 100),
+            state: stateData.state,
+            speciesCount: speciesCount,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
+
+// Country pie chart slices (species count)
+const countryPieSlices = computed(() => {
+    const total = props.speciesByCountry.reduce((sum, c) => sum + Number(c.species_count), 0);
+    if (total === 0) return [];
+
+    const slices: { path: string; color: string; percentage: number; country: string; speciesCount: number }[] = [];
+    let currentAngle = -90;
+
+    props.speciesByCountry.forEach((countryData, index) => {
+        const speciesCount = Number(countryData.species_count);
+        const percentage = speciesCount / total;
+        const angle = percentage >= 0.9999 ? 359.99 : percentage * 360;
+
+        slices.push({
+            path: createPieSlice(100, 100, 70, currentAngle, currentAngle + angle),
+            color: getCountryColor(index),
+            percentage: Math.round(percentage * 100),
+            country: countryData.country,
+            speciesCount: speciesCount,
+        });
+
+        currentAngle += angle;
+    });
+
+    return slices;
+});
 </script>
 
 <template>
@@ -1281,15 +1587,18 @@ const hoveredStyleSlice = ref<number | null>(null);
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20"
                 >
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Total Catches</CardTitle>
-                        <div class="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
-                            <Fish class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div>
+                            <CardTitle class="text-sm font-medium">Total Catches</CardTitle>
+                            <p class="text-xs text-muted-foreground mt-0.5">Your {{ yearLabel.toLowerCase() }} fishing stats</p>
+                        </div>
+                        <div class="rounded-full bg-blue-100 p-2.5 dark:bg-blue-900/30">
+                            <Fish class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                     </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ stats.totalCatches }}</div>
-                        <p class="text-xs text-muted-foreground">Across {{ stats.totalTrips }} trips</p>
+                    <CardContent class="pb-4 pt-1">
+                        <div class="text-3xl font-bold text-blue-700 dark:text-blue-300">{{ stats.totalCatches }}</div>
+                        <p class="text-sm text-muted-foreground mt-1">Across {{ stats.totalTrips }} trips</p>
                     </CardContent>
                 </DashboardCard>
 
@@ -1324,39 +1633,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                         <p class="text-xs text-muted-foreground">Most visited spot</p>
                     </CardContent>
                 </DashboardCard>
-
-                <!-- Stats: Top Species -->
-                <DashboardCard
-                    v-if="isCardVisible('stats_top_species')"
-                    card-id="stats_top_species"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('stats_top_species')"
-                    :order="getCardOrder('stats_top_species')"
-                    :size="getCardSize('stats_top_species')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('stats_top_species')"
-                    :is-last="isCardLast('stats_top_species')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('stats_top_species')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20"
-                >
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Top Species</CardTitle>
-                        <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                            <TrendingUp class="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ stats.topFish || 'N/A' }}</div>
-                        <p class="text-xs text-muted-foreground">{{ stats.topFishCount }} caught</p>
-                    </CardContent>
-                </DashboardCard>
-
                 <!-- Stats: Fishing Buddies -->
                 <DashboardCard
                     v-if="isCardVisible('stats_fishing_buddies')"
@@ -1767,17 +2043,20 @@ const hoveredStyleSlice = ref<number | null>(null);
                     @jump-to-position="jumpCardToPosition"
                     class="bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20"
                 >
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Average per Trip</CardTitle>
-                        <div class="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/30">
-                            <BarChart3 class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div>
+                            <CardTitle class="text-sm font-medium">Average per Trip</CardTitle>
+                            <p class="text-xs text-muted-foreground mt-0.5">Your catch rate efficiency</p>
+                        </div>
+                        <div class="rounded-full bg-indigo-100 p-2.5 dark:bg-indigo-900/30">
+                            <BarChart3 class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
                     </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
+                    <CardContent class="pb-4 pt-1">
+                        <div class="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
                             {{ speciesStats.totalTrips > 0 ? (speciesStats.totalFish / speciesStats.totalTrips).toFixed(1) : '0' }}
                         </div>
-                        <p class="text-xs text-muted-foreground">
+                        <p class="text-sm text-muted-foreground mt-1">
                             Fish per outing
                         </p>
                     </CardContent>
@@ -3181,7 +3460,7 @@ const hoveredStyleSlice = ref<number | null>(null);
                         <CardDescription>Overhead/Underfoot vs Rising/Setting</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="majorVsMinorFeeding.major > 0 || majorVsMinorFeeding.minor > 0" class="space-y-3">
+                        <div v-if="majorVsMinorFeeding.major > 0 || majorVsMinorFeeding.minor > 0 || majorVsMinorFeeding.other > 0" class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <span class="text-lg">⭐</span>
@@ -3195,6 +3474,13 @@ const hoveredStyleSlice = ref<number | null>(null);
                                     <span class="text-sm font-medium">Minor (Rising/Setting)</span>
                                 </div>
                                 <span class="text-lg font-bold text-purple-700 dark:text-purple-300">{{ majorVsMinorFeeding.minor }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">🌅</span>
+                                    <span class="text-sm font-medium">Off-Peak (Between Windows)</span>
+                                </div>
+                                <span class="text-lg font-bold text-purple-700 dark:text-purple-300">{{ majorVsMinorFeeding.other }}</span>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No feeding window data yet</p>
@@ -3228,18 +3514,39 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Best Moon for Big Fish
                         </CardTitle>
-                        <CardDescription>Moon position for trophy catches</CardDescription>
+                        <CardDescription>Moon position & phase for trophy catches</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
-                        <div v-if="bestMoonForBigFish" class="space-y-2">
-                            <div class="text-xl font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ bestMoonForBigFish.position }}</div>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
-                                    📏 Biggest: {{ formatSize(bestMoonForBigFish.biggest_size) }}"
-                                </span>
-                                <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
-                                    📊 Avg: {{ formatSize(bestMoonForBigFish.avg_size) }}"
-                                </span>
+                        <div v-if="bestMoonForBigFish.position || bestMoonForBigFish.phase" class="space-y-3">
+                            <!-- Moon Position -->
+                            <div v-if="bestMoonForBigFish.position" class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🌙</span>
+                                    <span class="text-lg font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ bestMoonForBigFish.position }}</span>
+                                </div>
+                                <div class="flex flex-wrap gap-2 pl-6">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                                        📏 Biggest: {{ formatSize(bestMoonForBigFish.position_biggest_size) }}"
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                                        📊 Avg: {{ formatSize(bestMoonForBigFish.position_avg_size) }}"
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Moon Phase -->
+                            <div v-if="bestMoonForBigFish.phase" class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🌕</span>
+                                    <span class="text-lg font-bold text-fuchsia-700 dark:text-fuchsia-300">{{ bestMoonForBigFish.phase }}</span>
+                                </div>
+                                <div class="flex flex-wrap gap-2 pl-6">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                                        📏 Biggest: {{ formatSize(bestMoonForBigFish.phase_biggest_size) }}"
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-medium text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300">
+                                        📊 Avg: {{ formatSize(bestMoonForBigFish.phase_avg_size) }}"
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No size data yet</p>
@@ -3719,51 +4026,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                     </CardContent>
                 </DashboardCard>
 
-                <!-- Most Successful Style -->
-                <DashboardCard
-                    v-if="isCardVisible('most_successful_style')"
-                    card-id="most_successful_style"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('most_successful_style')"
-                    :order="getCardOrder('most_successful_style')"
-                    :size="getCardSize('most_successful_style')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('most_successful_style')"
-                    :is-last="isCardLast('most_successful_style')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('most_successful_style')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
-                                <span class="text-lg">⭐</span>
-                            </div>
-                            Most Successful Style
-                        </CardTitle>
-                        <CardDescription>Your best technique</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="mostSuccessfulStyle" class="space-y-2">
-                            <div class="text-xl font-bold text-pink-700 dark:text-pink-300">{{ mostSuccessfulStyle.style }}</div>
-                            <div class="flex flex-wrap gap-2">
-                                <span class="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-medium text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">
-                                    🎣 {{ mostSuccessfulStyle.total }} fish
-                                </span>
-                                <span class="inline-flex items-center gap-1 rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-medium text-pink-800 dark:bg-pink-900/30 dark:text-pink-300">
-                                    📅 {{ mostSuccessfulStyle.days }} days
-                                </span>
-                            </div>
-                        </div>
-                        <p v-else class="text-muted-foreground">No style data yet</p>
-                    </CardContent>
-                </DashboardCard>
-
                 <!-- ========== COMBINED ANALYSIS CARDS ========== -->
 
                 <!-- Golden Conditions -->
@@ -3795,34 +4057,62 @@ const hoveredStyleSlice = ref<number | null>(null);
                         </CardTitle>
                         <CardDescription>Conditions on your best fishing days</CardDescription>
                     </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="goldenConditions.moon_position || goldenConditions.time_of_day || goldenConditions.cloud || goldenConditions.clarity" class="grid grid-cols-2 gap-3">
-                            <div v-if="goldenConditions.moon_position" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Moon Position</div>
-                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">🌙 {{ goldenConditions.moon_position }}</div>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="goldenConditions.moon_position || goldenConditions.time_of_day || goldenConditions.cloud || goldenConditions.clarity" class="grid grid-cols-3 gap-2">
+                            <div v-if="goldenConditions.moon_position" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Moon Position</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">🌙 {{ goldenConditions.moon_position }}</div>
                             </div>
-                            <div v-if="goldenConditions.moon_phase" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Moon Phase</div>
-                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">🌕 {{ goldenConditions.moon_phase }}</div>
+                            <div v-if="goldenConditions.moon_phase" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Moon Phase</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">🌕 {{ goldenConditions.moon_phase }}</div>
                             </div>
-                            <div v-if="goldenConditions.time_of_day" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Time of Day</div>
-                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">☀️ {{ goldenConditions.time_of_day }}</div>
+                            <div v-if="goldenConditions.time_of_day" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Time of Day</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">🕐 {{ goldenConditions.time_of_day }}</div>
                             </div>
-                            <div v-if="goldenConditions.cloud" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Cloud Cover</div>
-                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">☁️ {{ goldenConditions.cloud }}</div>
+                            <div v-if="goldenConditions.sun_phase" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Sun Phase</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">☀️ {{ goldenConditions.sun_phase }}</div>
                             </div>
-                            <div v-if="goldenConditions.clarity" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Water Clarity</div>
-                                <div class="text-sm font-medium text-amber-700 dark:text-amber-300">💧 {{ goldenConditions.clarity }}</div>
+                            <div v-if="goldenConditions.cloud" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Cloud Cover</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">☁️ {{ goldenConditions.cloud }}</div>
+                            </div>
+                            <div v-if="goldenConditions.wind" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Wind</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">💨 {{ goldenConditions.wind }}</div>
+                            </div>
+                            <div v-if="goldenConditions.precipitation" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Precipitation</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">🌧️ {{ goldenConditions.precipitation }}</div>
+                            </div>
+                            <div v-if="goldenConditions.barometric_pressure" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Pressure</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">📊 {{ goldenConditions.barometric_pressure }}</div>
+                            </div>
+                            <div v-if="goldenConditions.clarity" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Water Clarity</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">💧 {{ goldenConditions.clarity }}</div>
+                            </div>
+                            <div v-if="goldenConditions.water_level" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Water Level</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">📏 {{ goldenConditions.water_level }}</div>
+                            </div>
+                            <div v-if="goldenConditions.water_speed" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Water Speed</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">🌊 {{ goldenConditions.water_speed }}</div>
+                            </div>
+                            <div v-if="goldenConditions.surface_condition" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Surface</div>
+                                <div class="text-xs font-medium text-amber-700 dark:text-amber-300">〰️ {{ goldenConditions.surface_condition }}</div>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
                     </CardContent>
                 </DashboardCard>
 
-                <!-- Best Conditions Summary -->
+                <!-- Golden Conditions for Big Fish -->
                 <DashboardCard
                     v-if="isCardVisible('best_conditions_summary')"
                     card-id="best_conditions_summary"
@@ -3840,34 +4130,66 @@ const hoveredStyleSlice = ref<number | null>(null);
                     :display-position="getCardDisplayPosition('best_conditions_summary')"
                     :total-visible="getTotalVisibleCards"
                     @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
+                    class="bg-gradient-to-br from-orange-50/30 to-red-50/30 dark:from-orange-950/10 dark:to-red-950/10"
                 >
                     <CardHeader class="pb-2">
                         <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 p-1.5 dark:from-emerald-900/30 dark:to-teal-900/30">
-                                <span class="text-lg">🎯</span>
+                            <div class="rounded-full bg-gradient-to-br from-orange-100 to-red-100 p-1.5 dark:from-orange-900/30 dark:to-red-900/30">
+                                <span class="text-lg">🏆</span>
                             </div>
-                            Best Conditions Summary
+                            Trophy Conditions
                         </CardTitle>
-                        <CardDescription>Your most productive conditions overall</CardDescription>
+                        <CardDescription>Conditions when you caught your biggest fish</CardDescription>
                     </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="bestConditions.moon_position || bestConditions.time_of_day || bestConditions.cloud || bestConditions.clarity" class="grid grid-cols-2 gap-3">
-                            <div v-if="bestConditions.moon_position" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Best Moon Position</div>
-                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">🌙 {{ bestConditions.moon_position }}</div>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="bigFishConditions.moon_position || bigFishConditions.time_of_day || bigFishConditions.cloud || bigFishConditions.clarity" class="grid grid-cols-3 gap-2">
+                            <div v-if="bigFishConditions.moon_position" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Moon Position</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">🌙 {{ bigFishConditions.moon_position }}</div>
                             </div>
-                            <div v-if="bestConditions.time_of_day" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Best Time of Day</div>
-                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">☀️ {{ bestConditions.time_of_day }}</div>
+                            <div v-if="bigFishConditions.moon_phase" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Moon Phase</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">🌕 {{ bigFishConditions.moon_phase }}</div>
                             </div>
-                            <div v-if="bestConditions.cloud" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Best Cloud Cover</div>
-                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">☁️ {{ bestConditions.cloud }}</div>
+                            <div v-if="bigFishConditions.time_of_day" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Time of Day</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">🕐 {{ bigFishConditions.time_of_day }}</div>
                             </div>
-                            <div v-if="bestConditions.clarity" class="space-y-1">
-                                <div class="text-xs text-muted-foreground">Best Water Clarity</div>
-                                <div class="text-sm font-medium text-emerald-700 dark:text-emerald-300">💧 {{ bestConditions.clarity }}</div>
+                            <div v-if="bigFishConditions.sun_phase" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Sun Phase</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">☀️ {{ bigFishConditions.sun_phase }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.cloud" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Cloud Cover</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">☁️ {{ bigFishConditions.cloud }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.wind" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Wind</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">💨 {{ bigFishConditions.wind }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.precipitation" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Precipitation</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">🌧️ {{ bigFishConditions.precipitation }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.barometric_pressure" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Pressure</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">📊 {{ bigFishConditions.barometric_pressure }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.clarity" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Water Clarity</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">💧 {{ bigFishConditions.clarity }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.water_level" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Water Level</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">📏 {{ bigFishConditions.water_level }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.water_speed" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Water Speed</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">🌊 {{ bigFishConditions.water_speed }}</div>
+                            </div>
+                            <div v-if="bigFishConditions.surface_condition" class="space-y-0.5">
+                                <div class="text-[10px] text-muted-foreground">Surface</div>
+                                <div class="text-xs font-medium text-orange-700 dark:text-orange-300">〰️ {{ bigFishConditions.surface_condition }}</div>
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
@@ -3914,84 +4236,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                     </CardContent>
                 </DashboardCard>
 
-                <!-- Time Blocks (Morning vs Afternoon vs Evening) -->
-                <DashboardCard
-                    v-if="isCardVisible('time_blocks')"
-                    card-id="time_blocks"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('time_blocks')"
-                    :order="getCardOrder('time_blocks')"
-                    :size="getCardSize('time_blocks')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('time_blocks')"
-                    :is-last="isCardLast('time_blocks')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('time_blocks')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-sky-50/30 to-indigo-50/30 dark:from-sky-950/10 dark:to-indigo-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-sky-100 to-indigo-100 p-1.5 dark:from-sky-900/30 dark:to-indigo-900/30">
-                                <Sun class="h-4 w-4 text-sky-600 dark:text-sky-400" />
-                            </div>
-                            Time of Day Analysis
-                        </CardTitle>
-                        <CardDescription>Catches by time block</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="Object.keys(timeBlocks).length > 0" class="space-y-2">
-                            <div v-for="(count, block) in timeBlocks" :key="block" class="flex justify-between items-center">
-                                <span class="text-sm">{{ block }}</span>
-                                <span class="font-semibold text-sky-600 dark:text-sky-400">{{ count }}</span>
-                            </div>
-                        </div>
-                        <p v-else class="text-muted-foreground">Not enough data yet</p>
-                    </CardContent>
-                </DashboardCard>
-
-                <!-- Best Day of Month -->
-                <DashboardCard
-                    v-if="isCardVisible('best_day_of_month')"
-                    card-id="best_day_of_month"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('best_day_of_month')"
-                    :order="getCardOrder('best_day_of_month')"
-                    :size="getCardSize('best_day_of_month')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('best_day_of_month')"
-                    :is-last="isCardLast('best_day_of_month')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('best_day_of_month')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-violet-100 to-purple-100 p-1.5 dark:from-violet-900/30 dark:to-purple-900/30">
-                                <Calendar class="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                            </div>
-                            Best Day of Month
-                        </CardTitle>
-                        <CardDescription>Most productive day number</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="bestDayOfMonth" class="space-y-2">
-                            <div class="text-3xl font-bold text-violet-600 dark:text-violet-400">{{ bestDayOfMonth.day }}<span class="text-lg">{{ bestDayOfMonth.day === 1 || bestDayOfMonth.day === 21 || bestDayOfMonth.day === 31 ? 'st' : bestDayOfMonth.day === 2 || bestDayOfMonth.day === 22 ? 'nd' : bestDayOfMonth.day === 3 || bestDayOfMonth.day === 23 ? 'rd' : 'th' }}</span></div>
-                            <div class="text-sm text-muted-foreground">{{ bestDayOfMonth.total }} fish caught</div>
-                        </div>
-                        <p v-else class="text-muted-foreground">Not enough data yet</p>
-                    </CardContent>
-                </DashboardCard>
-
                 <!-- Seasonal Trends -->
                 <DashboardCard
                     v-if="isCardVisible('seasonal_trends')"
@@ -4030,44 +4274,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
-                    </CardContent>
-                </DashboardCard>
-
-                <!-- Days Since Last Skunk -->
-                <DashboardCard
-                    v-if="isCardVisible('days_since_skunk')"
-                    card-id="days_since_skunk"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('days_since_skunk')"
-                    :order="getCardOrder('days_since_skunk')"
-                    :size="getCardSize('days_since_skunk')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('days_since_skunk')"
-                    :is-last="isCardLast('days_since_skunk')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('days_since_skunk')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-teal-50/30 to-cyan-50/30 dark:from-teal-950/10 dark:to-cyan-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 p-1.5 dark:from-teal-900/30 dark:to-cyan-900/30">
-                                <span class="text-lg">🦨</span>
-                            </div>
-                            Days Since Skunk
-                        </CardTitle>
-                        <CardDescription>Last time you got skunked</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="daysSinceSkunk !== null" class="space-y-2">
-                            <div class="text-3xl font-bold text-teal-600 dark:text-teal-400">{{ daysSinceSkunk }} days</div>
-                            <div class="text-sm text-muted-foreground">Keep the streak going!</div>
-                        </div>
-                        <p v-else class="text-muted-foreground">No skunks recorded!</p>
                     </CardContent>
                 </DashboardCard>
 
@@ -4266,41 +4472,6 @@ const hoveredStyleSlice = ref<number | null>(null);
 
                 <!-- ===== SPECIES DEEP DIVE CARDS ===== -->
 
-                <!-- Species Diversity -->
-                <DashboardCard
-                    v-if="isCardVisible('species_diversity')"
-                    card-id="species_diversity"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('species_diversity')"
-                    :order="getCardOrder('species_diversity')"
-                    :size="getCardSize('species_diversity')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('species_diversity')"
-                    :is-last="isCardLast('species_diversity')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('species_diversity')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-purple-50/30 to-violet-50/30 dark:from-purple-950/10 dark:to-violet-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-purple-100 to-violet-100 p-1.5 dark:from-purple-900/30 dark:to-violet-900/30">
-                                <Fish class="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            Species Diversity
-                        </CardTitle>
-                        <CardDescription>Different species caught</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ speciesDiversity }}</div>
-                        <div class="text-sm text-muted-foreground">unique species</div>
-                    </CardContent>
-                </DashboardCard>
-
                 <!-- Rarest Catches -->
                 <DashboardCard
                     v-if="isCardVisible('rarest_catches')"
@@ -4338,80 +4509,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No rare catches yet</p>
-                    </CardContent>
-                </DashboardCard>
-
-                <!-- Most Caught Species -->
-                <DashboardCard
-                    v-if="isCardVisible('species_streak')"
-                    card-id="species_streak"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('species_streak')"
-                    :order="getCardOrder('species_streak')"
-                    :size="getCardSize('species_streak')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('species_streak')"
-                    :is-last="isCardLast('species_streak')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('species_streak')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-teal-50/30 to-emerald-50/30 dark:from-teal-950/10 dark:to-emerald-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 p-1.5 dark:from-teal-900/30 dark:to-emerald-900/30">
-                                <span class="text-lg">🎯</span>
-                            </div>
-                            Most Caught Species
-                        </CardTitle>
-                        <CardDescription>Your go-to target</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="speciesStreak" class="space-y-2">
-                            <div class="text-lg font-semibold text-teal-600 dark:text-teal-400">{{ speciesStreak.name }}</div>
-                            <div class="text-2xl font-bold">{{ speciesStreak.count }}</div>
-                            <div class="text-sm text-muted-foreground">times caught</div>
-                        </div>
-                        <p v-else class="text-muted-foreground">Not enough data yet</p>
-                    </CardContent>
-                </DashboardCard>
-
-                <!-- New Species This Year / Total Species -->
-                <DashboardCard
-                    v-if="isCardVisible('new_species_this_year')"
-                    card-id="new_species_this_year"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('new_species_this_year')"
-                    :order="getCardOrder('new_species_this_year')"
-                    :size="getCardSize('new_species_this_year')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('new_species_this_year')"
-                    :is-last="isCardLast('new_species_this_year')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('new_species_this_year')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-green-50/30 to-lime-50/30 dark:from-green-950/10 dark:to-lime-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-green-100 to-lime-100 p-1.5 dark:from-green-900/30 dark:to-lime-900/30">
-                                <span class="text-lg">{{ selectedYearFilter === 'lifetime' ? '🐟' : '🆕' }}</span>
-                            </div>
-                            {{ selectedYearFilter === 'lifetime' ? 'Species Caught' : 'New Species This Year' }}
-                        </CardTitle>
-                        <CardDescription>{{ selectedYearFilter === 'lifetime' ? 'Unique species' : 'First-time catches' }}</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ newSpeciesThisYear }}</div>
-                        <div class="text-sm text-muted-foreground">{{ selectedYearFilter === 'lifetime' ? 'species caught' : 'new species caught' }}</div>
                     </CardContent>
                 </DashboardCard>
 
@@ -4534,46 +4631,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                         </div>
                         <p v-else class="text-muted-foreground">No one-hit wonders yet</p>
-                    </CardContent>
-                </DashboardCard>
-
-                <!-- Reliable Producers -->
-                <DashboardCard
-                    v-if="isCardVisible('reliable_producers')"
-                    card-id="reliable_producers"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('reliable_producers')"
-                    :order="getCardOrder('reliable_producers')"
-                    :size="getCardSize('reliable_producers')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('reliable_producers')"
-                    :is-last="isCardLast('reliable_producers')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('reliable_producers')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 p-1.5 dark:from-emerald-900/30 dark:to-teal-900/30">
-                                <span class="text-lg">✅</span>
-                            </div>
-                            Reliable Producers
-                        </CardTitle>
-                        <CardDescription>Consistently catch fish</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="reliableProducers.length > 0" class="space-y-2">
-                            <div v-for="fly in reliableProducers" :key="fly.name" class="flex justify-between items-center">
-                                <span class="text-sm truncate">{{ fly.name }}</span>
-                                <span class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{{ fly.success_rate }}%</span>
-                            </div>
-                        </div>
-                        <p v-else class="text-muted-foreground">Not enough data yet</p>
                     </CardContent>
                 </DashboardCard>
 
@@ -4724,49 +4781,6 @@ const hoveredStyleSlice = ref<number | null>(null);
                     </CardContent>
                 </DashboardCard>
 
-                <!-- Personal Bests -->
-                <DashboardCard
-                    v-if="isCardVisible('personal_bests')"
-                    card-id="personal_bests"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('personal_bests')"
-                    :order="getCardOrder('personal_bests')"
-                    :size="getCardSize('personal_bests')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('personal_bests')"
-                    :is-last="isCardLast('personal_bests')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('personal_bests')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-amber-50/30 to-yellow-50/30 dark:from-amber-950/10 dark:to-yellow-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-yellow-100 p-1.5 dark:from-amber-900/30 dark:to-yellow-900/30">
-                                <Award class="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            Personal Bests
-                        </CardTitle>
-                        <CardDescription>Your biggest catches</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="personalBests.length > 0" class="space-y-2">
-                            <div v-for="(pb, index) in personalBests.slice(0, 5)" :key="index" class="flex justify-between items-center">
-                                <div class="truncate">
-                                    <span class="text-sm font-semibold">{{ pb.size }}"</span>
-                                    <span class="text-xs text-muted-foreground ml-1">{{ pb.species }}</span>
-                                </div>
-                                <span class="text-xs text-muted-foreground">{{ pb.location }}</span>
-                            </div>
-                        </div>
-                        <p v-else class="text-muted-foreground">No personal bests yet</p>
-                    </CardContent>
-                </DashboardCard>
-
                 <!-- Improvement Rate -->
                 <DashboardCard
                     v-if="isCardVisible('improvement_rate')"
@@ -4799,13 +4813,13 @@ const hoveredStyleSlice = ref<number | null>(null);
                     <CardContent class="pt-0 pb-4">
                         <div v-if="improvementRate && improvementRate.monthlyData.length > 0" class="space-y-3">
                             <!-- Bar chart -->
-                            <div class="flex items-end gap-2 h-28">
+                            <div class="flex items-end gap-1 h-28">
                                 <div
                                     v-for="item in improvementRate.monthlyData"
                                     :key="item.monthNum"
-                                    class="flex-1 flex flex-col items-center h-full"
+                                    class="flex-1 flex flex-col items-center h-full min-w-0"
                                 >
-                                    <div class="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                                    <div class="text-[10px] font-medium text-green-600 dark:text-green-400 mb-1 truncate">
                                         {{ item.avg }}
                                     </div>
                                     <div class="flex-1 w-full flex items-end">
@@ -4857,19 +4871,19 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Avg Size Trend
                         </CardTitle>
-                        <CardDescription>Average fish length by month</CardDescription>
+                        <CardDescription>Average fish length by month (inches)</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
                         <div v-if="avgSizeTrend && avgSizeTrend.monthlyData.length > 0" class="space-y-3">
                             <!-- Bar chart -->
-                            <div class="flex items-end gap-2 h-28">
+                            <div class="flex items-end gap-1 h-28">
                                 <div
                                     v-for="item in avgSizeTrend.monthlyData"
                                     :key="item.monthNum"
-                                    class="flex-1 flex flex-col items-center h-full"
+                                    class="flex-1 flex flex-col items-center h-full min-w-0"
                                 >
-                                    <div class="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">
-                                        {{ item.avg }}"
+                                    <div class="text-[10px] font-medium text-purple-600 dark:text-purple-400 mb-1 truncate">
+                                        {{ item.avg }}
                                     </div>
                                     <div class="flex-1 w-full flex items-end">
                                         <div
@@ -4920,19 +4934,19 @@ const hoveredStyleSlice = ref<number | null>(null);
                             </div>
                             Avg Weight Trend
                         </CardTitle>
-                        <CardDescription>Average fish weight by month</CardDescription>
+                        <CardDescription>Average fish weight by month (lbs)</CardDescription>
                     </CardHeader>
                     <CardContent class="pt-0 pb-4">
                         <div v-if="avgWeightTrend && avgWeightTrend.monthlyData.length > 0" class="space-y-3">
                             <!-- Bar chart -->
-                            <div class="flex items-end gap-2 h-28">
+                            <div class="flex items-end gap-1 h-28">
                                 <div
                                     v-for="item in avgWeightTrend.monthlyData"
                                     :key="item.monthNum"
-                                    class="flex-1 flex flex-col items-center h-full"
+                                    class="flex-1 flex flex-col items-center h-full min-w-0"
                                 >
-                                    <div class="text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">
-                                        {{ item.avg }}lb
+                                    <div class="text-[10px] font-medium text-amber-600 dark:text-amber-400 mb-1 truncate">
+                                        {{ item.avg }}
                                     </div>
                                     <div class="flex-1 w-full flex items-end">
                                         <div
@@ -5114,41 +5128,6 @@ const hoveredStyleSlice = ref<number | null>(null);
 
                 <!-- ===== GAMIFICATION CARDS ===== -->
 
-                <!-- Fishing Score -->
-                <DashboardCard
-                    v-if="isCardVisible('fishing_score')"
-                    card-id="fishing_score"
-                    :is-edit-mode="isEditMode"
-                    :is-hidden="isCardHidden('fishing_score')"
-                    :order="getCardOrder('fishing_score')"
-                    :size="getCardSize('fishing_score')"
-                    @hide="hideCard"
-                    @show="showCard"
-                    @resize="resizeCard"
-                    :is-first="isCardFirst('fishing_score')"
-                    :is-last="isCardLast('fishing_score')"
-                    @move-up="moveCardUp"
-                    @move-down="moveCardDown"
-                    :display-position="getCardDisplayPosition('fishing_score')"
-                    :total-visible="getTotalVisibleCards"
-                    @jump-to-position="jumpCardToPosition"
-                    class="bg-gradient-to-br from-amber-50/30 to-orange-50/30 dark:from-amber-950/10 dark:to-orange-950/10"
-                >
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1.5 dark:from-amber-900/30 dark:to-orange-900/30">
-                                <Crown class="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            Fishing Score
-                        </CardTitle>
-                        <CardDescription>Your overall rating</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ fishingScore.toLocaleString() }}</div>
-                        <div class="text-sm text-muted-foreground">points earned</div>
-                    </CardContent>
-                </DashboardCard>
-
                 <!-- Achievement Badges -->
                 <DashboardCard
                     v-if="isCardVisible('badges')"
@@ -5178,10 +5157,10 @@ const hoveredStyleSlice = ref<number | null>(null);
                         </CardTitle>
                         <CardDescription>Milestones unlocked</CardDescription>
                     </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="badges.length > 0" class="flex flex-wrap gap-2">
-                            <div v-for="badge in badges" :key="badge.name" class="flex items-center gap-1 px-2 py-1 bg-purple-100/50 dark:bg-purple-900/20 rounded-full" :title="badge.description">
-                                <span>{{ badge.icon }}</span>
+                    <CardContent class="pt-0 pb-2">
+                        <div v-if="badges.length > 0" class="flex flex-wrap gap-1">
+                            <div v-for="badge in badges" :key="badge.name" class="flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100/50 dark:bg-purple-900/20 rounded-full" :title="badge.description">
+                                <span class="text-sm">{{ badge.icon }}</span>
                                 <span class="text-xs font-medium">{{ badge.name }}</span>
                             </div>
                         </div>
@@ -5262,6 +5241,1133 @@ const hoveredStyleSlice = ref<number | null>(null);
                             <div class="text-sm text-muted-foreground">caught {{ luckyNumber.occurrences }} times</div>
                         </div>
                         <p v-else class="text-muted-foreground">Not enough data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Temperature Sweet Spot -->
+                <DashboardCard
+                    v-if="isCardVisible('temp_sweet_spot')"
+                    card-id="temp_sweet_spot"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('temp_sweet_spot')"
+                    :order="getCardOrder('temp_sweet_spot')"
+                    :size="getCardSize('temp_sweet_spot')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('temp_sweet_spot')"
+                    :is-last="isCardLast('temp_sweet_spot')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('temp_sweet_spot')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-orange-50/30 dark:from-amber-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-orange-100 p-1.5 dark:from-amber-900/30 dark:to-orange-900/30">
+                                <Target class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            Temperature Sweet Spot
+                        </CardTitle>
+                        <CardDescription>Best air + water combo</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="tempSweetSpot" class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <Thermometer class="h-4 w-4 text-orange-500" />
+                                <span class="font-semibold">{{ tempSweetSpot.air_temp }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <Droplets class="h-4 w-4 text-blue-500" />
+                                <span class="font-semibold">{{ tempSweetSpot.water_temp }}</span>
+                            </div>
+                            <div class="text-sm text-muted-foreground">{{ tempSweetSpot.total }} fish caught</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Need both temp readings</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Big Fish Temperature -->
+                <DashboardCard
+                    v-if="isCardVisible('big_fish_air_temp')"
+                    card-id="big_fish_air_temp"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('big_fish_air_temp')"
+                    :order="getCardOrder('big_fish_air_temp')"
+                    :size="getCardSize('big_fish_air_temp')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('big_fish_air_temp')"
+                    :is-last="isCardLast('big_fish_air_temp')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('big_fish_air_temp')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-red-50/30 to-orange-50/30 dark:from-red-950/10 dark:to-orange-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-red-100 to-orange-100 p-1.5 dark:from-red-900/30 dark:to-orange-900/30">
+                                <Crown class="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </div>
+                            Big Fish Temperature
+                        </CardTitle>
+                        <CardDescription>Air temp for trophy fish</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bigFishAirTemp" class="space-y-2">
+                            <div class="text-3xl font-bold text-red-600 dark:text-red-400">{{ bigFishAirTemp.temperature }}</div>
+                            <div class="text-sm text-muted-foreground">Biggest: {{ bigFishAirTemp.biggest_size }}" | Avg: {{ bigFishAirTemp.avg_size }}"</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No size data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Air Temp -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_air_temp')"
+                    card-id="catches_by_air_temp"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_air_temp')"
+                    :order="getCardOrder('catches_by_air_temp')"
+                    :size="getCardSize('catches_by_air_temp')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_air_temp')"
+                    :is-last="isCardLast('catches_by_air_temp')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_air_temp')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/30 to-amber-50/30 dark:from-orange-950/10 dark:to-amber-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-orange-100 to-amber-100 p-1.5 dark:from-orange-900/30 dark:to-amber-900/30">
+                                <BarChart3 class="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            Catches by Air Temp
+                        </CardTitle>
+                        <CardDescription>Distribution by air temperature</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByAirTemp.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByAirTemp.slice(0, 5)" :key="item.temperature" class="flex items-center justify-between">
+                                <span class="text-sm">{{ item.temperature }}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 bg-orange-500 rounded" :style="{ width: `${Math.min(100, (item.total_caught / Math.max(...catchesByAirTemp.map(i => i.total_caught))) * 80)}px` }"></div>
+                                    <span class="text-sm font-medium w-8 text-right">{{ item.total_caught }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No temperature data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Water Temp -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_by_water_temp')"
+                    card-id="catches_by_water_temp"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_by_water_temp')"
+                    :order="getCardOrder('catches_by_water_temp')"
+                    :size="getCardSize('catches_by_water_temp')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_by_water_temp')"
+                    :is-last="isCardLast('catches_by_water_temp')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_by_water_temp')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-cyan-50/30 dark:from-blue-950/10 dark:to-cyan-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 p-1.5 dark:from-blue-900/30 dark:to-cyan-900/30">
+                                <BarChart3 class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            Catches by Water Temp
+                        </CardTitle>
+                        <CardDescription>Distribution by water temperature</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchesByWaterTemp.length > 0" class="space-y-2">
+                            <div v-for="item in catchesByWaterTemp.slice(0, 5)" :key="item.temperature" class="flex items-center justify-between">
+                                <span class="text-sm">{{ item.temperature }}</span>
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 bg-blue-500 rounded" :style="{ width: `${Math.min(100, (item.total_caught / Math.max(...catchesByWaterTemp.map(i => i.total_caught))) * 80)}px` }"></div>
+                                    <span class="text-sm font-medium w-8 text-right">{{ item.total_caught }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water temp data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Best Fly Size -->
+                <DashboardCard
+                    v-if="isCardVisible('best_fly_size')"
+                    card-id="best_fly_size"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('best_fly_size')"
+                    :order="getCardOrder('best_fly_size')"
+                    :size="getCardSize('best_fly_size')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('best_fly_size')"
+                    :is-last="isCardLast('best_fly_size')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('best_fly_size')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-emerald-50/30 dark:from-teal-950/10 dark:to-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 p-1.5 dark:from-teal-900/30 dark:to-emerald-900/30">
+                                <Target class="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            Best Fly Size
+                        </CardTitle>
+                        <CardDescription>Most productive fly size</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="bestFlySize" class="space-y-2">
+                            <div class="text-3xl font-bold text-teal-600 dark:text-teal-400">{{ bestFlySize.size }}</div>
+                            <div class="text-sm text-muted-foreground">{{ bestFlySize.total }} fish caught</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No fly size data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Fly Size by Species -->
+                <DashboardCard
+                    v-if="isCardVisible('fly_size_by_species')"
+                    card-id="fly_size_by_species"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fly_size_by_species')"
+                    :order="getCardOrder('fly_size_by_species')"
+                    :size="getCardSize('fly_size_by_species')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fly_size_by_species')"
+                    :is-last="isCardLast('fly_size_by_species')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fly_size_by_species')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-cyan-50/30 dark:from-teal-950/10 dark:to-cyan-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 p-1.5 dark:from-teal-900/30 dark:to-cyan-900/30">
+                                <Fish class="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            Fly Size by Species
+                        </CardTitle>
+                        <CardDescription>Best fly size for each species</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="flySizeBySpecies.length > 0" class="space-y-2">
+                            <div v-for="item in flySizeBySpecies" :key="item.species" class="flex items-center justify-between">
+                                <span class="text-sm truncate flex-1">{{ item.species }}</span>
+                                <span class="text-sm font-medium text-teal-600 dark:text-teal-400 ml-2">{{ item.size }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No fly size data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Fly Size by Season -->
+                <DashboardCard
+                    v-if="isCardVisible('fly_size_by_season')"
+                    card-id="fly_size_by_season"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fly_size_by_season')"
+                    :order="getCardOrder('fly_size_by_season')"
+                    :size="getCardSize('fly_size_by_season')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fly_size_by_season')"
+                    :is-last="isCardLast('fly_size_by_season')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fly_size_by_season')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-950/10 dark:to-emerald-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-emerald-100 p-1.5 dark:from-green-900/30 dark:to-emerald-900/30">
+                                <Calendar class="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </div>
+                            Fly Size by Season
+                        </CardTitle>
+                        <CardDescription>Best fly size for each season</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="flySizeBySeason.length > 0" class="grid grid-cols-2 gap-2">
+                            <div v-for="item in flySizeBySeason" :key="item.season" class="text-center p-2 rounded bg-green-50 dark:bg-green-900/20">
+                                <div class="text-xs text-muted-foreground">{{ item.season }}</div>
+                                <div class="text-lg font-bold text-green-600 dark:text-green-400">{{ item.size }}</div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No seasonal data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Fishing Radius -->
+                <DashboardCard
+                    v-if="isCardVisible('fishing_radius')"
+                    card-id="fishing_radius"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fishing_radius')"
+                    :order="getCardOrder('fishing_radius')"
+                    :size="getCardSize('fishing_radius')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fishing_radius')"
+                    :is-last="isCardLast('fishing_radius')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fishing_radius')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/30 to-blue-50/30 dark:from-sky-950/10 dark:to-blue-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-sky-100 to-blue-100 p-1.5 dark:from-sky-900/30 dark:to-blue-900/30">
+                                <Globe class="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                            </div>
+                            Fishing Radius
+                        </CardTitle>
+                        <CardDescription>Max distance between spots</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="fishingRadius" class="space-y-2">
+                            <div class="text-3xl font-bold text-sky-600 dark:text-sky-400">{{ fishingRadius }} mi</div>
+                            <div class="text-sm text-muted-foreground">Your fishing range</div>
+                        </div>
+                        <p v-else class="text-muted-foreground">Need multiple locations</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Freshwater vs Saltwater -->
+                <DashboardCard
+                    v-if="isCardVisible('freshwater_vs_saltwater')"
+                    card-id="freshwater_vs_saltwater"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('freshwater_vs_saltwater')"
+                    :order="getCardOrder('freshwater_vs_saltwater')"
+                    :size="getCardSize('freshwater_vs_saltwater')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('freshwater_vs_saltwater')"
+                    :is-last="isCardLast('freshwater_vs_saltwater')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('freshwater_vs_saltwater')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-cyan-50/30 to-teal-50/30 dark:from-cyan-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 p-1.5 dark:from-cyan-900/30 dark:to-teal-900/30">
+                                <Waves class="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                            </div>
+                            Freshwater vs Saltwater
+                        </CardTitle>
+                        <CardDescription>Catches by water type</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="freshwaterVsSaltwater.freshwater > 0 || freshwaterVsSaltwater.saltwater > 0" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Freshwater</span>
+                                <span class="font-bold text-blue-600 dark:text-blue-400">{{ freshwaterVsSaltwater.freshwater }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Saltwater</span>
+                                <span class="font-bold text-cyan-600 dark:text-cyan-400">{{ freshwaterVsSaltwater.saltwater }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water type data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Species by Water Type -->
+                <DashboardCard
+                    v-if="isCardVisible('species_by_water_type')"
+                    card-id="species_by_water_type"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('species_by_water_type')"
+                    :order="getCardOrder('species_by_water_type')"
+                    :size="getCardSize('species_by_water_type')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('species_by_water_type')"
+                    :is-last="isCardLast('species_by_water_type')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('species_by_water_type')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-violet-100 to-purple-100 p-1.5 dark:from-violet-900/30 dark:to-purple-900/30">
+                                <Waves class="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            Species by Water Type
+                        </CardTitle>
+                        <CardDescription>Unique species per water type</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="speciesByWaterType.freshwater > 0 || speciesByWaterType.saltwater > 0" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Freshwater</span>
+                                <span class="font-bold text-violet-600 dark:text-violet-400">{{ speciesByWaterType.freshwater }} species</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Saltwater</span>
+                                <span class="font-bold text-purple-600 dark:text-purple-400">{{ speciesByWaterType.saltwater }} species</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water type data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Species by State Pie Chart -->
+                <DashboardCard
+                    v-if="isCardVisible('states_pie_chart')"
+                    card-id="states_pie_chart"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('states_pie_chart')"
+                    :order="getCardOrder('states_pie_chart')"
+                    :size="getCardSize('states_pie_chart')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('states_pie_chart')"
+                    :is-last="isCardLast('states_pie_chart')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('states_pie_chart')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-emerald-50/30 to-teal-50/30 dark:from-emerald-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 p-1.5 dark:from-emerald-900/30 dark:to-teal-900/30">
+                                <Map class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            Species by State
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="speciesByState.length > 0 && statePieSlices.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in statePieSlices" :key="`state-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredStateSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-emerald-200 dark:stroke-emerald-800"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredStateSlice = index"
+                                            @mouseleave="hoveredStateSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ speciesByState.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        States
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(stateData, index) in speciesByState"
+                                    :key="stateData.state"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredStateSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredStateSlice = index"
+                                    @mouseleave="hoveredStateSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getStateColor(index) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ stateData.state }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ stateData.species_count }} species</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ statePieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No state data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Species by Country Pie Chart -->
+                <DashboardCard
+                    v-if="isCardVisible('countries_pie_chart')"
+                    card-id="countries_pie_chart"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('countries_pie_chart')"
+                    :order="getCardOrder('countries_pie_chart')"
+                    :size="getCardSize('countries_pie_chart')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('countries_pie_chart')"
+                    :is-last="isCardLast('countries_pie_chart')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('countries_pie_chart')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10"
+                >
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 p-1.5 dark:from-blue-900/30 dark:to-indigo-900/30">
+                                <Globe class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            Species by Country
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="speciesByCountry.length > 0 && countryPieSlices.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in countryPieSlices" :key="`country-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredCountrySlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-blue-200 dark:stroke-blue-800"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredCountrySlice = index"
+                                            @mouseleave="hoveredCountrySlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ speciesByCountry.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Countries
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(countryData, index) in speciesByCountry"
+                                    :key="countryData.country"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredCountrySlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredCountrySlice = index"
+                                    @mouseleave="hoveredCountrySlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getCountryColor(index) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ countryData.country }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ countryData.species_count }} species</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ countryPieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No country data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by State Pie Chart -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_state_pie_chart')"
+                    card-id="catches_state_pie_chart"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_state_pie_chart')"
+                    :order="getCardOrder('catches_state_pie_chart')"
+                    :size="getCardSize('catches_state_pie_chart')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_state_pie_chart')"
+                    :is-last="isCardLast('catches_state_pie_chart')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_state_pie_chart')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-lime-50/30 dark:from-green-950/10 dark:to-lime-950/10"
+                >
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-lime-100 p-1.5 dark:from-green-900/30 dark:to-lime-900/30">
+                                <Map class="h-5 w-5 text-green-600 dark:text-green-400" />
+                            </div>
+                            Catches by State
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesByState.length > 0 && catchesStatePieSlices.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in catchesStatePieSlices" :key="`catches-state-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredCatchesStateSlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-green-200 dark:stroke-green-800"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredCatchesStateSlice = index"
+                                            @mouseleave="hoveredCatchesStateSlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesByState.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        States
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(stateData, index) in catchesByState"
+                                    :key="stateData.state"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredCatchesStateSlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredCatchesStateSlice = index"
+                                    @mouseleave="hoveredCatchesStateSlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getCatchesStateColor(index) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ stateData.state }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ stateData.total }} catches</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ catchesStatePieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No state data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catches by Country Pie Chart -->
+                <DashboardCard
+                    v-if="isCardVisible('catches_country_pie_chart')"
+                    card-id="catches_country_pie_chart"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catches_country_pie_chart')"
+                    :order="getCardOrder('catches_country_pie_chart')"
+                    :size="getCardSize('catches_country_pie_chart')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catches_country_pie_chart')"
+                    :is-last="isCardLast('catches_country_pie_chart')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catches_country_pie_chart')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-sky-50/30 to-cyan-50/30 dark:from-sky-950/10 dark:to-cyan-950/10"
+                >
+                    <CardHeader class="pb-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <div class="rounded-full bg-gradient-to-br from-sky-100 to-cyan-100 p-1.5 dark:from-sky-900/30 dark:to-cyan-900/30">
+                                <Globe class="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                            </div>
+                            Catches by Country
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-3">
+                        <div v-if="catchesByCountry.length > 0 && catchesCountryPieSlices.length > 0" class="flex items-center gap-4">
+                            <!-- SVG Pie Chart -->
+                            <div class="relative w-44 h-44 flex-shrink-0">
+                                <svg class="w-full h-full" viewBox="0 0 200 200">
+                                    <!-- Pie slices -->
+                                    <g v-for="(slice, index) in catchesCountryPieSlices" :key="`catches-country-slice-${index}`">
+                                        <path
+                                            :d="slice.path"
+                                            :fill="slice.color"
+                                            :class="hoveredCatchesCountrySlice === index ? 'opacity-100' : 'opacity-80'"
+                                            class="cursor-pointer transition-all hover:opacity-100 stroke-sky-200 dark:stroke-sky-800"
+                                            stroke-width="1"
+                                            @mouseenter="hoveredCatchesCountrySlice = index"
+                                            @mouseleave="hoveredCatchesCountrySlice = null"
+                                        />
+                                    </g>
+
+                                    <!-- Center circle for donut effect -->
+                                    <circle
+                                        cx="100"
+                                        cy="100"
+                                        r="50"
+                                        fill="currentColor"
+                                        class="text-background"
+                                    />
+
+                                    <!-- Center text -->
+                                    <text
+                                        x="100"
+                                        y="95"
+                                        text-anchor="middle"
+                                        class="text-2xl font-bold"
+                                        fill="currentColor"
+                                    >
+                                        {{ catchesByCountry.length }}
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="110"
+                                        text-anchor="middle"
+                                        class="text-xs text-muted-foreground"
+                                        fill="currentColor"
+                                    >
+                                        Countries
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="flex-1 space-y-1 max-h-44 overflow-y-auto">
+                                <div
+                                    v-for="(countryData, index) in catchesByCountry"
+                                    :key="countryData.country"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                    :class="hoveredCatchesCountrySlice === index ? 'bg-muted' : ''"
+                                    @mouseenter="hoveredCatchesCountrySlice = index"
+                                    @mouseleave="hoveredCatchesCountrySlice = null"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div
+                                            class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: getCatchesCountryColor(index) }"
+                                        ></div>
+                                        <span class="text-xs font-medium truncate">{{ countryData.country }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        <span class="text-xs font-bold">{{ countryData.total }} catches</span>
+                                        <span class="text-xs text-muted-foreground">
+                                            ({{ catchesCountryPieSlices[index]?.percentage }}%)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No country data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Weekend Warrior -->
+                <DashboardCard
+                    v-if="isCardVisible('weekend_warrior')"
+                    card-id="weekend_warrior"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('weekend_warrior')"
+                    :order="getCardOrder('weekend_warrior')"
+                    :size="getCardSize('weekend_warrior')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('weekend_warrior')"
+                    :is-last="isCardLast('weekend_warrior')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('weekend_warrior')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-violet-100 to-purple-100 p-1.5 dark:from-violet-900/30 dark:to-purple-900/30">
+                                <CalendarDays class="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            Weekend Warrior
+                        </CardTitle>
+                        <CardDescription>Weekend vs weekday fishing</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-2 rounded bg-violet-50 dark:bg-violet-900/20">
+                                <div class="text-xs text-muted-foreground">Weekend</div>
+                                <div class="text-xl font-bold text-violet-600 dark:text-violet-400">{{ weekendWarrior.weekend.catches }}</div>
+                                <div class="text-xs text-muted-foreground">{{ weekendWarrior.weekend.avg }}/day</div>
+                            </div>
+                            <div class="text-center p-2 rounded bg-purple-50 dark:bg-purple-900/20">
+                                <div class="text-xs text-muted-foreground">Weekday</div>
+                                <div class="text-xl font-bold text-purple-600 dark:text-purple-400">{{ weekendWarrior.weekday.catches }}</div>
+                                <div class="text-xs text-muted-foreground">{{ weekendWarrior.weekday.avg }}/day</div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Monthly Personal Bests -->
+                <DashboardCard
+                    v-if="isCardVisible('monthly_personal_bests')"
+                    card-id="monthly_personal_bests"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('monthly_personal_bests')"
+                    :order="getCardOrder('monthly_personal_bests')"
+                    :size="getCardSize('monthly_personal_bests')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('monthly_personal_bests')"
+                    :is-last="isCardLast('monthly_personal_bests')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('monthly_personal_bests')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-amber-50/30 to-yellow-50/30 dark:from-amber-950/10 dark:to-yellow-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-amber-100 to-yellow-100 p-1.5 dark:from-amber-900/30 dark:to-yellow-900/30">
+                                <Award class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            Monthly Personal Bests
+                        </CardTitle>
+                        <CardDescription>Biggest fish each month</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="monthlyPersonalBests.length > 0" class="space-y-2">
+                            <div v-for="item in monthlyPersonalBests.slice(-6)" :key="item.month" class="flex items-center justify-between">
+                                <span class="text-sm">{{ item.month }}</span>
+                                <span class="text-sm font-medium text-amber-600 dark:text-amber-400">{{ item.biggest_size }}"</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No size data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Catch Rate Trend -->
+                <DashboardCard
+                    v-if="isCardVisible('catch_rate_trend')"
+                    card-id="catch_rate_trend"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('catch_rate_trend')"
+                    :order="getCardOrder('catch_rate_trend')"
+                    :size="getCardSize('catch_rate_trend')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('catch_rate_trend')"
+                    :is-last="isCardLast('catch_rate_trend')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('catch_rate_trend')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-green-50/30 to-teal-50/30 dark:from-green-950/10 dark:to-teal-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-green-100 to-teal-100 p-1.5 dark:from-green-900/30 dark:to-teal-900/30">
+                                <TrendingUp class="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </div>
+                            Catch Rate Trend
+                        </CardTitle>
+                        <CardDescription>Fish per trip over time</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="catchRateTrend.length > 0" class="space-y-2">
+                            <div v-for="item in catchRateTrend.slice(-6)" :key="item.month" class="flex items-center justify-between">
+                                <span class="text-sm">{{ item.month }}</span>
+                                <span class="text-sm font-medium text-green-600 dark:text-green-400">{{ item.catch_rate }} fish/trip</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No trip data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Species by Location -->
+                <DashboardCard
+                    v-if="isCardVisible('species_by_location')"
+                    card-id="species_by_location"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('species_by_location')"
+                    :order="getCardOrder('species_by_location')"
+                    :size="getCardSize('species_by_location')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('species_by_location')"
+                    :is-last="isCardLast('species_by_location')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('species_by_location')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-blue-50/30 to-sky-50/30 dark:from-blue-950/10 dark:to-sky-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-blue-100 to-sky-100 p-1.5 dark:from-blue-900/30 dark:to-sky-900/30">
+                                <MapPin class="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            Species by Location
+                        </CardTitle>
+                        <CardDescription>Top species at each spot</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="speciesByLocation.length > 0" class="space-y-2">
+                            <div v-for="item in speciesByLocation" :key="item.location" class="flex items-center justify-between">
+                                <span class="text-sm truncate flex-1">{{ item.location }}</span>
+                                <span class="text-sm font-medium text-blue-600 dark:text-blue-400 ml-2">{{ item.species }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No location data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Fly Color by Conditions -->
+                <DashboardCard
+                    v-if="isCardVisible('fly_color_by_conditions')"
+                    card-id="fly_color_by_conditions"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('fly_color_by_conditions')"
+                    :order="getCardOrder('fly_color_by_conditions')"
+                    :size="getCardSize('fly_color_by_conditions')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('fly_color_by_conditions')"
+                    :is-last="isCardLast('fly_color_by_conditions')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('fly_color_by_conditions')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-pink-50/30 to-rose-50/30 dark:from-pink-950/10 dark:to-rose-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-pink-100 to-rose-100 p-1.5 dark:from-pink-900/30 dark:to-rose-900/30">
+                                <Palette class="h-4 w-4 text-pink-600 dark:text-pink-400" />
+                            </div>
+                            Fly Color by Conditions
+                        </CardTitle>
+                        <CardDescription>Best fly color for each weather</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="flyColorByConditions.length > 0" class="space-y-2">
+                            <div v-for="item in flyColorByConditions" :key="item.cloud" class="flex items-center justify-between">
+                                <span class="text-sm truncate flex-1">{{ item.cloud }}</span>
+                                <span class="text-sm font-medium text-pink-600 dark:text-pink-400 ml-2">{{ item.color }}</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No color/weather data yet</p>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Multi-Species Days -->
+                <DashboardCard
+                    v-if="isCardVisible('multi_species_days')"
+                    card-id="multi_species_days"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('multi_species_days')"
+                    :order="getCardOrder('multi_species_days')"
+                    :size="getCardSize('multi_species_days')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('multi_species_days')"
+                    :is-last="isCardLast('multi_species_days')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('multi_species_days')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-orange-50/30 to-amber-50/30 dark:from-orange-950/10 dark:to-amber-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-orange-100 to-amber-100 p-1.5 dark:from-orange-900/30 dark:to-amber-900/30">
+                                <Layers class="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            Multi-Species Days
+                        </CardTitle>
+                        <CardDescription>Days with multiple species</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div class="space-y-2">
+                            <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ multiSpeciesDays.count }}</div>
+                            <div class="text-sm text-muted-foreground">{{ multiSpeciesDays.percentage }}% of {{ multiSpeciesDays.total_days }} days</div>
+                        </div>
+                    </CardContent>
+                </DashboardCard>
+
+                <!-- Quantity vs Quality -->
+                <DashboardCard
+                    v-if="isCardVisible('quantity_vs_quality')"
+                    card-id="quantity_vs_quality"
+                    :is-edit-mode="isEditMode"
+                    :is-hidden="isCardHidden('quantity_vs_quality')"
+                    :order="getCardOrder('quantity_vs_quality')"
+                    :size="getCardSize('quantity_vs_quality')"
+                    @hide="hideCard"
+                    @show="showCard"
+                    @resize="resizeCard"
+                    :is-first="isCardFirst('quantity_vs_quality')"
+                    :is-last="isCardLast('quantity_vs_quality')"
+                    @move-up="moveCardUp"
+                    @move-down="moveCardDown"
+                    :display-position="getCardDisplayPosition('quantity_vs_quality')"
+                    :total-visible="getTotalVisibleCards"
+                    @jump-to-position="jumpCardToPosition"
+                    class="bg-gradient-to-br from-teal-50/30 to-cyan-50/30 dark:from-teal-950/10 dark:to-cyan-950/10"
+                >
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2">
+                            <div class="rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 p-1.5 dark:from-teal-900/30 dark:to-cyan-900/30">
+                                <BarChart2 class="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                            </div>
+                            Quantity vs Quality
+                        </CardTitle>
+                        <CardDescription>High catch days vs big fish</CardDescription>
+                    </CardHeader>
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="quantityVsQuality.high_quantity_avg_size || quantityVsQuality.low_quantity_avg_size" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">High catch days (5+)</span>
+                                <span class="font-medium text-teal-600 dark:text-teal-400">{{ quantityVsQuality.high_quantity_avg_size || 'N/A' }}" avg</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Low catch days (&lt;5)</span>
+                                <span class="font-medium text-cyan-600 dark:text-cyan-400">{{ quantityVsQuality.low_quantity_avg_size || 'N/A' }}" avg</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No size data yet</p>
                     </CardContent>
                 </DashboardCard>
             </div>

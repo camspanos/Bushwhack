@@ -173,6 +173,8 @@ const editLog = (log: FishingLog) => {
         quantity: log.quantity,
         max_size: log.max_size,
         max_weight: log.max_weight,
+        avg_size: log.avg_size,
+        avg_weight: log.avg_weight,
         user_fly_id: log.user_fly_id,
         user_rod_id: log.user_rod_id,
         style: log.style,

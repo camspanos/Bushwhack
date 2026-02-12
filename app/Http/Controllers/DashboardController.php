@@ -355,6 +355,18 @@ class DashboardController extends Controller
         // Gamification
         $gamificationStats = $this->dashboardService->getGamificationStats($userId, $yearFilter);
 
+        // Temperature stats
+        $temperatureStats = $this->dashboardService->getTemperatureStats($userId, $yearFilter);
+
+        // Fly size stats
+        $flySizeStats = $this->dashboardService->getFlySizeStats($userId, $yearFilter);
+
+        // Geographic stats
+        $geographicStats = $this->dashboardService->getGeographicStats($userId, $yearFilter);
+
+        // Additional analysis stats
+        $additionalAnalysisStats = $this->dashboardService->getAdditionalAnalysisStats($userId, $yearFilter);
+
         return [
             'stats' => [
                 'totalCatches' => $totalCatches,
@@ -450,16 +462,12 @@ class DashboardController extends Controller
             'mostSuccessfulRod' => $rodStyleStats['mostSuccessfulRod'],
             'bestRodForTrophies' => $rodStyleStats['bestRodForTrophies'],
             'catchesByStyle' => $rodStyleStats['catchesByStyle'],
-            'mostSuccessfulStyle' => $rodStyleStats['mostSuccessfulStyle'],
             // Golden conditions
             'goldenConditions' => $goldenConditions['goldenConditions'],
-            'bestConditions' => $goldenConditions['bestConditions'],
+            'bigFishConditions' => $goldenConditions['bigFishConditions'],
             // Time pattern stats
             'bestHour' => $timePatternStats['bestHour'],
-            'timeBlocks' => $timePatternStats['timeBlocks'],
-            'bestDayOfMonth' => $timePatternStats['bestDayOfMonth'],
             'seasonalTrends' => $timePatternStats['seasonalTrends'],
-            'daysSinceSkunk' => $timePatternStats['daysSinceSkunk'],
             // Location stats
             'locationVariety' => $locationStats['locationVariety'],
             'mostConsistentSpot' => $locationStats['mostConsistentSpot'],
@@ -467,20 +475,15 @@ class DashboardController extends Controller
             'bestLocationBySeason' => $locationStats['bestLocationBySeason'],
             'newSpotSuccessRate' => $locationStats['newSpotSuccessRate'],
             // Species stats
-            'speciesDiversity' => $speciesStats['speciesDiversity'],
             'rarestCatches' => $speciesStats['rarestCatches'],
-            'speciesStreak' => $speciesStats['speciesStreak'],
-            'newSpeciesThisYear' => $speciesStats['newSpeciesThisYear'],
             'sizeImprovement' => $speciesStats['sizeImprovement'],
             // Fly pattern stats
             'flyRotation' => $flyPatternStats['flyRotation'],
             'oneHitWonders' => $flyPatternStats['oneHitWonders'],
-            'reliableProducers' => $flyPatternStats['reliableProducers'],
             'bestFlyByLocation' => $flyPatternStats['bestFlyByLocation'],
             'bestFlyBySpecies' => $flyPatternStats['bestFlyBySpecies'],
             // Progress stats
             'yoyComparison' => $progressStats['yoyComparison'],
-            'personalBests' => $progressStats['personalBests'],
             'improvementRate' => $progressStats['improvementRate'],
             'fishingFrequency' => $progressStats['fishingFrequency'],
             'avgSizeTrend' => $progressStats['avgSizeTrend'],
@@ -490,10 +493,34 @@ class DashboardController extends Controller
             'moonTimeCombo' => $environmentalComboStats['moonTimeCombo'],
             'waterWeatherCombo' => $environmentalComboStats['waterWeatherCombo'],
             // Gamification stats
-            'fishingScore' => $gamificationStats['fishingScore'],
             'badges' => $gamificationStats['badges'],
             'hotStreak' => $gamificationStats['hotStreak'],
             'luckyNumber' => $gamificationStats['luckyNumber'],
+            // Temperature stats
+            'tempSweetSpot' => $temperatureStats['tempSweetSpot'],
+            'catchesByAirTemp' => $temperatureStats['catchesByAirTemp'],
+            'catchesByWaterTemp' => $temperatureStats['catchesByWaterTemp'],
+            'bigFishAirTemp' => $temperatureStats['bigFishAirTemp'],
+            // Fly size stats
+            'bestFlySize' => $flySizeStats['bestFlySize'],
+            'flySizeBySpecies' => $flySizeStats['flySizeBySpecies'],
+            'flySizeBySeason' => $flySizeStats['flySizeBySeason'],
+            // Geographic stats
+            'fishingRadius' => $geographicStats['fishingRadius'],
+            'catchesByState' => $geographicStats['catchesByState'],
+            'catchesByCountry' => $geographicStats['catchesByCountry'],
+            'speciesByState' => $geographicStats['speciesByState'],
+            'speciesByCountry' => $geographicStats['speciesByCountry'],
+            'freshwaterVsSaltwater' => $geographicStats['freshwaterVsSaltwater'],
+            'speciesByWaterType' => $geographicStats['speciesByWaterType'],
+            // Additional analysis stats
+            'weekendWarrior' => $additionalAnalysisStats['weekendWarrior'],
+            'monthlyPersonalBests' => $additionalAnalysisStats['monthlyPersonalBests'],
+            'catchRateTrend' => $additionalAnalysisStats['catchRateTrend'],
+            'speciesByLocation' => $additionalAnalysisStats['speciesByLocation'],
+            'flyColorByConditions' => $additionalAnalysisStats['flyColorByConditions'],
+            'multiSpeciesDays' => $additionalAnalysisStats['multiSpeciesDays'],
+            'quantityVsQuality' => $additionalAnalysisStats['quantityVsQuality'],
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
             'dashboardPreferences' => $this->getDashboardPreferences($userId),

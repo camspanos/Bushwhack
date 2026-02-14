@@ -1357,6 +1357,7 @@ class DashboardDataService
 
         return [
             'rarestCatches' => $rarestCatchList,
+            'newSpeciesThisYear' => $newSpeciesInPeriod,
             'sizeImprovement' => $sizeImprovement,
         ];
     }

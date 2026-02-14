@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import PremiumFeatureDialog from '@/components/PremiumFeatureDialog.vue';
+import DashboardCardHeader from '@/components/dashboard/DashboardCardHeader.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -8,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Fish, TrendingUp, Award, Target, BarChart3, Calendar, X, Flame, MapPin, Crown, Moon, Sun } from 'lucide-vue-next';
+import { Fish, TrendingUp, Award, Target, BarChart3, BarChart2, Calendar, X, Flame, MapPin, Crown, Moon, Sun, Waves } from 'lucide-vue-next';
 import { computed, ref, watch, nextTick } from 'vue';
 
 interface Stats {
@@ -19,16 +20,24 @@ interface Stats {
     biggestCatch: {
         size: number;
         species: string;
+        location: string;
         date: string;
+        style: string | null;
         fly: string | null;
         rod: string | null;
+        friends: string[];
+        notes: string | null;
     } | null;
     secondBiggestCatch: {
         size: number;
         species: string;
+        location: string;
         date: string;
+        style: string | null;
         fly: string | null;
         rod: string | null;
+        friends: string[];
+        notes: string | null;
     } | null;
 }
 
@@ -134,6 +143,16 @@ interface BadgesInfo {
     totalAvailable: number;
 }
 
+interface SpeciesByWaterType {
+    freshwater: number;
+    saltwater: number;
+}
+
+interface QuantityVsQuality {
+    high_quantity_avg_size: number | null;
+    low_quantity_avg_size: number | null;
+}
+
 const props = defineProps<{
     user: UserInfo;
     stats: Stats;
@@ -151,6 +170,8 @@ const props = defineProps<{
     catchesOverTime: CatchOverTime[];
     streakStats: StreakStats;
     favoriteWeekday: FavoriteWeekday | null;
+    speciesByWaterType: SpeciesByWaterType;
+    quantityVsQuality: QuantityVsQuality;
     availableYears: string[];
     selectedYear: string;
     badges: BadgesInfo;
@@ -582,47 +603,73 @@ const sunPhasePieSlices = computed(() => {
                 </Card>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="grid gap-4 md:grid-cols-2">
+            <!-- Row 1: Total Catches, Average per Trip, Quantity vs Quality, Species by Water Type -->
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <!-- Total Catches -->
                 <Card class="bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Total Catches</CardTitle>
-                        <div class="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
-                            <span class="text-base">🐟</span>
-                        </div>
-                    </CardHeader>
+                    <DashboardCardHeader title="Total Catches" emoji="🐟" color="blue">
+                        <template #subtitle>Across {{ stats.totalTrips }} trips</template>
+                    </DashboardCardHeader>
                     <CardContent class="pb-3">
                         <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ stats.totalCatches }}</div>
-                        <p class="text-xs text-muted-foreground">Across {{ stats.totalTrips }} trips</p>
                     </CardContent>
                 </Card>
 
-                <Card class="bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Top Species</CardTitle>
-                        <div class="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                            <TrendingUp class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <!-- Average per Trip -->
+                <Card class="bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20">
+                    <DashboardCardHeader title="Average per Trip" subtitle="Your catch rate efficiency" :icon="BarChart3" color="indigo" />
+                    <CardContent class="pb-4 pt-1">
+                        <div class="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
+                            {{ speciesStats.totalTrips > 0 ? (speciesStats.totalFish / speciesStats.totalTrips).toFixed(1) : '0' }}
                         </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ stats.topFish || 'N/A' }}</div>
-                        <p class="text-xs text-muted-foreground">{{ stats.topFishCount }} caught</p>
+                        <p class="text-sm text-muted-foreground mt-1">
+                            Fish per outing
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <!-- Quantity vs Quality -->
+                <Card class="bg-gradient-to-br from-teal-50/30 to-cyan-50/30 dark:from-teal-950/10 dark:to-cyan-950/10">
+                    <DashboardCardHeader title="Quantity vs Quality" subtitle="High catch days vs big fish" :icon="BarChart2" color="teal" gradientTo="cyan" />
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="quantityVsQuality.high_quantity_avg_size || quantityVsQuality.low_quantity_avg_size" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">High catch days (5+)</span>
+                                <span class="font-medium text-teal-600 dark:text-teal-400">{{ quantityVsQuality.high_quantity_avg_size || 'N/A' }}" avg</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Low catch days (&lt;5)</span>
+                                <span class="font-medium text-cyan-600 dark:text-cyan-400">{{ quantityVsQuality.low_quantity_avg_size || 'N/A' }}" avg</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No size data yet</p>
+                    </CardContent>
+                </Card>
+
+                <!-- Species by Water Type -->
+                <Card class="bg-gradient-to-br from-violet-50/30 to-purple-50/30 dark:from-violet-950/10 dark:to-purple-950/10">
+                    <DashboardCardHeader title="Species by Water Type" subtitle="Unique species per water type" :icon="Waves" color="violet" gradientTo="purple" />
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="speciesByWaterType.freshwater > 0 || speciesByWaterType.saltwater > 0" class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Freshwater</span>
+                                <span class="font-bold text-violet-600 dark:text-violet-400">{{ speciesByWaterType.freshwater }} species</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm">Saltwater</span>
+                                <span class="font-bold text-purple-600 dark:text-purple-400">{{ speciesByWaterType.saltwater }} species</span>
+                            </div>
+                        </div>
+                        <p v-else class="text-muted-foreground">No water type data yet</p>
                     </CardContent>
                 </Card>
             </div>
 
-            <!-- Biggest Catch & Charts Row -->
-            <div class="grid gap-4 md:grid-cols-4">
+            <!-- Row 2: Biggest Catch, Runner Up, Species Pie Chart -->
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Biggest Catch -->
                 <Card v-if="stats.biggestCatch" class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
-                                <span class="text-lg">🏆</span>
-                            </div>
-                            Biggest Catch
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Biggest Catch" subtitle="Largest fish caught" emoji="🏆" color="yellow" />
                     <CardContent class="pt-0 pb-3">
                         <div class="space-y-2">
                             <div class="space-y-1">
@@ -631,6 +678,10 @@ const sunPhasePieSlices = computed(() => {
                             </div>
 
                             <div class="space-y-1 text-sm">
+                                <div v-if="stats.biggestCatch.location" class="flex items-start gap-2">
+                                    <MapPin class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.biggestCatch.location }}</span>
+                                </div>
                                 <div class="flex items-start gap-2">
                                     <Calendar class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                                     <span class="text-muted-foreground">{{ formatDate(stats.biggestCatch.date) }}</span>
@@ -649,14 +700,7 @@ const sunPhasePieSlices = computed(() => {
                 </Card>
 
                 <Card v-else class="bg-gradient-to-br from-gray-50/30 to-transparent dark:from-gray-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-gray-100 p-1.5 dark:bg-gray-800">
-                                <span class="text-lg">🏆</span>
-                            </div>
-                            Biggest Catch
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Biggest Catch" subtitle="Largest fish caught" emoji="🏆" color="gray" />
                     <CardContent class="pt-0 pb-3">
                         <p class="text-muted-foreground">No catches recorded yet</p>
                     </CardContent>
@@ -664,14 +708,7 @@ const sunPhasePieSlices = computed(() => {
 
                 <!-- Runner Up / Second Biggest Catch -->
                 <Card v-if="stats.secondBiggestCatch" class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
-                                <Award class="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            Runner Up
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Runner Up" subtitle="Second largest catch" emoji="🥈" color="orange" />
                     <CardContent class="pt-0 pb-3">
                         <div class="space-y-2">
                             <div class="space-y-1">
@@ -679,6 +716,10 @@ const sunPhasePieSlices = computed(() => {
                                 <div class="text-lg font-medium">{{ stats.secondBiggestCatch.species }}</div>
                             </div>
                             <div class="space-y-1 text-sm">
+                                <div v-if="stats.secondBiggestCatch.location" class="flex items-start gap-2">
+                                    <MapPin class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                    <span class="text-muted-foreground">{{ stats.secondBiggestCatch.location }}</span>
+                                </div>
                                 <div class="flex items-start gap-2">
                                     <Calendar class="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                                     <span class="text-muted-foreground">{{ formatDate(stats.secondBiggestCatch.date) }}</span>
@@ -698,14 +739,7 @@ const sunPhasePieSlices = computed(() => {
 
                 <!-- Species Distribution Pie Chart -->
                 <Card class="md:col-span-2 bg-gradient-to-br from-pink-50/30 to-transparent dark:from-pink-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-pink-100 p-1.5 dark:bg-pink-900/30">
-                                <span class="text-lg">🐠</span>
-                            </div>
-                            Species Caught
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Species Caught" subtitle="Variety of fish caught" emoji="🐠" color="pink" />
                     <CardContent class="pt-0 pb-3">
                         <div v-if="allSpecies.length > 0 && speciesStats.totalFish > 0" class="flex items-center gap-4">
                             <!-- SVG Pie Chart -->
@@ -787,18 +821,155 @@ const sunPhasePieSlices = computed(() => {
                 </Card>
             </div>
 
-            <!-- Pie Charts Row: Month, Moon Phase, Sun Phase -->
+            <!-- Row 3: Days Fished, Successful Days, Days Skunked, Most in a Day -->
+            <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <!-- Days Fished -->
+                <Card class="bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20">
+                    <DashboardCardHeader title="Days Fished" subtitle="Total days on the water" :icon="Calendar" color="sky" />
+                    <CardContent class="pb-3">
+                        <div class="text-2xl font-bold text-sky-700 dark:text-sky-300">{{ yearStats.daysFished }}</div>
+                        <p class="text-xs text-muted-foreground">
+                            Total days on the water
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <!-- Successful Days -->
+                <Card class="bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20">
+                    <DashboardCardHeader title="Successful Days" subtitle="Days with at least one catch" emoji="🐡" color="green" />
+                    <CardContent class="pb-3">
+                        <div class="text-2xl font-bold text-green-700 dark:text-green-300">{{ yearStats.daysWithFish }}</div>
+                        <div class="mt-1 flex items-center gap-2">
+                            <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                    class="h-full bg-green-500 transition-all duration-500"
+                                    :style="{ width: `${yearStats.successRate}%` }"
+                                ></div>
+                            </div>
+                            <span class="text-xs font-medium text-green-600 dark:text-green-400">{{ yearStats.successRate }}%</span>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Days Skunked -->
+                <Card class="bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20">
+                    <DashboardCardHeader title="Days Skunked" subtitle="Days without a catch" emoji="🦨" color="red" />
+                    <CardContent class="pb-3">
+                        <div class="text-2xl font-bold text-red-700 dark:text-red-300">{{ yearStats.daysSkunked }}</div>
+                        <p class="text-xs text-muted-foreground">
+                            Where the fish at?
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <!-- Most in a Day -->
+                <Card class="bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20">
+                    <DashboardCardHeader title="Most in a Day" subtitle="Personal best day" emoji="🎉" color="violet" />
+                    <CardContent class="pb-3">
+                        <div class="text-2xl font-bold text-violet-700 dark:text-violet-300">{{ yearStats.mostInDay }}</div>
+                        <p class="text-xs text-muted-foreground">
+                            Personal best day
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Row 4: Most Successful Fly, Biggest Fish Fly, Most Successful Fly Type, Most Successful Fly Color -->
+            <div class="grid gap-4 md:grid-cols-4">
+                <!-- Most Successful Fly (by quantity) -->
+                <Card class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10">
+                    <DashboardCardHeader title="Most Successful Fly" subtitle="Your top producing fly" emoji="🪝" color="rose" />
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulFly" class="space-y-2">
+                            <div class="text-xl font-bold text-rose-700 dark:text-rose-300">{{ mostSuccessfulFly.name }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
+                                    <span>🎣</span>
+                                    <span>{{ mostSuccessfulFly.total }} fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ mostSuccessfulFly.days }} days used
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-foreground">
+                            No data yet
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Biggest Fish Fly -->
+                <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
+                    <DashboardCardHeader title="Biggest Fish Fly" subtitle="Fly for trophy catches" emoji="🏆" color="teal" />
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="biggestFishFly" class="space-y-2">
+                            <div class="text-xl font-bold text-teal-700 dark:text-teal-300">{{ biggestFishFly.name }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-medium text-teal-800 dark:bg-teal-900/30 dark:text-teal-300">
+                                    <span>🏆</span>
+                                    <span>{{ formatSize(biggestFishFly.size) }}" fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ biggestFishFly.days }} days used
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-foreground">
+                            No data yet
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Most Successful Type -->
+                <Card class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10">
+                    <DashboardCardHeader title="Most Successful Type" subtitle="Best fly type" emoji="⭐" color="purple" />
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulFlyType" class="space-y-2">
+                            <div class="text-xl font-bold text-purple-700 dark:text-purple-300">{{ mostSuccessfulFlyType.type }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                    <span>🎣</span>
+                                    <span>{{ mostSuccessfulFlyType.total }} fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ mostSuccessfulFlyType.days }} days used
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-foreground">
+                            No data yet
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Most Successful Color -->
+                <Card class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10">
+                    <DashboardCardHeader title="Most Successful Color" subtitle="Best fly color" emoji="🎨" color="indigo" />
+                    <CardContent class="pt-0 pb-4">
+                        <div v-if="mostSuccessfulFlyColor" class="space-y-2">
+                            <div class="text-xl font-bold text-indigo-700 dark:text-indigo-300">{{ mostSuccessfulFlyColor.color }}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                                    <span>🎨</span>
+                                    <span>{{ mostSuccessfulFlyColor.total }} fish</span>
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{ mostSuccessfulFlyColor.days }} days used
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted-foreground">
+                            No data yet
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Row 5: Catches by Month, Catches by Moon Phase, Catches by Sun Phase -->
             <div class="grid gap-4 md:grid-cols-3">
                 <!-- Fish Caught per Month (Pie Chart) -->
                 <Card class="bg-gradient-to-br from-blue-50/30 to-transparent dark:from-blue-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-blue-100 p-1.5 dark:bg-blue-900/30">
-                                <Calendar class="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            Fish Caught per Month
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Fish Caught per Month" subtitle="Monthly catch distribution" :icon="Calendar" color="blue" />
                     <CardContent class="pt-0 pb-3">
                         <div v-if="catchesByMonthPie && catchesByMonthPie.length > 0" class="flex items-center gap-4">
                             <div class="relative w-44 h-44 flex-shrink-0">
@@ -842,14 +1013,7 @@ const sunPhasePieSlices = computed(() => {
 
                 <!-- Fish Caught by Moon Phase -->
                 <Card class="bg-gradient-to-br from-slate-50/30 to-transparent dark:from-slate-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-slate-100 p-1.5 dark:bg-slate-900/30">
-                                <Moon class="h-5 w-5 text-slate-600 dark:text-slate-400" />
-                            </div>
-                            Fish Caught by Moon Phase
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Fish Caught by Moon Phase" subtitle="Lunar influence on catches" :icon="Moon" color="slate" />
                     <CardContent class="pt-0 pb-3">
                         <div v-if="catchesByMoonPhase && catchesByMoonPhase.length > 0" class="flex items-center gap-4">
                             <div class="relative w-44 h-44 flex-shrink-0">
@@ -894,14 +1058,7 @@ const sunPhasePieSlices = computed(() => {
 
                 <!-- Fish Caught by Sun Phase -->
                 <Card class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10">
-                    <CardHeader class="pb-1">
-                        <CardTitle class="flex items-center gap-2 text-base">
-                            <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
-                                <Sun class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                            </div>
-                            Fish Caught by Sun Phase
-                        </CardTitle>
-                    </CardHeader>
+                    <DashboardCardHeader title="Fish Caught by Sun Phase" subtitle="Time of day distribution" :icon="Sun" color="amber" />
                     <CardContent class="pt-0 pb-3">
                         <div v-if="catchesBySunPhase && catchesBySunPhase.length > 0" class="flex items-center gap-4">
                             <div class="relative w-44 h-44 flex-shrink-0">
@@ -944,303 +1101,12 @@ const sunPhasePieSlices = computed(() => {
                 </Card>
             </div>
 
-            <!-- Year Stats Grid - 4 columns on large screens -->
-            <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
-                <!-- Favorite Weekday -->
-                <Card class="bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Favorite Weekday</CardTitle>
-                        <div class="rounded-full bg-cyan-100 p-2 dark:bg-cyan-900/30">
-                            <Calendar class="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div v-if="favoriteWeekday" class="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{{ favoriteWeekday.day }}</div>
-                        <div v-else class="text-2xl font-bold text-muted-foreground">-</div>
-                        <p class="text-xs text-muted-foreground">
-                            {{ favoriteWeekday ? `${favoriteWeekday.count} trips` : 'No data yet' }}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <!-- Streak Tracker -->
-                <Card class="bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Longest Streak</CardTitle>
-                        <div class="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
-                            <Flame class="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ streakStats.longestStreak }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Current streak {{ streakStats.currentStreak }}
-                            <span v-if="streakStats.currentStreak > 0" class="ml-1">🔥</span>
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <!-- Average per Trip -->
-                <Card class="bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Average per Trip</CardTitle>
-                        <div class="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/30">
-                            <BarChart3 class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
-                            {{ speciesStats.totalTrips > 0 ? (speciesStats.totalFish / speciesStats.totalTrips).toFixed(1) : '0' }}
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Fish per outing
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <!-- Most in a Day -->
-                <Card class="bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Most in a Day</CardTitle>
-                        <div class="rounded-full bg-violet-100 p-2 dark:bg-violet-900/30">
-                            <Award class="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-violet-700 dark:text-violet-300">{{ yearStats.mostInDay }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Personal best day
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Days Stats Grid - 3 columns on large screens -->
-            <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
-                <!-- Days Fished -->
-                <Card class="bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Days Fished</CardTitle>
-                        <div class="rounded-full bg-sky-100 p-2 dark:bg-sky-900/30">
-                            <Calendar class="h-4 w-4 text-sky-600 dark:text-sky-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-sky-700 dark:text-sky-300">{{ yearStats.daysFished }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Total days on the water
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <!-- Successful Days -->
-                <Card class="bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Successful Days</CardTitle>
-                        <div class="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
-                            <span class="text-base">🐡</span>
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-green-700 dark:text-green-300">{{ yearStats.daysWithFish }}</div>
-                        <div class="mt-1 flex items-center gap-2">
-                            <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                <div
-                                    class="h-full bg-green-500 transition-all duration-500"
-                                    :style="{ width: `${yearStats.successRate}%` }"
-                                ></div>
-                            </div>
-                            <span class="text-xs font-medium text-green-600 dark:text-green-400">{{ yearStats.successRate }}%</span>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Days Skunked -->
-                <Card class="bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20">
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-1">
-                        <CardTitle class="text-sm font-medium">Days Skunked</CardTitle>
-                        <div class="rounded-full bg-red-100 p-2 dark:bg-red-900/30">
-                            <X class="h-4 w-4 text-red-600 dark:text-red-400" />
-                        </div>
-                    </CardHeader>
-                    <CardContent class="pb-3">
-                        <div class="text-2xl font-bold text-red-700 dark:text-red-300">{{ yearStats.daysSkunked }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Where the fish at?
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Badges Section -->
-            <Card v-if="badges && badges.earned.length > 0" class="bg-gradient-to-br from-amber-50/30 to-transparent dark:from-amber-950/10">
-                <CardHeader class="pb-2">
-                    <CardTitle class="flex items-center gap-2">
-                        <div class="rounded-full bg-amber-100 p-1.5 dark:bg-amber-900/30">
-                            <Award class="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        Achievement Badges
-                    </CardTitle>
-                    <CardDescription>{{ badges.totalEarned }} of {{ badges.totalAvailable }} badges earned</CardDescription>
-                </CardHeader>
-                <CardContent class="pt-0 pb-4">
-                    <div class="flex flex-wrap gap-2">
-                        <div
-                            v-for="badge in badges.earned"
-                            :key="badge.id"
-                            :class="[
-                                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:scale-105',
-                                badge.rarity_colors.bg,
-                                badge.rarity_colors.text,
-                                badge.rarity === 'legendary' && 'ring-2 ring-amber-400 ring-offset-1',
-                                badge.rarity === 'epic' && 'ring-1 ring-purple-400',
-                            ]"
-                            :title="badge.description"
-                        >
-                            <span class="text-base">{{ badge.icon }}</span>
-                            <span>{{ badge.name }}</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <!-- Top Performers -->
-            <div class="grid gap-4 md:grid-cols-4">
-                <!-- Most Successful Fly (by quantity) -->
-                <Card class="bg-gradient-to-br from-rose-50/30 to-transparent dark:from-rose-950/10">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-rose-100 p-1.5 dark:bg-rose-900/30">
-                                <Award class="h-5 w-5 text-rose-600 dark:text-rose-400" />
-                            </div>
-                            Most Successful Fly
-                        </CardTitle>
-                        <CardDescription>Most fish caught</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="mostSuccessfulFly" class="space-y-2">
-                            <div class="text-xl font-bold text-rose-700 dark:text-rose-300">{{ mostSuccessfulFly.name }}</div>
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
-                                    <span>🎣</span>
-                                    <span>{{ mostSuccessfulFly.total }} fish</span>
-                                </span>
-                                <span class="text-xs text-muted-foreground">
-                                    {{ mostSuccessfulFly.days }} days used
-                                </span>
-                            </div>
-                        </div>
-                        <div v-else class="text-muted-foreground">
-                            No data yet
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Biggest Fish Fly -->
-                <Card class="bg-gradient-to-br from-teal-50/30 to-transparent dark:from-teal-950/10">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-teal-100 p-1.5 dark:bg-teal-900/30">
-                                <Award class="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                            </div>
-                            Biggest Fish Fly
-                        </CardTitle>
-                        <CardDescription>Largest fish caught</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="biggestFishFly" class="space-y-2">
-                            <div class="text-xl font-bold text-teal-700 dark:text-teal-300">{{ biggestFishFly.name }}</div>
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-medium text-teal-800 dark:bg-teal-900/30 dark:text-teal-300">
-                                    <span>🏆</span>
-                                    <span>{{ formatSize(biggestFishFly.size) }}" fish</span>
-                                </span>
-                                <span class="text-xs text-muted-foreground">
-                                    {{ biggestFishFly.days }} days used
-                                </span>
-                            </div>
-                        </div>
-                        <div v-else class="text-muted-foreground">
-                            No data yet
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Most Successful Type -->
-                <Card class="bg-gradient-to-br from-purple-50/30 to-transparent dark:from-purple-950/10">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-purple-100 p-1.5 dark:bg-purple-900/30">
-                                <Target class="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            Most Successful Type
-                        </CardTitle>
-                        <CardDescription>Best performing fly type</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="mostSuccessfulFlyType" class="space-y-2">
-                            <div class="text-xl font-bold text-purple-700 dark:text-purple-300">{{ mostSuccessfulFlyType.type }}</div>
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                                    <span>🎣</span>
-                                    <span>{{ mostSuccessfulFlyType.total }} fish</span>
-                                </span>
-                                <span class="text-xs text-muted-foreground">
-                                    {{ mostSuccessfulFlyType.days }} days used
-                                </span>
-                            </div>
-                        </div>
-                        <div v-else class="text-muted-foreground">
-                            No data yet
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Most Successful Color -->
-                <Card class="bg-gradient-to-br from-indigo-50/30 to-transparent dark:from-indigo-950/10">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-indigo-100 p-1.5 dark:bg-indigo-900/30">
-                                <Target class="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                            </div>
-                            Most Successful Color
-                        </CardTitle>
-                        <CardDescription>Best performing fly color</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
-                        <div v-if="mostSuccessfulFlyColor" class="space-y-2">
-                            <div class="text-xl font-bold text-indigo-700 dark:text-indigo-300">{{ mostSuccessfulFlyColor.color }}</div>
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
-                                    <span>🎨</span>
-                                    <span>{{ mostSuccessfulFlyColor.total }} fish</span>
-                                </span>
-                                <span class="text-xs text-muted-foreground">
-                                    {{ mostSuccessfulFlyColor.days }} days used
-                                </span>
-                            </div>
-                        </div>
-                        <div v-else class="text-muted-foreground">
-                            No data yet
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             <!-- Top Species Cards -->
             <div class="grid gap-4 md:grid-cols-2">
                 <!-- Top Species by Size -->
                 <Card class="bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-950/10">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-orange-100 p-1.5 dark:bg-orange-900/30">
-                                <Award class="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            Top Species by Size
-                        </CardTitle>
-                        <CardDescription>Largest fish by species</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
+                    <DashboardCardHeader title="Top Species by Size" subtitle="Biggest fish per species" emoji="📏" color="orange" />
+                    <CardContent class="pt-0 pb-1">
                         <div v-if="topSpeciesBySize && topSpeciesBySize.length > 0" class="space-y-2">
                             <div v-for="(species, index) in topSpeciesBySize.slice(0, 5)" :key="species.species" class="flex items-center gap-3 pb-2 border-b last:border-0">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-sm font-bold flex-shrink-0">
@@ -1248,16 +1114,18 @@ const sunPhasePieSlices = computed(() => {
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
-                                        <span class="font-medium">{{ species.species }}</span>
+                                        <span class="text-sm font-medium">{{ species.species }}</span>
                                         <span v-if="index === 0">🥇</span>
                                         <span v-else-if="index === 1">🥈</span>
                                         <span v-else-if="index === 2">🥉</span>
                                     </div>
-                                    <div class="text-sm text-muted-foreground">{{ species.total_caught }} catches</div>
+                                    <div class="text-xs text-muted-foreground flex items-center gap-2">
+                                        <span>Largest catch:</span>
+                                        <span class="font-medium text-orange-700 dark:text-orange-300">{{ formatSize(species.biggest_size) }}"</span>
+                                    </div>
                                 </div>
-                                <div v-if="species.biggest_size > 0" class="text-right">
-                                    <div class="text-lg font-bold text-orange-700 dark:text-orange-300">{{ formatSize(species.biggest_size) }}"</div>
-                                    <div class="text-xs text-muted-foreground">biggest</div>
+                                <div class="text-right">
+                                    <div class="text-xs text-muted-foreground">{{ species.total_caught }} catches</div>
                                 </div>
                             </div>
                         </div>
@@ -1265,18 +1133,10 @@ const sunPhasePieSlices = computed(() => {
                     </CardContent>
                 </Card>
 
-                <!-- Top Species -->
+                <!-- Top Species by Count -->
                 <Card class="bg-gradient-to-br from-yellow-50/30 to-transparent dark:from-yellow-950/10">
-                    <CardHeader class="pb-2">
-                        <CardTitle class="flex items-center gap-2">
-                            <div class="rounded-full bg-yellow-100 p-1.5 dark:bg-yellow-900/30">
-                                <span class="text-lg">🐟</span>
-                            </div>
-                            Top Species Caught
-                        </CardTitle>
-                        <CardDescription>Most caught species</CardDescription>
-                    </CardHeader>
-                    <CardContent class="pt-0 pb-4">
+                    <DashboardCardHeader title="Top Species by Count" subtitle="Your most caught species" emoji="🐠" color="yellow" />
+                    <CardContent class="pt-0 pb-1">
                         <div v-if="topSpecies.length > 0" class="space-y-2">
                             <div v-for="(species, index) in topSpecies" :key="species.species" class="flex items-center gap-3 pb-2 border-b last:border-0">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-sm font-bold flex-shrink-0">
@@ -1284,18 +1144,15 @@ const sunPhasePieSlices = computed(() => {
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
-                                        <span class="font-medium">{{ species.species }}</span>
-                                        <span v-if="species.water_type" class="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
-                                            {{ species.water_type }}
-                                        </span>
+                                        <span class="text-sm font-medium">{{ species.species }}</span>
                                         <span v-if="index === 0">🥇</span>
                                         <span v-else-if="index === 1">🥈</span>
                                         <span v-else-if="index === 2">🥉</span>
                                     </div>
-                                    <div class="text-sm text-muted-foreground">{{ species.total_caught }} catches</div>
+                                    <div class="text-xs text-muted-foreground">{{ species.total_caught }} catches</div>
                                 </div>
                                 <div v-if="species.biggest_size > 0" class="text-right">
-                                    <div class="text-sm font-medium text-yellow-700 dark:text-yellow-300">{{ formatSize(species.biggest_size) }}"</div>
+                                    <div class="text-xs font-medium text-yellow-700 dark:text-yellow-300">{{ formatSize(species.biggest_size) }}"</div>
                                     <div class="text-xs text-muted-foreground">biggest</div>
                                 </div>
                             </div>
@@ -1304,6 +1161,26 @@ const sunPhasePieSlices = computed(() => {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Badges Section -->
+            <Card v-if="badges && badges.earned.length > 0" class="bg-gradient-to-br from-purple-50/30 to-pink-50/30 dark:from-purple-950/10 dark:to-pink-950/10">
+                <DashboardCardHeader title="Achievement Badges" emoji="🏅" color="purple" gradientTo="pink">
+                    <template #subtitle>{{ badges.totalEarned }} of {{ badges.totalAvailable }} badges earned</template>
+                </DashboardCardHeader>
+                <CardContent class="pt-0 pb-4">
+                    <div class="flex flex-wrap gap-1">
+                        <div
+                            v-for="badge in badges.earned"
+                            :key="badge.id"
+                            class="flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-100/50 dark:bg-purple-900/20 rounded-full"
+                            :title="badge.description"
+                        >
+                            <span class="text-sm">{{ badge.icon }}</span>
+                            <span class="text-xs font-medium">{{ badge.name }}</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     </AppLayout>
 </template>

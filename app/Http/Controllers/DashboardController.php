@@ -476,6 +476,7 @@ class DashboardController extends Controller
             'newSpotSuccessRate' => $locationStats['newSpotSuccessRate'],
             // Species stats
             'rarestCatches' => $speciesStats['rarestCatches'],
+            'newSpeciesThisYear' => $speciesStats['newSpeciesThisYear'],
             'sizeImprovement' => $speciesStats['sizeImprovement'],
             // Fly pattern stats
             'flyRotation' => $flyPatternStats['flyRotation'],
@@ -545,35 +546,21 @@ class DashboardController extends Controller
 
         // Merge with defaults to ensure all cards are present
         $defaultCards = UserDashboardPreference::getDefaultCards();
-        $userPreferences = [];
-        $newCards = [];
-
-        // Get the highest order from user's existing preferences
-        $maxOrder = $preferences->max('order') ?? 0;
+        $mergedPreferences = [];
 
         foreach ($defaultCards as $default) {
             if ($preferences->has($default['card_id'])) {
                 $pref = $preferences->get($default['card_id']);
-                $userPreferences[] = [
+                $mergedPreferences[] = [
                     'card_id' => $pref->card_id,
                     'order' => $pref->order,
                     'is_visible' => $pref->is_visible,
                     'size' => $pref->size ?? $default['size'],
                 ];
             } else {
-                // New card - add to the end of user's order
-                $maxOrder++;
-                $newCards[] = [
-                    'card_id' => $default['card_id'],
-                    'order' => $maxOrder,
-                    'is_visible' => true,
-                    'size' => $default['size'],
-                ];
+                $mergedPreferences[] = $default;
             }
         }
-
-        // Combine user preferences with new cards appended at the end
-        $mergedPreferences = array_merge($userPreferences, $newCards);
 
         // Sort by order
         usort($mergedPreferences, fn($a, $b) => $a['order'] <=> $b['order']);

@@ -79,14 +79,14 @@ class PublicDashboardController extends Controller
         $biggestCatch = (clone $baseQuery)
             ->whereNotNull('max_size')
             ->orderByDesc('max_size')
-            ->with(['fish', 'location', 'fly', 'rod'])
+            ->with(['fish', 'location', 'fly', 'rod', 'friends'])
             ->first();
 
         // Second biggest catch (filtered by year)
         $secondBiggestCatch = (clone $baseQuery)
             ->whereNotNull('max_size')
             ->orderByDesc('max_size')
-            ->with(['fish', 'fly', 'rod'])
+            ->with(['fish', 'location', 'fly', 'rod', 'friends'])
             ->skip(1)
             ->first();
 
@@ -221,6 +221,14 @@ class PublicDashboardController extends Controller
         // Streak statistics using service
         $streakStats = $this->dashboardService->getStreakStats($userId, $yearFilter);
 
+        // Geographic stats for species by water type
+        $geographicStats = $this->dashboardService->getGeographicStats($userId, $yearFilter);
+        $speciesByWaterType = $geographicStats['speciesByWaterType'];
+
+        // Additional analysis stats for quantity vs quality
+        $additionalAnalysisStats = $this->dashboardService->getAdditionalAnalysisStats($userId, $yearFilter);
+        $quantityVsQuality = $additionalAnalysisStats['quantityVsQuality'];
+
         // Get earned badges for the user (limited to most recent 12 for display)
         $earnedBadges = $user->badges()
             ->orderByPivot('earned_at', 'desc')
@@ -257,16 +265,24 @@ class PublicDashboardController extends Controller
                 'biggestCatch' => $biggestCatch ? [
                     'size' => $biggestCatch->max_size,
                     'species' => $biggestCatch->fish?->species,
+                    'location' => $biggestCatch->location?->name,
                     'date' => $biggestCatch->date,
+                    'style' => $biggestCatch->style,
                     'fly' => $biggestCatch->fly?->name,
                     'rod' => $biggestCatch->rod?->rod_name,
+                    'friends' => $biggestCatch->friends->pluck('name')->toArray(),
+                    'notes' => $biggestCatch->notes,
                 ] : null,
                 'secondBiggestCatch' => $secondBiggestCatch ? [
                     'size' => $secondBiggestCatch->max_size,
                     'species' => $secondBiggestCatch->fish?->species,
+                    'location' => $secondBiggestCatch->location?->name,
                     'date' => $secondBiggestCatch->date,
+                    'style' => $secondBiggestCatch->style,
                     'fly' => $secondBiggestCatch->fly?->name,
                     'rod' => $secondBiggestCatch->rod?->rod_name,
+                    'friends' => $secondBiggestCatch->friends->pluck('name')->toArray(),
+                    'notes' => $secondBiggestCatch->notes,
                 ] : null,
             ],
             'allSpecies' => $allSpecies,
@@ -299,6 +315,8 @@ class PublicDashboardController extends Controller
             'favoriteWeekday' => $favoriteWeekday,
             'catchesOverTime' => $catchesOverTime,
             'streakStats' => $streakStats,
+            'speciesByWaterType' => $speciesByWaterType,
+            'quantityVsQuality' => $quantityVsQuality,
             'availableYears' => $availableYears,
             'selectedYear' => $yearFilter,
             'badges' => [

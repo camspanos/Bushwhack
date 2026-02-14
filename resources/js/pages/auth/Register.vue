@@ -2,16 +2,21 @@
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import NativeSelect from '@/components/ui/native-select/NativeSelect.vue';
 import NativeSelectOption from '@/components/ui/native-select/NativeSelectOption.vue';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
+import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
 import { Form, Head } from '@inertiajs/vue3';
+import { Calendar as CalendarIcon } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface Country {
     id: number;
@@ -24,6 +29,23 @@ interface Props {
 }
 
 defineProps<Props>();
+
+// Birthday date picker state
+const birthdayInput = ref('');
+const selectedBirthday = ref<CalendarDate | undefined>(undefined);
+const birthdayPickerOpen = ref(false);
+const maxBirthdayDate = today(getLocalTimeZone()); // Prevent future date selection
+
+// Handle calendar date selection for birthday
+const handleBirthdaySelect = (date: CalendarDate | undefined) => {
+    if (!date) return;
+    selectedBirthday.value = date;
+    const year = date.year;
+    const month = String(date.month).padStart(2, '0');
+    const day = String(date.day).padStart(2, '0');
+    birthdayInput.value = `${year}-${month}-${day}`;
+    birthdayPickerOpen.value = false;
+};
 </script>
 
 <template>
@@ -131,12 +153,42 @@ defineProps<Props>();
                 </div>
 
                 <div class="grid gap-2">
+                    <Label for="birthday">Birthday (optional)</Label>
+                    <input type="hidden" name="birthday" :value="birthdayInput" />
+                    <Popover v-model:open="birthdayPickerOpen">
+                        <PopoverTrigger as-child>
+                            <Button
+                                id="birthday"
+                                type="button"
+                                variant="outline"
+                                :tabindex="7"
+                                class="w-full justify-between text-left font-normal"
+                                :class="{ 'text-muted-foreground': !birthdayInput }"
+                            >
+                                <span>{{ birthdayInput ? new Date(birthdayInput + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Select birthday' }}</span>
+                                <CalendarIcon class="h-4 w-4 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-auto p-0" align="start">
+                            <Calendar
+                                class="min-w-[280px]"
+                                :model-value="selectedBirthday"
+                                @update:model-value="handleBirthdaySelect"
+                                :max-value="maxBirthdayDate"
+                                layout="month-and-year"
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    <InputError :message="errors.birthday" />
+                </div>
+
+                <div class="grid gap-2">
                     <Label for="password">Password</Label>
                     <Input
                         id="password"
                         type="password"
                         required
-                        :tabindex="7"
+                        :tabindex="8"
                         autocomplete="new-password"
                         name="password"
                         placeholder="Password"
@@ -150,7 +202,7 @@ defineProps<Props>();
                         id="password_confirmation"
                         type="password"
                         required
-                        :tabindex="8"
+                        :tabindex="9"
                         autocomplete="new-password"
                         name="password_confirmation"
                         placeholder="Confirm password"
@@ -161,7 +213,7 @@ defineProps<Props>();
                 <Button
                     type="submit"
                     class="mt-2 w-full"
-                    tabindex="9"
+                    tabindex="10"
                     :disabled="processing"
                     data-test="register-user-button"
                 >
@@ -175,7 +227,7 @@ defineProps<Props>();
                 <TextLink
                     :href="login()"
                     class="underline underline-offset-4"
-                    :tabindex="10"
+                    :tabindex="11"
                     >Log in</TextLink
                 >
             </div>

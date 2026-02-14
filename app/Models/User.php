@@ -28,6 +28,7 @@ class User extends Authenticatable
         'state',
         'country_id',
         'metric',
+        'birthday',
         'allow_followers',
         'is_premium',
     ];
@@ -55,6 +56,7 @@ class User extends Authenticatable
             'allow_followers' => 'boolean',
             'is_premium' => 'boolean',
             'metric' => 'boolean',
+            'birthday' => 'date',
         ];
     }
 

@@ -32,6 +32,7 @@ class CreateNewUser implements CreatesNewUsers
             'state' => ['nullable', 'string', 'max:255'],
             'country_id' => ['nullable', 'exists:countries,id'],
             'metric' => ['nullable', 'in:0,1,true,false'],
+            'birthday' => ['nullable', 'date', 'before:today'],
         ])->validate();
 
         $user = User::create([
@@ -42,6 +43,7 @@ class CreateNewUser implements CreatesNewUsers
             'state' => $input['state'] ?? null,
             'country_id' => $input['country_id'] ?? null,
             'metric' => filter_var($input['metric'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'birthday' => $input['birthday'] ?? null,
         ]);
 
         // Automatically follow user_id 1 (if it exists and is not the new user)

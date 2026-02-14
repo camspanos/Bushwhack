@@ -29,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             'state' => ['nullable', 'string', 'max:255'],
             'country_id' => ['nullable', 'exists:countries,id'],
             'metric' => ['boolean'],
+            'birthday' => ['nullable', 'date', 'before:today'],
         ];
     }
 

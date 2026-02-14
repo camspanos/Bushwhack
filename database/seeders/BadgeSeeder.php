@@ -29,6 +29,8 @@ class BadgeSeeder extends Seeder
             $this->getComboBadges(),
             $this->getMilestoneBadges(),
             $this->getChallengeBadges(),
+            $this->getWaterConditionBadges(),
+            $this->getSocialBadges(),
         );
 
         $sortOrder = 0;
@@ -90,6 +92,8 @@ class BadgeSeeder extends Seeder
             ['name' => 'Lunch Break', 'icon' => '🥪', 'description' => 'Catch a fish between 12pm-1pm', 'category' => 'time', 'rarity' => 'common', 'requirement_type' => 'time_between', 'requirement_field' => 'time', 'requirement_operator' => 'between', 'requirement_value' => 12, 'requirement_value2' => 13],
             ['name' => 'Golden Hour', 'icon' => '🌇', 'description' => 'Catch 25 fish during golden hour (6-8am or 6-8pm)', 'category' => 'time', 'rarity' => 'rare', 'requirement_type' => 'count_golden_hour', 'requirement_field' => 'time', 'requirement_operator' => 'golden', 'requirement_value' => 25],
             ['name' => 'All Day Angler', 'icon' => '⏰', 'description' => 'Catch fish in morning, afternoon, and evening in one day', 'category' => 'time', 'rarity' => 'rare', 'requirement_type' => 'time_variety', 'requirement_field' => 'time', 'requirement_operator' => 'all_periods', 'requirement_value' => 1],
+            ['name' => 'Witching Hour', 'icon' => '🧙', 'description' => 'Catch a fish between midnight and 4am', 'category' => 'time', 'rarity' => 'rare', 'requirement_type' => 'time_between', 'requirement_field' => 'time', 'requirement_operator' => 'between', 'requirement_value' => 0, 'requirement_value2' => 4],
+            ['name' => 'Night Stalker', 'icon' => '🦇', 'description' => 'Catch 10 fish between midnight and 4am', 'category' => 'time', 'rarity' => 'epic', 'requirement_type' => 'count_time_between', 'requirement_field' => 'time', 'requirement_operator' => 'between', 'requirement_value' => 0, 'requirement_value2' => 4, 'requirement_extra' => ['count' => 10]],
         ];
     }
 
@@ -124,6 +128,7 @@ class BadgeSeeder extends Seeder
             ['name' => 'Quarter Pounder', 'icon' => '🌓', 'description' => 'Catch fish during all 4 moon quarters', 'category' => 'moon', 'rarity' => 'rare', 'requirement_type' => 'moon_variety', 'requirement_field' => 'moon_phase', 'requirement_operator' => 'all', 'requirement_value' => 4],
             ['name' => 'Solunar Scientist', 'icon' => '🔬', 'description' => 'Catch 50 fish during major solunar periods', 'category' => 'moon', 'rarity' => 'epic', 'requirement_type' => 'count_solunar', 'requirement_field' => 'solunar_position', 'requirement_operator' => 'major', 'requirement_value' => 50],
             ['name' => 'Moon Position Master', 'icon' => '🎯', 'description' => 'Catch fish in all 6 moon positions', 'category' => 'moon', 'rarity' => 'epic', 'requirement_type' => 'moon_position_variety', 'requirement_field' => 'solunar_position', 'requirement_operator' => 'all', 'requirement_value' => 6],
+            ['name' => 'Supermoon Slayer', 'icon' => '🌝', 'description' => 'Catch a fish during a supermoon', 'category' => 'moon', 'rarity' => 'rare', 'requirement_type' => 'supermoon', 'requirement_field' => 'supermoon_catch', 'requirement_operator' => '>=', 'requirement_value' => 1],
         ];
     }
 
@@ -324,6 +329,77 @@ class BadgeSeeder extends Seeder
             ['name' => 'Weather Watcher', 'icon' => '🌤️', 'description' => 'Log weather conditions 100 times', 'category' => 'challenge', 'rarity' => 'rare', 'requirement_type' => 'challenge', 'requirement_field' => 'weather_count', 'requirement_operator' => '>=', 'requirement_value' => 100],
             ['name' => 'Clarity Counter', 'icon' => '💧', 'description' => 'Log water clarity 50 times', 'category' => 'challenge', 'rarity' => 'uncommon', 'requirement_type' => 'challenge', 'requirement_field' => 'clarity_count', 'requirement_operator' => '>=', 'requirement_value' => 50],
             ['name' => 'Flow Tracker', 'icon' => '🌊', 'description' => 'Log water flow 50 times', 'category' => 'challenge', 'rarity' => 'uncommon', 'requirement_type' => 'challenge', 'requirement_field' => 'flow_count', 'requirement_operator' => '>=', 'requirement_value' => 50],
+        ];
+    }
+
+    private function getWaterConditionBadges(): array
+    {
+        return [
+            // Water Clarity badges
+            ['name' => 'Crystal Clear', 'icon' => '💎', 'description' => 'Catch a fish in crystal clear water', 'category' => 'water_condition', 'rarity' => 'common', 'requirement_type' => 'water_clarity', 'requirement_field' => 'clarity', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['clarity' => 'Crystal Clear']],
+            ['name' => 'Clear Water Angler', 'icon' => '🔍', 'description' => 'Catch 25 fish in clear water', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'count_water_clarity', 'requirement_field' => 'clarity', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['clarity' => ['Crystal Clear', 'Clear']]],
+            ['name' => 'Stained Water Specialist', 'icon' => '🟤', 'description' => 'Catch 25 fish in stained water', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'count_water_clarity', 'requirement_field' => 'clarity', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['clarity' => ['Slightly Stained', 'Stained']]],
+            ['name' => 'Muddy Water Master', 'icon' => '🌫️', 'description' => 'Catch a fish in murky or muddy water', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'water_clarity', 'requirement_field' => 'clarity', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['clarity' => ['Murky', 'Muddy']]],
+            ['name' => 'Dirty Water Pro', 'icon' => '💪', 'description' => 'Catch 50 fish in murky or muddy water', 'category' => 'water_condition', 'rarity' => 'rare', 'requirement_type' => 'count_water_clarity', 'requirement_field' => 'clarity', 'requirement_operator' => '=', 'requirement_value' => 50, 'requirement_extra' => ['clarity' => ['Murky', 'Muddy']]],
+
+            // Water Level badges
+            ['name' => 'Low Water Legend', 'icon' => '📉', 'description' => 'Catch a fish when water level is low', 'category' => 'water_condition', 'rarity' => 'common', 'requirement_type' => 'water_level', 'requirement_field' => 'level', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['level' => ['Very Low', 'Low']]],
+            ['name' => 'Low Water Expert', 'icon' => '🏜️', 'description' => 'Catch 25 fish in low water conditions', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'count_water_level', 'requirement_field' => 'level', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['level' => ['Very Low', 'Low']]],
+            ['name' => 'High Water Hero', 'icon' => '📈', 'description' => 'Catch a fish when water level is high', 'category' => 'water_condition', 'rarity' => 'common', 'requirement_type' => 'water_level', 'requirement_field' => 'level', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['level' => ['High', 'Very High']]],
+            ['name' => 'High Water Expert', 'icon' => '🌊', 'description' => 'Catch 25 fish in high water conditions', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'count_water_level', 'requirement_field' => 'level', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['level' => ['High', 'Very High']]],
+            ['name' => 'Flood Fighter', 'icon' => '🚣', 'description' => 'Catch a fish during flood conditions', 'category' => 'water_condition', 'rarity' => 'rare', 'requirement_type' => 'water_level', 'requirement_field' => 'level', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['level' => 'Flood']],
+
+            // Water Speed badges
+            ['name' => 'Still Water Stalker', 'icon' => '🪷', 'description' => 'Catch a fish in still water', 'category' => 'water_condition', 'rarity' => 'common', 'requirement_type' => 'water_speed', 'requirement_field' => 'speed', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['speed' => 'Still']],
+            ['name' => 'Still Water Master', 'icon' => '🧘', 'description' => 'Catch 50 fish in still water', 'category' => 'water_condition', 'rarity' => 'rare', 'requirement_type' => 'count_water_speed', 'requirement_field' => 'speed', 'requirement_operator' => '=', 'requirement_value' => 50, 'requirement_extra' => ['speed' => 'Still']],
+            ['name' => 'Current Crusher', 'icon' => '💨', 'description' => 'Catch a fish in fast-moving water', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'water_speed', 'requirement_field' => 'speed', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['speed' => ['Fast', 'Very Fast']]],
+            ['name' => 'Rapid Runner', 'icon' => '🏃', 'description' => 'Catch 25 fish in fast-moving water', 'category' => 'water_condition', 'rarity' => 'rare', 'requirement_type' => 'count_water_speed', 'requirement_field' => 'speed', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['speed' => ['Fast', 'Very Fast']]],
+
+            // Tide badges
+            ['name' => 'Tide Turner', 'icon' => '🌙', 'description' => 'Catch fish during all tide phases', 'category' => 'water_condition', 'rarity' => 'rare', 'requirement_type' => 'tide_variety', 'requirement_field' => 'tide', 'requirement_operator' => 'all', 'requirement_value' => 5],
+            ['name' => 'Rising Tide Rider', 'icon' => '⬆️', 'description' => 'Catch 25 fish during rising tide', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'count_tide', 'requirement_field' => 'tide', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['tide' => 'Rising']],
+            ['name' => 'Falling Tide Fisher', 'icon' => '⬇️', 'description' => 'Catch 25 fish during falling tide', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'count_tide', 'requirement_field' => 'tide', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['tide' => 'Falling']],
+
+            // Surface Condition badges
+            ['name' => 'Calm Water Catcher', 'icon' => '😌', 'description' => 'Catch 25 fish in calm surface conditions', 'category' => 'water_condition', 'rarity' => 'common', 'requirement_type' => 'count_surface', 'requirement_field' => 'surface_condition', 'requirement_operator' => '=', 'requirement_value' => 25, 'requirement_extra' => ['surface' => 'Calm']],
+            ['name' => 'Rough Water Warrior', 'icon' => '🌊', 'description' => 'Catch a fish in rough water conditions', 'category' => 'water_condition', 'rarity' => 'uncommon', 'requirement_type' => 'surface_condition', 'requirement_field' => 'surface_condition', 'requirement_operator' => '=', 'requirement_value' => 1, 'requirement_extra' => ['surface' => ['Rough', 'Very Rough']]],
+            ['name' => 'Choppy Champion', 'icon' => '🏆', 'description' => 'Catch 50 fish in choppy or rough conditions', 'category' => 'water_condition', 'rarity' => 'rare', 'requirement_type' => 'count_surface', 'requirement_field' => 'surface_condition', 'requirement_operator' => '=', 'requirement_value' => 50, 'requirement_extra' => ['surface' => ['Choppy', 'Rough', 'Very Rough']]],
+        ];
+    }
+
+    private function getSocialBadges(): array
+    {
+        return [
+            // Friend fishing badges
+            ['name' => 'Fishing Buddy', 'icon' => '👥', 'description' => 'Fish with friends 10 times', 'category' => 'social', 'rarity' => 'common', 'requirement_type' => 'friend_trips', 'requirement_field' => 'friend_trip_count', 'requirement_operator' => '>=', 'requirement_value' => 10],
+            ['name' => 'Social Angler', 'icon' => '🤝', 'description' => 'Fish with friends 25 times', 'category' => 'social', 'rarity' => 'uncommon', 'requirement_type' => 'friend_trips', 'requirement_field' => 'friend_trip_count', 'requirement_operator' => '>=', 'requirement_value' => 25],
+            ['name' => 'Group Leader', 'icon' => '👨‍👩‍👧‍👦', 'description' => 'Fish with friends 50 times', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'friend_trips', 'requirement_field' => 'friend_trip_count', 'requirement_operator' => '>=', 'requirement_value' => 50],
+            ['name' => 'Party Boat', 'icon' => '🎉', 'description' => 'Fish with 3+ friends on one trip', 'category' => 'social', 'rarity' => 'uncommon', 'requirement_type' => 'party_boat', 'requirement_field' => 'max_friends_trip', 'requirement_operator' => '>=', 'requirement_value' => 3],
+            ['name' => 'Fishing Party', 'icon' => '🥳', 'description' => 'Fish with 5+ friends on one trip', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'party_boat', 'requirement_field' => 'max_friends_trip', 'requirement_operator' => '>=', 'requirement_value' => 5],
+
+            // Solo fishing badges
+            ['name' => 'Solo Artist', 'icon' => '🎭', 'description' => 'Log 25 solo fishing trips', 'category' => 'social', 'rarity' => 'common', 'requirement_type' => 'solo_trips', 'requirement_field' => 'solo_trip_count', 'requirement_operator' => '>=', 'requirement_value' => 25],
+            ['name' => 'Lone Wolf', 'icon' => '🐺', 'description' => 'Log 100 solo fishing trips', 'category' => 'social', 'rarity' => 'uncommon', 'requirement_type' => 'solo_trips', 'requirement_field' => 'solo_trip_count', 'requirement_operator' => '>=', 'requirement_value' => 100],
+            ['name' => 'Solitary Master', 'icon' => '🧘', 'description' => 'Log 250 solo fishing trips', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'solo_trips', 'requirement_field' => 'solo_trip_count', 'requirement_operator' => '>=', 'requirement_value' => 250],
+
+            // Follower badges
+            ['name' => 'First Follower', 'icon' => '👋', 'description' => 'Have 1 follower', 'category' => 'social', 'rarity' => 'common', 'requirement_type' => 'follower_count', 'requirement_field' => 'follower_count', 'requirement_operator' => '>=', 'requirement_value' => 1],
+            ['name' => 'Rising Star', 'icon' => '⭐', 'description' => 'Have 5 followers', 'category' => 'social', 'rarity' => 'uncommon', 'requirement_type' => 'follower_count', 'requirement_field' => 'follower_count', 'requirement_operator' => '>=', 'requirement_value' => 5],
+            ['name' => 'Mentor', 'icon' => '🎓', 'description' => 'Have 10 followers', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'follower_count', 'requirement_field' => 'follower_count', 'requirement_operator' => '>=', 'requirement_value' => 10],
+            ['name' => 'Influencer', 'icon' => '📢', 'description' => 'Have 25 followers', 'category' => 'social', 'rarity' => 'epic', 'requirement_type' => 'follower_count', 'requirement_field' => 'follower_count', 'requirement_operator' => '>=', 'requirement_value' => 25],
+            ['name' => 'Fishing Celebrity', 'icon' => '🌟', 'description' => 'Have 50 followers', 'category' => 'social', 'rarity' => 'legendary', 'requirement_type' => 'follower_count', 'requirement_field' => 'follower_count', 'requirement_operator' => '>=', 'requirement_value' => 50],
+
+            // Friend variety badges
+            ['name' => 'Diverse Crew', 'icon' => '🌈', 'description' => 'Fish with 5 different friends', 'category' => 'social', 'rarity' => 'common', 'requirement_type' => 'friend_variety', 'requirement_field' => 'unique_friends_fished', 'requirement_operator' => '>=', 'requirement_value' => 5],
+            ['name' => 'Social Butterfly', 'icon' => '🦋', 'description' => 'Fish with 10 different friends', 'category' => 'social', 'rarity' => 'uncommon', 'requirement_type' => 'friend_variety', 'requirement_field' => 'unique_friends_fished', 'requirement_operator' => '>=', 'requirement_value' => 10],
+            ['name' => 'Networking Pro', 'icon' => '🕸️', 'description' => 'Fish with 25 different friends', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'friend_variety', 'requirement_field' => 'unique_friends_fished', 'requirement_operator' => '>=', 'requirement_value' => 25],
+
+            // Loyal location badges
+            ['name' => 'Loyal Angler', 'icon' => '💚', 'description' => 'Fish the same spot 20 days in a year', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'loyal_location', 'requirement_field' => 'location_days_in_year', 'requirement_operator' => '>=', 'requirement_value' => 20],
+
+            // Monthly consistency badges
+            ['name' => 'Monthly Regular', 'icon' => '📆', 'description' => 'Fish at least once every month for a year', 'category' => 'social', 'rarity' => 'epic', 'requirement_type' => 'monthly_consistency', 'requirement_field' => 'consecutive_months_fished', 'requirement_operator' => '>=', 'requirement_value' => 12],
+            ['name' => 'Weekly Warrior', 'icon' => '🗓️', 'description' => 'Fish every week for a month', 'category' => 'social', 'rarity' => 'rare', 'requirement_type' => 'weekly_consistency', 'requirement_field' => 'consecutive_weeks_fished', 'requirement_operator' => '>=', 'requirement_value' => 4],
         ];
     }
 }

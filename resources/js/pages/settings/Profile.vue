@@ -9,15 +9,18 @@ import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import NativeSelect from '@/components/ui/native-select/NativeSelect.vue';
 import NativeSelectOption from '@/components/ui/native-select/NativeSelectOption.vue';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { CheckCircle2 } from 'lucide-vue-next';
+import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
+import { CheckCircle2, Calendar as CalendarIcon } from 'lucide-vue-next';
 
 interface Country {
     id: number;
@@ -47,6 +50,36 @@ const user = page.props.auth.user;
 const selectedCountryId = ref(user.country_id?.toString() || '');
 const isMetric = ref(Boolean(user.metric)); // Explicitly convert to boolean
 
+// Birthday date picker state
+const initBirthdayFromUser = () => {
+    if (user.birthday) {
+        const datePart = user.birthday.split('T')[0];
+        const [year, month, day] = datePart.split('-').map(Number);
+        return {
+            input: datePart,
+            date: new CalendarDate(year, month, day)
+        };
+    }
+    return { input: '', date: undefined };
+};
+
+const initialBirthday = initBirthdayFromUser();
+const birthdayInput = ref(initialBirthday.input);
+const selectedBirthday = ref<CalendarDate | undefined>(initialBirthday.date);
+const birthdayPickerOpen = ref(false);
+const maxBirthdayDate = today(getLocalTimeZone()); // Prevent future date selection
+
+// Handle calendar date selection for birthday
+const handleBirthdaySelect = (date: CalendarDate | undefined) => {
+    if (!date) return;
+    selectedBirthday.value = date;
+    const year = date.year;
+    const month = String(date.month).padStart(2, '0');
+    const day = String(date.day).padStart(2, '0');
+    birthdayInput.value = `${year}-${month}-${day}`;
+    birthdayPickerOpen.value = false;
+};
+
 // Watch for user changes (in case they update from another tab)
 watch(() => user.country_id, (newValue) => {
     selectedCountryId.value = newValue?.toString() || '';
@@ -54,6 +87,18 @@ watch(() => user.country_id, (newValue) => {
 
 watch(() => user.metric, (newValue) => {
     isMetric.value = Boolean(newValue); // Explicitly convert to boolean
+});
+
+watch(() => user.birthday, (newValue) => {
+    if (newValue) {
+        const datePart = newValue.split('T')[0];
+        const [year, month, day] = datePart.split('-').map(Number);
+        birthdayInput.value = datePart;
+        selectedBirthday.value = new CalendarDate(year, month, day);
+    } else {
+        birthdayInput.value = '';
+        selectedBirthday.value = undefined;
+    }
 });
 </script>
 
@@ -163,6 +208,35 @@ watch(() => user.metric, (newValue) => {
                             Use metric system (cm, kg, m) instead of imperial (in, lb, ft)
                         </Label>
                         <InputError class="mt-2" :message="errors.metric" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="birthday">Birthday</Label>
+                        <input type="hidden" name="birthday" :value="birthdayInput" />
+                        <Popover v-model:open="birthdayPickerOpen">
+                            <PopoverTrigger as-child>
+                                <Button
+                                    id="birthday"
+                                    type="button"
+                                    variant="outline"
+                                    class="mt-1 w-full justify-between text-left font-normal"
+                                    :class="{ 'text-muted-foreground': !birthdayInput }"
+                                >
+                                    <span>{{ birthdayInput ? new Date(birthdayInput + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Select birthday' }}</span>
+                                    <CalendarIcon class="h-4 w-4 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent class="w-auto p-0" align="start">
+                                <Calendar
+                                    class="min-w-[280px]"
+                                    :model-value="selectedBirthday"
+                                    @update:model-value="handleBirthdaySelect"
+                                    :max-value="maxBirthdayDate"
+                                    layout="month-and-year"
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <InputError class="mt-2" :message="errors.birthday" />
                     </div>
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at">
